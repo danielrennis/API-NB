@@ -87,6 +87,8 @@
     td.right{text-align:right}
     .img-prod{width:38px;height:38px;object-fit:contain;border-radius:8px;border:1px solid var(--border)}
     .price-venta{color:#16a34a;font-weight:800;font-size:13px}
+    .price-con-stock{color:#16a34a!important;font-size:16px!important;font-weight:900!important;letter-spacing:-.02em}
+    .price-sin-stock{color:var(--muted);font-weight:700;font-size:12px}
     .sku{font-family:monospace;font-size:10px;color:var(--muted)}
     .stock-ok{color:#16a34a;font-weight:700}
     .stock-no{color:#dc2626;font-weight:700}
@@ -458,7 +460,7 @@ function renderProductos() {
       '<td class="left"><span class="badge badge-info">' + (p.category||'—') + '</span></td>' +
       '<td class="left" style="color:var(--muted);font-weight:600">' + (p.brand||'—') + '</td>' +
       '<td><span class="' + (tieneStock?'stock-ok':'stock-no') + '"><i class="fa-solid ' + (tieneStock?'fa-circle-check':'fa-circle-xmark') + '"></i> ' + stockTxt + '</span></td>' +
-      '<td class="right price-venta">' + precioTxt + '</td>' +
+      '<td class="right ' + (tieneStock ? 'price-venta price-con-stock' : 'price-sin-stock') + '">' + precioTxt + '</td>' +
       '</tr>';
   }).join('');
 
@@ -520,7 +522,7 @@ async function abrirProdModal(id) {
         '</div>' +
         '<div class="prod-modal-price">' +
           (ventaPesos !== null ? '$' + ventaPesos.toLocaleString('es-AR', {minimumFractionDigits:0, maximumFractionDigits:0}) : '—') +
-          '<small>Precio Final Contado · IVA ' + iva + '% · markup ' + markup + '%' + (cotiz ? ' · BNA $'+parseFloat(cotiz).toLocaleString('es-AR') : '') + '</small>' +
+          '<small>Precio Final Contado · IVA ' + iva + '% · cotización BNA</small>' +
         '</div>' +
       '</div>';
 
@@ -536,7 +538,7 @@ async function abrirProdModal(id) {
         '<div class="prod-detail-item"><div class="label">Garantía</div><div class="value"><i class="fa-solid fa-shield-halved" style="color:var(--ryr)"></i> ' + garantia + '</div></div>' +
         '<div class="prod-detail-item"><div class="label">Cantidad en stock</div><div class="value">' + amountStock + '</div></div>' +
         '<div class="prod-detail-item"><div class="label">IVA</div><div class="value">' + iva + '%</div></div>' +
-        '<div class="prod-detail-item"><div class="label">Precio base (USD)</div><div class="value">' + precioBaseUSD + '</div></div>' +
+        
         '<div class="prod-detail-item"><div class="label">Cotiz. proveedor</div><div class="value">$' + cotizProv + '</div></div>' +
       '</div>';
 
