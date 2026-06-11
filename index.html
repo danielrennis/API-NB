@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel New Bytes</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+    nav { background: #1e293b; padding: 1rem 2rem; display: flex; align-items: center; gap: 1.5rem; border-bottom: 1px solid #334155; }
+    nav .logo { font-weight: 700; font-size: 1.1rem; color: #38bdf8; }
+    nav button { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.9rem; padding: 0.4rem 0.8rem; border-radius: 6px; transition: all .2s; }
+    nav button:hover, nav button.active { background: #334155; color: #e2e8f0; }
+    nav button.active { color: #38bdf8; }
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .section { display: none; }
+    .section.active { display: block; }
+    h2 { font-size: 1.4rem; margin-bottom: 1.5rem; color: #f1f5f9; }
+    .search-row { display: flex; gap: .75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .search-row input, .search-row select { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; padding: .6rem 1rem; border-radius: 8px; font-size: .9rem; flex: 1; min-width: 180px; }
+    .search-row input:focus, .search-row select:focus { outline: none; border-color: #38bdf8; }
+    .btn { background: #0ea5e9; color: #fff; border: none; padding: .6rem 1.4rem; border-radius: 8px; cursor: pointer; font-size: .9rem; font-weight: 600; transition: background .2s; white-space: nowrap; }
+    .btn:hover { background: #0284c7; }
+    .btn-secondary { background: #334155; color: #e2e8f0; }
+    .btn-secondary:hover { background: #475569; }
+    .markup-badge { background: #0f3460; color: #38bdf8; padding: .4rem .9rem; border-radius: 6px; font-size: .85rem; align-self: center; white-space: nowrap; }
+    .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid #334155; }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    thead { background: #1e293b; }
+    th { padding: .85rem 1rem; text-align: left; color: #94a3b8; font-weight: 600; border-bottom: 1px solid #334155; white-space: nowrap; }
+    td { padding: .8rem 1rem; border-bottom: 1px solid #1e293b; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1e293b44; }
+    .stock-ok { color: #4ade80; font-weight: 600; }
+    .stock-no { color: #f87171; }
+    .img-prod { width: 44px; height: 44px; object-fit: contain; border-radius: 6px; background: #1e293b; }
+    .price-costo { color: #94a3b8; }
+    .price-venta { color: #4ade80; font-weight: 700; font-size: 1rem; }
+    .sku { font-family: monospace; font-size: .78rem; color: #64748b; }
+    .state-msg { text-align: center; padding: 3rem; color: #475569; font-size: .95rem; }
+    .spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid #334155; border-top-color: #38bdf8; border-radius: 50%; animation: spin .7s linear infinite; margin-bottom: .5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .pagination { display: flex; gap: .5rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap; }
+    .pagination button { background: #1e293b; border: 1px solid #334155; color: #94a3b8; padding: .4rem .8rem; border-radius: 6px; cursor: pointer; font-size: .85rem; }
+    .pagination button.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
+    .pagination button:hover:not(.active) { background: #334155; }
+    .config-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 2rem; max-width: 480px; }
+    .config-card label { display: block; font-size: .85rem; color: #94a3b8; margin-bottom: .4rem; }
+    .config-card input { width: 100%; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: .65rem 1rem; border-radius: 8px; font-size: .95rem; margin-bottom: 1.2rem; }
+    .config-card input:focus { outline: none; border-color: #38bdf8; }
+    .alert { padding: .75rem 1rem; border-radius: 8px; font-size: .88rem; margin-bottom: 1rem; }
+    .alert-error { background: #7f1d1d44; border: 1px solid #ef4444; color: #fca5a5; }
+    .alert-success { background: #14532d44; border: 1px solid #4ade80; color: #86efac; }
+    #login-overlay { position: fixed; inset: 0; background: #0f172aee; display: flex; align-items: center; justify-content: center; z-index: 100; }
+    #login-overlay .card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 2.5rem; width: 340px; text-align: center; }
+    #login-overlay .card h3 { margin-bottom: 1.5rem; color: #f1f5f9; }
+    #login-overlay .card input { width: 100%; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: .7rem 1rem; border-radius: 8px; font-size: .95rem; margin-bottom: 1rem; text-align: center; letter-spacing: 2px; }
+    #login-overlay .card input:focus { outline: none; border-color: #38bdf8; }
+  </style>
+</head>
+<body>
+<div id="login-overlay" style="display:none;">
+  <div class="card">
+    <h3>Configuracion</h3>
+    <p style="color:#64748b;font-size:.85rem;margin-bottom:1.2rem;">Ingresa la contrasena para continuar</p>
+    <input type="password" id="config-pwd-input" placeholder="Contrasena" />
+    <div id="login-error" class="alert alert-error" style="display:none;">Contrasena incorrecta</div>
+    <button class="btn" style="width:100%" onclick="checkConfigPassword()">Ingresar</button>
+    <button class="btn btn-secondary" style="width:100%;margin-top:.6rem" onclick="closeLoginOverlay()">Cancelar</button>
+  </div>
+</div>
+<nav>
+  <span class="logo">New Bytes Panel</span>
+  <button class="active" onclick="showSection('catalogo', this)">Catalogo</button>
+  <button onclick="showSection('precios', this)">Lista de Precios</button>
+  <button onclick="openConfig()">Configuracion</button>
+</nav>
+<main>
+  <div id="section-catalogo" class="section active">
+    <h2>Catalogo de Productos</h2>
+    <div class="search-row">
+      <input type="text" id="search-input" placeholder="Buscar por nombre o SKU..." />
+      <select id="search-type">
+        <option value="title">Por nombre</option>
+        <option value="sku">Por SKU</option>
+        <option value="product_id">Por ID</option>
+        <option value="brand">Por marca</option>
+        <option value="category">Por categoria</option>
+      </select>
+      <button class="btn" onclick="buscarProductos()">Buscar</button>
+      <div class="markup-badge">Markup: <strong id="markup-val-display">cargando...</strong></div>
+    </div>
+    <div id="catalogo-result"><div class="state-msg">Realiza una busqueda para ver productos.</div></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+  <div id="section-precios" class="section">
+    <h2>Lista de Precios</h2>
+    <div style="display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center">
+      <button class="btn" onclick="cargarPrecios()">Actualizar precios</button>
+      <div class="markup-badge">Markup activo: <strong id="markup-val-precios">cargando...</strong></div>
+    </div>
+    <div id="precios-result"><div class="state-msg">Haz clic en Actualizar precios para cargar.</div></div>
+  </div>
+  <div id="section-config" class="section">
+    <h2>Configuracion</h2>
+    <div class="config-card">
+      <div id="config-alert"></div>
+      <label>Usuario API New Bytes</label>
+      <input type="text" id="cfg-user" placeholder="tu_usuario" />
+      <label>Contrasena API New Bytes</label>
+      <input type="password" id="cfg-pass" placeholder="tu_contrasena" />
+      <label>Markup de ganancia (%)</label>
+      <input type="number" id="cfg-markup" placeholder="Ej: 30" min="0" max="500" step="0.5" />
+      <small style="color:#64748b;display:block;margin-top:-.8rem;margin-bottom:1.2rem;">Precio venta = Precio con IVA x (1 + markup/100)</small>
+      <label>Supabase URL</label>
+      <input type="text" id="cfg-supa-url" placeholder="https://xxxx.supabase.co" />
+      <label>Supabase Anon Key</label>
+      <input type="text" id="cfg-supa-key" placeholder="eyJ..." />
+      <button class="btn" onclick="guardarConfig()" style="width:100%">Guardar configuracion</button>
+      <button class="btn btn-secondary" onclick="probarConexion()" style="width:100%;margin-top:.6rem">Probar conexion API</button>
+    </div>
+  </div>
+</main>
+<script>
+var CONFIG_PASSWORD = 'da89c261';
+var NB_API = 'https://api.nb.com.ar/v1';
+var STORAGE_KEY = 'nb_config';
+var DEFAULT_SUPA_URL = 'https://mvbgtzofohhwhhnjqvvg.supabase.co';
+var DEFAULT_SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12Ymd0em9mb2hod2hobmpxdnZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MjI1MjcsImV4cCI6MjA5MzQ5ODUyN30.6GILq6R1rzfX3b6s63TecyfAIebHyOgRih0kBaM0gcA';
+var appState = { token: null, markup: 30, supaUrl: '', supaKey: '', nbUser: '', nbPass: '', productos: [], currentPage: 1, pageSize: 20 };
+var sbClient = null;
+
+(async function init() {
+  loadLocalConfig();
+  await initSupa();
+  await loadMarkup();
+  updateMarkupUI();
+})();
+
+function loadLocalConfig() {
+  try {
+    var c = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    if (c.nbUser) { appState.nbUser = c.nbUser; document.getElementById('cfg-user').value = c.nbUser; }
+    if (c.nbPass) { appState.nbPass = c.nbPass; document.getElementById('cfg-pass').value = c.nbPass; }
+    if (c.markup) { appState.markup = c.markup; document.getElementById('cfg-markup').value = c.markup; }
+    appState.supaUrl = c.supaUrl || DEFAULT_SUPA_URL;
+    appState.supaKey = c.supaKey || DEFAULT_SUPA_KEY;
+    document.getElementById('cfg-supa-url').value = appState.supaUrl;
+    document.getElementById('cfg-supa-key').value = appState.supaKey;
+  } catch(e) { appState.supaUrl = DEFAULT_SUPA_URL; appState.supaKey = DEFAULT_SUPA_KEY; }
+}
+
+async function initSupa() {
+  var url = appState.supaUrl || DEFAULT_SUPA_URL;
+  var key = appState.supaKey || DEFAULT_SUPA_KEY;
+  if (url && key) {
+    try { sbClient = window.supabase.createClient(url, key); } catch(e) { sbClient = null; }
+  }
+}
+
+async function loadMarkup() {
+  if (!sbClient) return;
+  try {
+    var r = await sbClient.from('config').select('value').eq('key','markup').single();
+    if (r.data && r.data.value !== undefined) {
+      appState.markup = parseFloat(r.data.value);
+      document.getElementById('cfg-markup').value = appState.markup;
+    }
+  } catch(e) {}
+}
+
+function updateMarkupUI() {
+  var txt = appState.markup + '%';
+  document.getElementById('markup-val-display').textContent = txt;
+  document.getElementById('markup-val-precios').textContent = txt;
+}
+
+async function getToken() {
+  if (appState.token) return appState.token;
+  var user = appState.nbUser || document.getElementById('cfg-user').value;
+  var pass = appState.nbPass || document.getElementById('cfg-pass').value;
+  if (!user || !pass) throw new Error('Configura usuario y contrasena de New Bytes primero.');
+  var res = await fetch(NB_API + '/auth/login', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({user: user, password: pass, mode: 'api'})
+  });
+  if (!res.ok) throw new Error('Login fallido. Verifica tus credenciales.');
+  var data = await res.json();
+  appState.token = data.token || data.access_token || (data.data && data.data.token);
+  if (!appState.token) throw new Error('No se recibio token.');
+  return appState.token;
+}
+
+async function apiFetch(path) {
+  var token = await getToken();
+  var res = await fetch(NB_API + path, {headers: {'Authorization': 'Bearer ' + token}});
+  if (res.status === 401) { appState.token = null; throw new Error('Token expirado, intenta de nuevo.'); }
+  if (!res.ok) throw new Error('Error API: ' + res.status);
+  return res.json();
+}
+
+async function buscarProductos() {
+  var query = document.getElementById('search-input').value.trim();
+  var type = document.getElementById('search-type').value;
+  if (!query) return showMsg('catalogo-result', 'Ingresa un termino de busqueda.');
+  showLoading('catalogo-result');
+  document.getElementById('pagination').innerHTML = '';
+  try {
+    var data = await apiFetch('/?' + encodeURIComponent(type) + '=' + encodeURIComponent(query));
+    appState.productos = Array.isArray(data) ? data : (data.products || data.data || []);
+    appState.currentPage = 1;
+    renderProductos();
+  } catch(e) { showError('catalogo-result', e.message); }
+}
+
+function renderProductos() {
+  var productos = appState.productos, currentPage = appState.currentPage, pageSize = appState.pageSize, markup = appState.markup;
+  if (!productos.length) return showMsg('catalogo-result', 'Sin resultados.');
+  var total = productos.length;
+  var pages = Math.ceil(total / pageSize);
+  var slice = productos.slice((currentPage-1)*pageSize, currentPage*pageSize);
+  var rows = slice.map(function(p) {
+    var fp = p.price && p.price.finalPrice != null ? p.price.finalPrice : null;
+    var vp = fp !== null ? fp * (1 + markup/100) : null;
+    var stockTxt = p.stock || 'Sin stock';
+    var stockClass = stockTxt.toLowerCase().indexOf('sin') >= 0 ? 'stock-no' : 'stock-ok';
+    var img = p.mainImage ? '<img class="img-prod" src="' + p.mainImage + '" alt="" onerror="this.style.display=\'none\'">' : '<div style="width:44px;height:44px;background:#1e293b;border-radius:6px;"></div>';
+    return '<tr><td>' + img + '</td><td><div style="font-weight:600;font-size:.9rem">' + (p.title||'—') + '</div><div class="sku">' + (p.sku||'') + '</div></td><td>' + (p.category||'—') + '</td><td>' + (p.brand||'—') + '</td><td class="' + stockClass + '">' + stockTxt + '</td><td class="price-costo">' + (fp !== null ? '$'+fp.toFixed(2) : '—') + '</td><td class="price-venta">' + (vp !== null ? '$'+vp.toFixed(2) : '—') + '</td></tr>';
+  }).join('');
+  document.getElementById('catalogo-result').innerHTML = '<div style="font-size:.82rem;color:#64748b;margin-bottom:.75rem">' + total + ' resultado(s)</div><div class="table-wrap"><table><thead><tr><th></th><th>Producto</th><th>Categoria</th><th>Marca</th><th>Stock</th><th>Precio c/IVA</th><th>Precio venta (+' + markup + '%)</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  var pagDiv = document.getElementById('pagination');
+  if (pages <= 1) { pagDiv.innerHTML = ''; return; }
+  var btns = '';
+  for (var i = 1; i <= pages; i++) btns += '<button class="' + (i===currentPage?'active':'') + '" onclick="goPage(' + i + ')">' + i + '</button>';
+  pagDiv.innerHTML = btns;
+}
+
+function goPage(n) { appState.currentPage = n; renderProductos(); }
+
+async function cargarPrecios() {
+  showLoading('precios-result');
+  try {
+    var data = await apiFetch('/prices');
+    var list = Array.isArray(data) ? data : (data.data || []);
+    if (!list.length) return showMsg('precios-result', 'Sin datos.');
+    var markup = appState.markup;
+    var rows = list.slice(0,500).map(function(p) {
+      var venta = p.finalPrice ? (p.finalPrice * (1 + markup/100)).toFixed(2) : '—';
+      return '<tr><td>' + p.id + '</td><td class="sku">' + (p.sku||'—') + '</td><td>' + (p.iva != null ? p.iva : '—') + '%</td><td class="price-costo">$' + (p.value != null ? p.value.toFixed(2) : '—') + '</td><td class="price-costo">$' + (p.finalPrice != null ? p.finalPrice.toFixed(2) : '—') + '</td><td class="price-venta">$' + venta + '</td></tr>';
+    }).join('');
+    document.getElementById('precios-result').innerHTML = '<div style="font-size:.82rem;color:#64748b;margin-bottom:.75rem">' + list.length + ' productos (primeros 500)</div><div class="table-wrap"><table><thead><tr><th>ID</th><th>SKU</th><th>IVA</th><th>Valor base</th><th>Precio c/IVA</th><th>Precio venta (+' + markup + '%)</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  } catch(e) { showError('precios-result', e.message); }
+}
+
+async function guardarConfig() {
+  var user = document.getElementById('cfg-user').value.trim();
+  var pass = document.getElementById('cfg-pass').value;
+  var markup = parseFloat(document.getElementById('cfg-markup').value) || 0;
+  var supaUrl = document.getElementById('cfg-supa-url').value.trim();
+  var supaKey = document.getElementById('cfg-supa-key').value.trim();
+  appState.nbUser = user; appState.nbPass = pass; appState.markup = markup; appState.supaUrl = supaUrl; appState.supaKey = supaKey;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({nbUser:user,nbPass:pass,markup:markup,supaUrl:supaUrl,supaKey:supaKey}));
+  await initSupa();
+  if (sbClient) {
+    try {
+      await sbClient.from('config').upsert({key:'markup', value:String(markup)});
+      showConfigAlert('success', 'Configuracion guardada en Supabase');
+    } catch(e) { showConfigAlert('error', 'Local OK, Supabase fallo: ' + e.message); }
+  } else {
+    showConfigAlert('success', 'Guardado localmente');
+  }
+  updateMarkupUI();
+}
+
+async function probarConexion() {
+  var user = document.getElementById('cfg-user').value.trim();
+  var pass = document.getElementById('cfg-pass').value;
+  if (!user || !pass) return showConfigAlert('error', 'Ingresa usuario y contrasena primero.');
+  appState.token = null; appState.nbUser = user; appState.nbPass = pass;
+  try { await getToken(); showConfigAlert('success', 'Conexion exitosa con New Bytes API'); }
+  catch(e) { showConfigAlert('error', e.message); }
+}
+
+function showConfigAlert(type, msg) {
+  var el = document.getElementById('config-alert');
+  el.className = 'alert alert-' + type; el.textContent = msg; el.style.display = 'block';
+  setTimeout(function(){ el.style.display = 'none'; }, 5000);
+}
+
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('nav button').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('section-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function openConfig() {
+  document.getElementById('login-overlay').style.display = 'flex';
+  setTimeout(function(){ document.getElementById('config-pwd-input').focus(); }, 100);
+}
+
+function closeLoginOverlay() {
+  document.getElementById('login-overlay').style.display = 'none';
+  document.getElementById('config-pwd-input').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function checkConfigPassword() {
+  var pwd = document.getElementById('config-pwd-input').value;
+  if (pwd === CONFIG_PASSWORD) {
+    closeLoginOverlay(); showSection('config', null);
+    document.querySelectorAll('nav button').forEach(function(b){ b.classList.remove('active'); });
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('config-pwd-input').value = '';
+    document.getElementById('config-pwd-input').focus();
+  }
+}
+
+document.getElementById('config-pwd-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') checkConfigPassword();
+});
+
+function showLoading(id) { document.getElementById(id).innerHTML = '<div class="state-msg"><div class="spinner"></div><br>Cargando...</div>'; }
+function showMsg(id, msg) { document.getElementById(id).innerHTML = '<div class="state-msg">' + msg + '</div>'; }
+function showError(id, msg) { document.getElementById(id).innerHTML = '<div class="state-msg" style="color:#f87171">Aviso: ' + msg + '</div>'; }
+</script>
+</body>
+</html>
