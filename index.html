@@ -4,270 +4,210 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Proveedor 213</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--ryr:#E30613;--ryr-d:#b90510;--bg:#f4f7fa;--surface:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b}
+    body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
 
-    :root {
-      --ryr:     #E30613;
-      --ryr-d:   #b90510;
-      --bg:      #f4f7fa;
-      --surface: #fff;
-      --border:  #e2e8f0;
-      --text:    #1e293b;
-      --muted:   #64748b;
-    }
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;height:56px;z-index:999;background:#1e293b;display:flex;align-items:center;padding:0 20px;gap:0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .nav-logo{font-size:18px;font-weight:900;color:#fff;margin-right:28px;letter-spacing:-.02em;white-space:nowrap}
+    .nav-logo span{color:var(--ryr)}
+    .nav-tabs{display:flex;gap:2px;flex:1}
+    .nav-tabs button{background:none;border:none;color:#94a3b8;cursor:pointer;font-family:'Outfit',sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:8px 14px;border-radius:8px;transition:all .15s;display:flex;align-items:center;gap:6px}
+    .nav-tabs button:hover{background:rgba(255,255,255,.08);color:#fff}
+    .nav-tabs button.active{background:rgba(255,255,255,.08);color:#fff}
+    .nav-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+    .cotiz-badge{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;color:#94a3b8;display:flex;align-items:center;gap:6px;white-space:nowrap}
+    .cotiz-badge strong{color:#4ade80}
 
-    body {
-      font-family: 'Outfit', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      -webkit-font-smoothing: antialiased;
-    }
+    /* PAGE */
+    .page{max-width:1400px;margin:0 auto;padding:80px 20px 60px}
+    .section{display:none}
+    .section.active{display:block}
 
-    /* ── NAVBAR ── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 999;
-      background: #1e293b;
-      display: flex; align-items: center; gap: 0;
-      padding: 0 20px;
-      border-bottom: 1px solid rgba(255,255,255,.06);
-    }
-    .nav-logo {
-      font-size: 18px; font-weight: 900; color: #fff;
-      margin-right: 28px; letter-spacing: -.02em; white-space: nowrap;
-    }
-    .nav-logo span { color: var(--ryr); }
-    .nav-tabs { display: flex; gap: 2px; }
-    .nav-tabs button {
-      background: none; border: none; color: #94a3b8; cursor: pointer;
-      font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: .06em;
-      padding: 8px 14px; border-radius: 8px; transition: all .15s;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .nav-tabs button:hover { background: rgba(255,255,255,.08); color: #fff; }
-    .nav-tabs button.active { background: rgba(255,255,255,.08); color: #fff; }
+    /* HEADER */
+    .page-header{margin-bottom:24px}
+    .page-header h1{font-size:28px;font-weight:900;letter-spacing:-.04em;display:flex;align-items:center;gap:10px}
+    .page-header h1 .icon-box{background:var(--ryr);color:#fff;width:38px;height:38px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .page-header p{font-size:12px;color:var(--muted);margin-top:5px;margin-left:48px}
 
-    /* ── PAGE ── */
-    .page { max-width: 1400px; margin: 0 auto; padding: 80px 20px 60px; }
+    /* CARD */
+    .card{background:var(--surface);border-radius:18px;border:1px solid var(--border);padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:16px}
+    .section-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
 
-    /* ── PAGE HEADER ── */
-    .page-header { margin-bottom: 28px; }
-    .page-header h1 {
-      font-size: 28px; font-weight: 900; letter-spacing: -.04em;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .page-header h1 .icon-box {
-      background: var(--ryr); color: #fff;
-      width: 38px; height: 38px; border-radius: 10px;
-      display: inline-flex; align-items: center; justify-content: center; font-size: 16px;
-    }
-    .page-header p { font-size: 12px; color: var(--muted); margin-top: 5px; margin-left: 48px; }
+    /* BOTONES */
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;border:none;cursor:pointer;transition:all .2s}
+    .btn-red{background:var(--ryr);color:#fff}
+    .btn-red:hover{background:var(--ryr-d)}
+    .btn-ghost{background:#f1f5f9;color:var(--muted)}
+    .btn-ghost:hover{background:#e2e8f0;color:var(--text)}
+    .btn-green{background:#16a34a;color:#fff}
+    .btn-green:hover{background:#15803d}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
 
-    /* ── CARDS ── */
-    .card {
-      background: var(--surface); border-radius: 18px;
-      border: 1px solid var(--border); padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.04); margin-bottom: 16px;
-    }
-    .section-title {
-      font-size: 10px; font-weight: 800; text-transform: uppercase;
-      letter-spacing: .08em; color: var(--muted); margin-bottom: 14px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    /* TOGGLE STOCK */
+    .toggle-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .toggle-wrap{display:flex;align-items:center;gap:8px;background:#f1f5f9;padding:6px 12px;border-radius:10px;cursor:pointer;user-select:none}
+    .toggle-wrap label{font-size:12px;font-weight:800;color:var(--muted);cursor:pointer;white-space:nowrap}
+    .toggle{position:relative;width:36px;height:20px;flex-shrink:0}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;inset:0;background:#cbd5e1;border-radius:20px;transition:.2s;cursor:pointer}
+    .toggle-slider:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+    .toggle input:checked + .toggle-slider{background:var(--ryr)}
+    .toggle input:checked + .toggle-slider:before{transform:translateX(16px)}
 
-    /* ── BOTONES ── */
-    .btn {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 9px 18px; border-radius: 10px;
-      font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 800;
-      border: none; cursor: pointer; transition: all .2s;
-    }
-    .btn-red { background: var(--ryr); color: #fff; }
-    .btn-red:hover { background: var(--ryr-d); }
-    .btn-ghost { background: #f1f5f9; color: var(--muted); }
-    .btn-ghost:hover { background: #e2e8f0; color: var(--text); }
-    .btn-green { background: #16a34a; color: #fff; }
-    .btn-green:hover { background: #15803d; }
-    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    /* SEARCH */
+    .search-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .search-row input,.search-row select{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--text);outline:none;background:#fff;flex:1;min-width:180px}
+    .search-row input:focus,.search-row select:focus{border-color:var(--ryr)}
+    input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+    input[type=number]{-moz-appearance:textfield}
 
-    /* ── BADGES ── */
-    .badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:800; }
-    .badge-ok  { background:#dcfce7; color:#16a34a; }
-    .badge-no  { background:#fee2e2; color:#dc2626; }
-    .badge-info { background:#e0f2fe; color:#0369a1; }
+    /* BADGES */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:800}
+    .badge-ok{background:#dcfce7;color:#16a34a}
+    .badge-no{background:#fee2e2;color:#dc2626}
+    .badge-info{background:#e0f2fe;color:#0369a1}
+    .badge-purple{background:#ede9fe;color:#7c3aed}
 
-    /* ── INPUTS ── */
-    .search-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
-    .search-row input, .search-row select {
-      padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 9px;
-      font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600;
-      color: var(--text); outline: none; background: #fff; flex: 1; min-width: 180px;
-    }
-    .search-row input:focus, .search-row select:focus { border-color: var(--ryr); }
+    /* TABLA */
+    .tbl-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    thead th{background:#f8fafc;padding:9px 10px;text-align:right;font-weight:800;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+    thead th.left{text-align:left}
+    tbody tr{border-bottom:1px solid #f1f5f9;transition:background .12s;cursor:pointer}
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover{background:#f8fafc}
+    td{padding:8px 10px;vertical-align:middle}
+    td.right{text-align:right}
+    .img-prod{width:38px;height:38px;object-fit:contain;border-radius:8px;border:1px solid var(--border)}
+    .price-venta{color:#16a34a;font-weight:800;font-size:13px}
+    .sku{font-family:monospace;font-size:10px;color:var(--muted)}
+    .stock-ok{color:#16a34a;font-weight:700}
+    .stock-no{color:#dc2626;font-weight:700}
 
-    input[type=number]::-webkit-outer-spin-button,
-    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-    input[type=number] { -moz-appearance: textfield; }
+    /* SPINNER */
+    .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(227,6,19,.2);border-top-color:var(--ryr);border-radius:50%;animation:spin .6s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* ── TABLAS ── */
-    .tbl-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    thead th {
-      background: #f8fafc; padding: 9px 10px; text-align: right;
-      font-weight: 800; font-size: 9px; text-transform: uppercase;
-      letter-spacing: .06em; color: var(--muted);
-      border-bottom: 1px solid var(--border); white-space: nowrap;
-    }
-    thead th.left { text-align: left; }
-    tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .12s; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: #f8fafc; }
-    td { padding: 8px 10px; vertical-align: middle; }
-    td.right { text-align: right; }
+    /* STATE */
+    .state-msg{text-align:center;padding:3rem;color:var(--muted);font-size:13px;font-weight:600}
 
-    .img-prod { width: 38px; height: 38px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); }
-    .price-venta { color: #16a34a; font-weight: 800; font-size: 13px; }
-    .sku { font-family: monospace; font-size: 10px; color: var(--muted); }
-    .stock-ok { color: #16a34a; font-weight: 700; }
-    .stock-no { color: #dc2626; font-weight: 700; }
+    /* PAGINATION */
+    .pagination{display:flex;gap:4px;justify-content:center;margin-top:16px;flex-wrap:wrap;padding:12px 20px}
+    .pagination button{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:5px 11px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;transition:all .15s}
+    .pagination button.active{background:var(--ryr);color:#fff;border-color:var(--ryr)}
+    .pagination button:hover:not(.active){background:#f1f5f9;color:var(--text)}
 
-    /* ── SPINNER ── */
-    .spinner {
-      display: inline-block; width: 13px; height: 13px;
-      border: 2px solid rgba(227,6,19,.2); border-top-color: var(--ryr);
-      border-radius: 50%; animation: spin .6s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* CONFIG FORM */
+    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:700px}
+    .config-grid .full{grid-column:1/-1}
+    .form-group{display:flex;flex-direction:column;gap:5px}
+    .form-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+    .form-input{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--text);outline:none;background:#fff}
+    .form-input:focus{border-color:var(--ryr)}
+    .form-hint{font-size:11px;color:var(--muted);margin-top:2px}
+    .alert{padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .alert-error{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5}
+    .alert-success{background:#dcfce7;color:#16a34a;border:1px solid #86efac}
 
-    /* ── STATE MSG ── */
-    .state-msg { text-align: center; padding: 3rem; color: var(--muted); font-size: 13px; font-weight: 600; }
+    /* MODAL LOGIN */
+    #login-overlay{display:none;position:fixed;inset:0;z-index:9990;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px}
+    #login-overlay.open{display:flex}
+    .modal-box{background:#fff;border-radius:20px;padding:32px;max-width:380px;width:100%;text-align:center}
+    .modal-box .modal-icon{width:52px;height:52px;background:#fee2e2;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ryr);margin:0 auto 16px}
+    .modal-box h3{font-size:18px;font-weight:800;margin-bottom:6px}
+    .modal-box p{font-size:12px;color:var(--muted);margin-bottom:20px}
+    .modal-box input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;text-align:center;letter-spacing:3px;color:var(--text);outline:none;margin-bottom:12px}
+    .modal-box input:focus{border-color:var(--ryr)}
+    .modal-btns{display:flex;flex-direction:column;gap:8px}
 
-    /* ── PAGINATION ── */
-    .pagination { display: flex; gap: 4px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
-    .pagination button {
-      background: var(--surface); border: 1px solid var(--border); color: var(--muted);
-      padding: 5px 11px; border-radius: 8px; cursor: pointer;
-      font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700;
-      transition: all .15s;
-    }
-    .pagination button.active { background: var(--ryr); color: #fff; border-color: var(--ryr); }
-    .pagination button:hover:not(.active) { background: #f1f5f9; color: var(--text); }
+    /* MODAL PRODUCTO */
+    #prod-modal{display:none;position:fixed;inset:0;z-index:9990;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+    #prod-modal.open{display:flex}
+    .prod-modal-box{background:#fff;border-radius:20px;padding:0;max-width:680px;width:100%;margin:auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+    .prod-modal-header{display:flex;gap:20px;padding:24px;border-bottom:1px solid var(--border);background:#fafafa}
+    .prod-modal-img{width:120px;height:120px;object-fit:contain;border-radius:12px;border:1px solid var(--border);background:#fff;flex-shrink:0}
+    .prod-modal-img-placeholder{width:120px;height:120px;border-radius:12px;border:1px solid var(--border);background:#f1f5f9;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--border);font-size:32px}
+    .prod-modal-meta{flex:1;min-width:0}
+    .prod-modal-meta h2{font-size:16px;font-weight:800;line-height:1.3;margin-bottom:8px}
+    .prod-modal-meta .sku{font-size:11px;margin-bottom:10px}
+    .prod-modal-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+    .prod-modal-price{font-size:26px;font-weight:900;color:#16a34a;letter-spacing:-.03em}
+    .prod-modal-price small{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-top:2px}
+    .prod-modal-body{padding:20px}
+    .prod-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .prod-detail-item{background:#f8fafc;border-radius:10px;padding:10px 14px}
+    .prod-detail-item .label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px}
+    .prod-detail-item .value{font-size:13px;font-weight:700;color:var(--text)}
+    .prod-modal-close{position:absolute;top:16px;right:16px;background:#f1f5f9;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .15s}
+    .prod-modal-close:hover{background:#e2e8f0;color:var(--text)}
+    .prod-modal-wrap{position:relative}
 
-    /* ── CONFIG FORM ── */
-    .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 700px; }
-    .config-grid .full { grid-column: 1 / -1; }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-label {
-      font-size: 10px; font-weight: 800; text-transform: uppercase;
-      letter-spacing: .06em; color: var(--muted);
-    }
-    .form-input {
-      padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 9px;
-      font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600;
-      color: var(--text); outline: none; background: #fff;
-    }
-    .form-input:focus { border-color: var(--ryr); }
-    .form-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-    .alert { padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-    .alert-error { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
-    .alert-success { background: #dcfce7; color: #16a34a; border: 1px solid #86efac; }
-
-    /* ── MODAL LOGIN ── */
-    #login-overlay {
-      display: none; position: fixed; inset: 0; z-index: 9990;
-      background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
-      align-items: center; justify-content: center; padding: 20px;
-    }
-    #login-overlay.open { display: flex; }
-    .modal-box {
-      background: #fff; border-radius: 20px; padding: 32px;
-      max-width: 380px; width: 100%; text-align: center;
-    }
-    .modal-box .modal-icon {
-      width: 52px; height: 52px; background: #fee2e2; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; color: var(--ryr); margin: 0 auto 16px;
-    }
-    .modal-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
-    .modal-box p { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
-    .modal-box input {
-      width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
-      border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 15px;
-      font-weight: 700; text-align: center; letter-spacing: 3px;
-      color: var(--text); outline: none; margin-bottom: 12px;
-    }
-    .modal-box input:focus { border-color: var(--ryr); }
-    .modal-btns { display: flex; flex-direction: column; gap: 8px; }
-
-    /* ── SECTIONS ── */
-    .section { display: none; }
-    .section.active { display: block; }
-
-    /* ── CONTADO BADGE ── */
-    .contado-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: #fffdf0; border: 1px solid #f59e0b;
-      color: #b45309; padding: 5px 12px; border-radius: 10px;
-      font-size: 11px; font-weight: 800;
-    }
+    .contado-badge{display:inline-flex;align-items:center;gap:6px;background:#fffdf0;border:1px solid #f59e0b;color:#b45309;padding:5px 12px;border-radius:10px;font-size:11px;font-weight:800}
   </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav>
   <div class="nav-logo"><span>R</span>y<span>R</span> &nbsp;·&nbsp; Proveedor 213</div>
   <div class="nav-tabs">
-    <button class="active" onclick="showSection('catalogo', this)">
+    <button class="active" onclick="showSection('catalogo',this)">
       <i class="fa-solid fa-magnifying-glass"></i> Catálogo
-    </button>
-    <button onclick="showSection('precios', this)">
-      <i class="fa-solid fa-tags"></i> Lista de Precios
     </button>
     <button onclick="openConfig()">
       <i class="fa-solid fa-gear"></i> Configuración
     </button>
   </div>
+  <div class="nav-right">
+    <div class="cotiz-badge" id="cotiz-badge">
+      <i class="fa-solid fa-dollar-sign"></i> BNA: <strong id="cotiz-val">...</strong>
+    </div>
+  </div>
 </nav>
 
-<!-- CONFIG LOGIN MODAL -->
+<!-- MODAL LOGIN CONFIG -->
 <div id="login-overlay">
   <div class="modal-box">
     <div class="modal-icon"><i class="fa-solid fa-lock"></i></div>
     <h3>Configuración</h3>
     <p>Ingresá la contraseña para continuar</p>
     <input type="password" id="config-pwd-input" placeholder="••••••••" />
-    <div id="login-error" class="alert alert-error" style="display:none;">
+    <div id="login-error" class="alert alert-error" style="display:none">
       <i class="fa-solid fa-circle-xmark"></i> Contraseña incorrecta
     </div>
     <div class="modal-btns">
       <button class="btn btn-red" style="justify-content:center" onclick="checkConfigPassword()">
         <i class="fa-solid fa-arrow-right-to-bracket"></i> Ingresar
       </button>
-      <button class="btn btn-ghost" style="justify-content:center" onclick="closeLoginOverlay()">
-        Cancelar
-      </button>
+      <button class="btn btn-ghost" style="justify-content:center" onclick="closeLoginOverlay()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUCTO -->
+<div id="prod-modal">
+  <div class="prod-modal-wrap">
+    <button class="prod-modal-close" onclick="cerrarProdModal()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="prod-modal-box">
+      <div class="prod-modal-header" id="prod-modal-header"></div>
+      <div class="prod-modal-body" id="prod-modal-body"></div>
     </div>
   </div>
 </div>
 
 <div class="page">
 
-  <!-- ====== CATÁLOGO ====== -->
+  <!-- CATÁLOGO -->
   <div id="section-catalogo" class="section active">
     <div class="page-header">
-      <h1>
-        <span class="icon-box"><i class="fa-solid fa-magnifying-glass"></i></span>
-        Catálogo de Productos
-      </h1>
-      <p>Buscá productos por nombre, SKU, marca o categoría</p>
+      <h1><span class="icon-box"><i class="fa-solid fa-magnifying-glass"></i></span> Catálogo de Productos</h1>
+      <p>Buscá productos — hacé clic en una fila para ver la ficha completa</p>
     </div>
 
     <div class="card">
@@ -285,54 +225,35 @@
           <i class="fa-solid fa-magnifying-glass"></i> Buscar
         </button>
       </div>
-    </div>
-
-    <div class="card" id="catalogo-card" style="padding:0;overflow:hidden">
-      <div id="catalogo-result" style="padding:20px">
-        <div class="state-msg"><i class="fa-solid fa-box-open" style="font-size:28px;display:block;margin-bottom:10px;opacity:.3"></i>Realizá una búsqueda para ver productos</div>
-      </div>
-      <div class="pagination" id="pagination" style="padding:12px 20px"></div>
-    </div>
-  </div>
-
-  <!-- ====== PRECIOS ====== -->
-  <div id="section-precios" class="section">
-    <div class="page-header">
-      <h1>
-        <span class="icon-box"><i class="fa-solid fa-tags"></i></span>
-        Lista de Precios
-      </h1>
-      <p>Precios actualizados del proveedor con markup aplicado</p>
-    </div>
-
-    <div class="card">
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <button class="btn btn-red" onclick="cargarPrecios()">
-          <i class="fa-solid fa-rotate"></i> Actualizar precios
-        </button>
-        <span class="contado-badge">
-          <i class="fa-solid fa-money-bill-wave"></i> Precios de contado efectivo
-        </span>
+      <div class="toggle-row">
+        <label class="toggle-wrap" for="toggle-stock">
+          <span class="toggle">
+            <input type="checkbox" id="toggle-stock" onchange="renderProductos()">
+            <span class="toggle-slider"></span>
+          </span>
+          <label for="toggle-stock"><i class="fa-solid fa-boxes-stacked"></i> Solo con stock</label>
+        </label>
+        <span id="result-count" style="font-size:11px;color:var(--muted);font-weight:700"></span>
       </div>
     </div>
 
     <div class="card" style="padding:0;overflow:hidden">
-      <div id="precios-result" style="padding:20px">
-        <div class="state-msg"><i class="fa-solid fa-tags" style="font-size:28px;display:block;margin-bottom:10px;opacity:.3"></i>Hacé clic en Actualizar precios para cargar</div>
+      <div id="catalogo-result" style="padding:20px">
+        <div class="state-msg">
+          <i class="fa-solid fa-box-open" style="font-size:28px;display:block;margin-bottom:10px;opacity:.3"></i>
+          Realizá una búsqueda para ver productos
+        </div>
       </div>
+      <div class="pagination" id="pagination"></div>
     </div>
   </div>
 
-  <!-- ====== CONFIGURACIÓN ====== -->
+  <!-- CONFIG -->
   <div id="section-config" class="section">
     <div class="page-header">
-      <h1>
-        <span class="icon-box"><i class="fa-solid fa-gear"></i></span>
-        Configuración
-      </h1>
+      <h1><span class="icon-box"><i class="fa-solid fa-gear"></i></span> Configuración</h1>
       <p>Credenciales API y parámetros de markup</p>
     </div>
-
     <div class="card">
       <div class="section-title"><i class="fa-solid fa-key"></i> Credenciales API</div>
       <div id="config-alert"></div>
@@ -352,7 +273,6 @@
         </div>
       </div>
     </div>
-
     <div class="card">
       <div class="section-title"><i class="fa-solid fa-database"></i> Supabase</div>
       <div class="config-grid">
@@ -366,18 +286,13 @@
         </div>
       </div>
     </div>
-
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-green" onclick="guardarConfig()">
-        <i class="fa-solid fa-floppy-disk"></i> Guardar configuración
-      </button>
-      <button class="btn btn-ghost" onclick="probarConexion()">
-        <i class="fa-solid fa-plug"></i> Probar conexión API
-      </button>
+      <button class="btn btn-green" onclick="guardarConfig()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+      <button class="btn btn-ghost" onclick="probarConexion()"><i class="fa-solid fa-plug"></i> Probar conexión</button>
     </div>
   </div>
 
-</div><!-- /page -->
+</div>
 
 <script>
 var CONFIG_PASSWORD = 'da89c261';
@@ -386,15 +301,36 @@ var STORAGE_KEY = 'nb_config';
 var DEFAULT_SUPA_URL = 'https://mvbgtzofohhwhhnjqvvg.supabase.co';
 var DEFAULT_SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12Ymd0em9mb2hod2hobmpxdnZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MjI1MjcsImV4cCI6MjA5MzQ5ODUyN30.6GILq6R1rzfX3b6s63TecyfAIebHyOgRih0kBaM0gcA';
 
-var appState = { token: null, markup: 30, supaUrl: '', supaKey: '', nbUser: '', nbPass: '', productos: [], currentPage: 1, pageSize: 25 };
+var appState = {
+  token: null, markup: 30, supaUrl: '', supaKey: '',
+  nbUser: '', nbPass: '', productos: [], currentPage: 1, pageSize: 25,
+  cotizBNA: null
+};
 var sbClient = null;
 
 (async function init() {
   loadLocalConfig();
   await initSupa();
   await loadMarkup();
+  cargarCotizacion();
 })();
 
+// ── COTIZACIÓN BNA ──────────────────────────────────────────────────────────
+async function cargarCotizacion() {
+  try {
+    var res = await fetch('https://dolarapi.com/v1/dolares/oficial');
+    var data = await res.json();
+    // BNA venta
+    appState.cotizBNA = data.venta || data.sell || null;
+    if (appState.cotizBNA) {
+      document.getElementById('cotiz-val').textContent = '$' + parseFloat(appState.cotizBNA).toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+  } catch(e) {
+    document.getElementById('cotiz-val').textContent = 'N/D';
+  }
+}
+
+// ── CONFIG ──────────────────────────────────────────────────────────────────
 function loadLocalConfig() {
   try {
     var c = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -427,14 +363,15 @@ async function loadMarkup() {
   } catch(e) {}
 }
 
+// ── AUTH ─────────────────────────────────────────────────────────────────────
 async function getToken() {
   if (appState.token) return appState.token;
   var user = appState.nbUser || document.getElementById('cfg-user').value;
   var pass = appState.nbPass || document.getElementById('cfg-pass').value;
-  if (!user || !pass) throw new Error('Configurá usuario y contraseña primero desde Configuración.');
+  if (!user || !pass) throw new Error('Configurá usuario y contraseña primero.');
   var res = await fetch(NB_API + '/auth/login', {
     method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({user: user, password: pass, mode: 'api'})
+    body: JSON.stringify({user:user, password:pass, mode:'api'})
   });
   if (!res.ok) throw new Error('Login fallido. Verificá tus credenciales.');
   var data = await res.json();
@@ -445,18 +382,20 @@ async function getToken() {
 
 async function apiFetch(path) {
   var token = await getToken();
-  var res = await fetch(NB_API + path, {headers: {'Authorization': 'Bearer ' + token}});
+  var res = await fetch(NB_API + path, {headers:{'Authorization':'Bearer '+token}});
   if (res.status === 401) { appState.token = null; throw new Error('Token expirado, intentá de nuevo.'); }
   if (!res.ok) throw new Error('Error API: ' + res.status);
   return res.json();
 }
 
+// ── BÚSQUEDA ─────────────────────────────────────────────────────────────────
 async function buscarProductos() {
   var query = document.getElementById('search-input').value.trim();
   var type = document.getElementById('search-type').value;
   if (!query) return showMsg('catalogo-result', 'Ingresá un término de búsqueda.');
   showLoading('catalogo-result');
   document.getElementById('pagination').innerHTML = '';
+  document.getElementById('result-count').textContent = '';
   try {
     var data = await apiFetch('/?' + encodeURIComponent(type) + '=' + encodeURIComponent(query));
     appState.productos = Array.isArray(data) ? data : (data.products || data.data || []);
@@ -465,43 +404,71 @@ async function buscarProductos() {
   } catch(e) { showError('catalogo-result', e.message); }
 }
 
+// ── RENDER ────────────────────────────────────────────────────────────────────
 function renderProductos() {
-  var productos = appState.productos, currentPage = appState.currentPage, pageSize = appState.pageSize, markup = appState.markup;
-  if (!productos.length) return showMsg('catalogo-result', 'Sin resultados para esa búsqueda.');
-  var total = productos.length;
+  var soloStock = document.getElementById('toggle-stock').checked;
+  var todos = appState.productos;
+  var filtrados = soloStock ? todos.filter(function(p) {
+    var s = (p.stock || '').toLowerCase();
+    return s.indexOf('sin') < 0 && s !== '' && s !== '0';
+  }) : todos;
+
+  document.getElementById('result-count').textContent = filtrados.length + ' / ' + todos.length + ' productos';
+
+  if (!filtrados.length) {
+    document.getElementById('catalogo-result').innerHTML = '<div class="state-msg">Sin resultados' + (soloStock ? ' con stock disponible' : '') + '.</div>';
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+
+  var pageSize = appState.pageSize;
+  var currentPage = appState.currentPage;
+  var total = filtrados.length;
   var pages = Math.ceil(total / pageSize);
-  var slice = productos.slice((currentPage-1)*pageSize, currentPage*pageSize);
+  if (currentPage > pages) currentPage = appState.currentPage = 1;
+  var slice = filtrados.slice((currentPage-1)*pageSize, currentPage*pageSize);
+  var markup = appState.markup;
+  var cotiz = appState.cotizBNA;
 
   var rows = slice.map(function(p) {
     var fp = p.price && p.price.finalPrice != null ? p.price.finalPrice : null;
-    var vp = fp !== null ? fp * (1 + markup/100) : null;
+    // Precio en pesos: finalPrice ya viene en USD * cotizacion propia del proveedor
+    // Pero para usar BNA del día: value (en USD) * cotizBNA * (1 + iva/100) * (1 + markup/100)
+    var precioUSD = p.price && p.price.value != null ? p.price.value : null;
+    var iva = p.price && p.price.iva != null ? p.price.iva : 21;
+    var ventaPesos = null;
+    if (precioUSD !== null && cotiz) {
+      ventaPesos = precioUSD * cotiz * (1 + iva/100) * (1 + markup/100);
+    } else if (fp !== null) {
+      // fallback: usar finalPrice (con cotizacion del proveedor)
+      ventaPesos = fp * (1 + markup/100);
+    }
+
     var stockTxt = p.stock || 'Sin stock';
-    var stockClass = stockTxt.toLowerCase().indexOf('sin') >= 0 ? 'stock-no' : 'stock-ok';
-    var stockIcon = stockTxt.toLowerCase().indexOf('sin') >= 0 ? 'fa-circle-xmark' : 'fa-circle-check';
+    var tieneStock = stockTxt.toLowerCase().indexOf('sin') < 0 && stockTxt !== '' && stockTxt !== '0';
     var img = p.mainImage
       ? '<img class="img-prod" src="' + p.mainImage + '" alt="" onerror="this.style.display=\'none\'">'
       : '<div style="width:38px;height:38px;background:#f1f5f9;border-radius:8px;border:1px solid var(--border)"></div>';
-    return '<tr>' +
+
+    var precioTxt = ventaPesos !== null ? '$' + ventaPesos.toLocaleString('es-AR', {minimumFractionDigits:0, maximumFractionDigits:0}) : '—';
+
+    return '<tr onclick="abrirProdModal(' + p.id + ')" title="Ver ficha completa">' +
       '<td class="left">' + img + '</td>' +
       '<td class="left"><div style="font-weight:700;font-size:12px">' + (p.title||'—') + '</div><div class="sku">' + (p.sku||'') + '</div></td>' +
       '<td class="left"><span class="badge badge-info">' + (p.category||'—') + '</span></td>' +
       '<td class="left" style="color:var(--muted);font-weight:600">' + (p.brand||'—') + '</td>' +
-      '<td><span class="' + stockClass + '"><i class="fa-solid ' + stockIcon + '"></i> ' + stockTxt + '</span></td>' +
-      '<td class="right price-venta">' + (vp !== null ? '$' + vp.toFixed(2) : '—') + '</td>' +
+      '<td><span class="' + (tieneStock?'stock-ok':'stock-no') + '"><i class="fa-solid ' + (tieneStock?'fa-circle-check':'fa-circle-xmark') + '"></i> ' + stockTxt + '</span></td>' +
+      '<td class="right price-venta">' + precioTxt + '</td>' +
       '</tr>';
   }).join('');
 
+  var cotizNote = cotiz ? ' · cotiz. BNA $' + parseFloat(cotiz).toLocaleString('es-AR') : ' · cotiz. del proveedor';
   document.getElementById('catalogo-result').innerHTML =
-    '<div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:12px"><i class="fa-solid fa-box"></i> ' + total + ' resultado(s)</div>' +
+    '<div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:12px">' +
+    '<i class="fa-solid fa-box"></i> ' + total + ' resultado(s)' + cotizNote + '</div>' +
     '<div class="tbl-wrap"><table>' +
-    '<thead><tr>' +
-    '<th class="left" style="width:50px"></th>' +
-    '<th class="left">Producto</th>' +
-    '<th class="left">Categoría</th>' +
-    '<th class="left">Marca</th>' +
-    '<th>Stock</th>' +
-    '<th>Precio Final Contado</th>' +
-    '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+    '<thead><tr><th class="left" style="width:50px"></th><th class="left">Producto</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table></div>';
 
   var pagDiv = document.getElementById('pagination');
   if (pages <= 1) { pagDiv.innerHTML = ''; return; }
@@ -513,33 +480,76 @@ function renderProductos() {
 
 function goPage(n) { appState.currentPage = n; renderProductos(); }
 
-async function cargarPrecios() {
-  showLoading('precios-result');
+// ── MODAL PRODUCTO ────────────────────────────────────────────────────────────
+async function abrirProdModal(id) {
+  document.getElementById('prod-modal-header').innerHTML = '<div class="state-msg" style="padding:1rem"><span class="spinner" style="width:20px;height:20px"></span></div>';
+  document.getElementById('prod-modal-body').innerHTML = '';
+  document.getElementById('prod-modal').classList.add('open');
   try {
-    var data = await apiFetch('/prices');
-    var list = Array.isArray(data) ? data : (data.data || []);
-    if (!list.length) return showMsg('precios-result', 'Sin datos de precios.');
-    var markup = appState.markup;
-    var rows = list.slice(0,500).map(function(p) {
-      var venta = p.finalPrice ? (p.finalPrice * (1 + markup/100)).toFixed(2) : '—';
-      var ivaLabel = p.iva != null ? p.iva + '%' : '—';
-      return '<tr>' +
-        '<td>' + p.id + '</td>' +
-        '<td class="left"><span class="sku">' + (p.sku||'—') + '</span></td>' +
-        '<td><span class="badge badge-info">' + ivaLabel + '</span></td>' +
-        '<td class="right price-venta">$' + venta + '</td>' +
-        '</tr>';
-    }).join('');
+    var data = await apiFetch('/?product_id=' + id);
+    var p = Array.isArray(data) ? data[0] : data;
+    if (!p) throw new Error('Sin datos');
 
-    document.getElementById('precios-result').innerHTML =
-      '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:16px 16px 0"><i class="fa-solid fa-list"></i> ' + list.length + ' productos (primeros 500)</div>' +
-      '<div class="tbl-wrap" style="margin:12px 0 0"><table>' +
-      '<thead><tr>' +
-      '<th>ID</th><th class="left">SKU</th><th>IVA</th><th>Precio Final Contado</th>' +
-      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
-  } catch(e) { showError('precios-result', e.message); }
+    var fp = p.price && p.price.finalPrice != null ? p.price.finalPrice : null;
+    var precioUSD = p.price && p.price.value != null ? p.price.value : null;
+    var iva = p.price && p.price.iva != null ? p.price.iva : 21;
+    var cotiz = appState.cotizBNA;
+    var markup = appState.markup;
+    var ventaPesos = null;
+    if (precioUSD !== null && cotiz) {
+      ventaPesos = precioUSD * cotiz * (1 + iva/100) * (1 + markup/100);
+    } else if (fp !== null) {
+      ventaPesos = fp * (1 + markup/100);
+    }
+
+    var stockTxt = p.stock || 'Sin stock';
+    var tieneStock = stockTxt.toLowerCase().indexOf('sin') < 0 && stockTxt !== '' && stockTxt !== '0';
+    var imgHtml = p.mainImage
+      ? '<img class="prod-modal-img" src="' + p.mainImage + '" alt="">'
+      : '<div class="prod-modal-img-placeholder"><i class="fa-solid fa-image"></i></div>';
+
+    document.getElementById('prod-modal-header').innerHTML =
+      imgHtml +
+      '<div class="prod-modal-meta">' +
+        '<h2>' + (p.title||'—') + '</h2>' +
+        '<div class="sku" style="margin-bottom:10px"><i class="fa-solid fa-barcode"></i> ' + (p.sku||'—') + '</div>' +
+        '<div class="prod-modal-badges">' +
+          '<span class="badge badge-info"><i class="fa-solid fa-tag"></i> ' + (p.category||'—') + '</span>' +
+          '<span class="badge badge-purple"><i class="fa-solid fa-industry"></i> ' + (p.brand||'—') + '</span>' +
+          '<span class="badge ' + (tieneStock?'badge-ok':'badge-no') + '"><i class="fa-solid ' + (tieneStock?'fa-circle-check':'fa-circle-xmark') + '"></i> ' + stockTxt + '</span>' +
+        '</div>' +
+        '<div class="prod-modal-price">' +
+          (ventaPesos !== null ? '$' + ventaPesos.toLocaleString('es-AR', {minimumFractionDigits:0, maximumFractionDigits:0}) : '—') +
+          '<small>Precio Final Contado · IVA ' + iva + '% · markup ' + markup + '%' + (cotiz ? ' · BNA $'+parseFloat(cotiz).toLocaleString('es-AR') : '') + '</small>' +
+        '</div>' +
+      '</div>';
+
+    var garantia = p.warranty || '—';
+    var amountStock = p.amountStock != null ? p.amountStock : '—';
+    var cotizProv = p.cotizacion || '—';
+    var precioBaseUSD = precioUSD != null ? '$' + precioUSD.toFixed(4) + ' USD' : '—';
+
+    document.getElementById('prod-modal-body').innerHTML =
+      '<div class="section-title" style="margin-bottom:14px"><i class="fa-solid fa-circle-info"></i> Información del producto</div>' +
+      '<div class="prod-detail-grid">' +
+        '<div class="prod-detail-item"><div class="label">ID Producto</div><div class="value">' + (p.id||'—') + '</div></div>' +
+        '<div class="prod-detail-item"><div class="label">Garantía</div><div class="value"><i class="fa-solid fa-shield-halved" style="color:var(--ryr)"></i> ' + garantia + '</div></div>' +
+        '<div class="prod-detail-item"><div class="label">Cantidad en stock</div><div class="value">' + amountStock + '</div></div>' +
+        '<div class="prod-detail-item"><div class="label">IVA</div><div class="value">' + iva + '%</div></div>' +
+        '<div class="prod-detail-item"><div class="label">Precio base (USD)</div><div class="value">' + precioBaseUSD + '</div></div>' +
+        '<div class="prod-detail-item"><div class="label">Cotiz. proveedor</div><div class="value">$' + cotizProv + '</div></div>' +
+      '</div>';
+
+  } catch(e) {
+    document.getElementById('prod-modal-header').innerHTML = '<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> ' + e.message + '</div>';
+  }
 }
 
+function cerrarProdModal() {
+  document.getElementById('prod-modal').classList.remove('open');
+}
+
+// ── GUARDAR CONFIG ────────────────────────────────────────────────────────────
 async function guardarConfig() {
   var user = document.getElementById('cfg-user').value.trim();
   var pass = document.getElementById('cfg-pass').value;
@@ -578,6 +588,7 @@ function showConfigAlert(type, msg) {
   setTimeout(function(){ el.style.display = 'none'; }, 5000);
 }
 
+// ── NAV ──────────────────────────────────────────────────────────────────────
 function showSection(id, btn) {
   document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
   document.querySelectorAll('.nav-tabs button').forEach(function(b){ b.classList.remove('active'); });
@@ -589,18 +600,15 @@ function openConfig() {
   document.getElementById('login-overlay').classList.add('open');
   setTimeout(function(){ document.getElementById('config-pwd-input').focus(); }, 100);
 }
-
 function closeLoginOverlay() {
   document.getElementById('login-overlay').classList.remove('open');
   document.getElementById('config-pwd-input').value = '';
   document.getElementById('login-error').style.display = 'none';
 }
-
 function checkConfigPassword() {
   var pwd = document.getElementById('config-pwd-input').value;
   if (pwd === CONFIG_PASSWORD) {
-    closeLoginOverlay();
-    showSection('config', null);
+    closeLoginOverlay(); showSection('config', null);
   } else {
     document.getElementById('login-error').style.display = 'flex';
     document.getElementById('config-pwd-input').value = '';
@@ -608,26 +616,16 @@ function checkConfigPassword() {
   }
 }
 
-document.getElementById('config-pwd-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') checkConfigPassword();
-});
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeLoginOverlay();
-});
-
-document.getElementById('search-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') buscarProductos();
+document.getElementById('config-pwd-input').addEventListener('keydown', function(e){ if(e.key==='Enter') checkConfigPassword(); });
+document.getElementById('search-input').addEventListener('keydown', function(e){ if(e.key==='Enter') buscarProductos(); });
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') { closeLoginOverlay(); cerrarProdModal(); }
 });
 
-function showLoading(id) {
-  document.getElementById(id).innerHTML = '<div class="state-msg"><span class="spinner" style="width:22px;height:22px;margin-bottom:10px;display:block;margin:0 auto 10px"></span>Cargando...</div>';
-}
-function showMsg(id, msg) {
-  document.getElementById(id).innerHTML = '<div class="state-msg">' + msg + '</div>';
-}
-function showError(id, msg) {
-  document.getElementById(id).innerHTML = '<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> ' + msg + '</div>';
-}
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function showLoading(id) { document.getElementById(id).innerHTML = '<div class="state-msg"><span class="spinner" style="width:22px;height:22px;display:block;margin:0 auto 10px"></span>Cargando...</div>'; }
+function showMsg(id, msg) { document.getElementById(id).innerHTML = '<div class="state-msg">' + msg + '</div>'; }
+function showError(id, msg) { document.getElementById(id).innerHTML = '<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> ' + msg + '</div>'; }
 </script>
 </body>
 </html>
