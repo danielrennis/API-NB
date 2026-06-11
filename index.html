@@ -14,12 +14,16 @@
 
     /* NAV */
     nav{position:fixed;top:0;left:0;right:0;height:56px;z-index:999;background:#1e293b;display:flex;align-items:center;padding:0 20px;gap:0;border-bottom:1px solid rgba(255,255,255,.06)}
-    .nav-logo{display:flex;align-items:center;gap:10px;margin-right:12px;flex-shrink:0;text-decoration:none}
-    .nav-logo-svg{flex-shrink:0}
+    .nav-logo{display:flex;align-items:center;gap:10px;margin-right:12px;flex-shrink:0}
+    .nav-logo-svg{flex-shrink:0;animation:pulse-logo 2.8s ease-in-out infinite}
+    @keyframes pulse-logo{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.75;transform:scale(1.06)}}
     .nav-logo-text{display:flex;flex-direction:column;gap:2px}
-    .nav-logo-name{font-size:15px;font-weight:900;color:#fff;letter-spacing:-.02em;line-height:1}
+    .nav-logo-name{font-size:17px;font-weight:900;color:#fff;letter-spacing:-.02em;line-height:1;white-space:nowrap}
     .nav-logo-name span{color:var(--ryr)}
     .nav-logo-sub{font-size:9px;font-weight:600;color:#475569;letter-spacing:.01em;white-space:nowrap;line-height:1;max-width:340px;overflow:hidden;text-overflow:ellipsis}
+    .hero-desc{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border-bottom:1px solid rgba(255,255,255,.06);padding:10px 20px 10px 20px;display:flex;align-items:center;gap:12px}
+    .hero-desc p{font-size:12px;font-weight:600;color:#94a3b8;line-height:1.5;max-width:780px}
+    .hero-desc p strong{color:#e2e8f0;font-weight:800}
     .nav-sep{width:1px;height:24px;background:rgba(255,255,255,.12);margin-right:16px;flex-shrink:0}
     .nav-tabs{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
     .nav-tabs::-webkit-scrollbar{display:none}
@@ -38,7 +42,7 @@
     .nav-cfg-btn:hover{background:rgba(255,255,255,.07);color:#94a3b8}
 
     /* PAGE */
-    .page{max-width:1400px;margin:0 auto;padding:76px 20px 60px}
+    .page{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
     .prov-section{display:none}
     .prov-section.active{display:block}
 
@@ -207,7 +211,7 @@
       <line x1="98" y1="38" x2="98" y2="82" stroke="#E30613" stroke-width="6" stroke-linecap="round"/>
       <path d="M98 38 Q80 38 80 50 Q80 62 98 62" stroke="#E30613" stroke-width="6" stroke-linecap="round" fill="none"/>
       <line x1="89" y1="62" x2="78" y2="82" stroke="#E30613" stroke-width="6" stroke-linecap="round"/>
-    </svg><div class="nav-logo-text"><div class="nav-logo-name"><span>R</span>y<span>R</span> Computación</div><div class="nav-logo-sub">Conexión directa con tus proveedores: precios al dólar BNA · stock en tiempo real · presupuesto inmediato</div></div></div>
+    </svg><div class="nav-logo-text"><div class="nav-logo-name"><span>R</span>y<span>R</span></div></div></div>
   <div class="nav-sep"></div>
   <div class="nav-tabs" id="nav-tabs"></div>
   <div class="nav-right">
@@ -215,6 +219,12 @@
     <button class="nav-cfg-btn" onclick="openConfig()" title="Configuración"><i class="fa-solid fa-gear"></i></button>
   </div>
 </nav>
+
+<!-- HERO DESC -->
+<div class="hero-desc" style="margin-top:56px">
+  <i class="fa-solid fa-bolt" style="color:var(--ryr);font-size:16px;flex-shrink:0"></i>
+  <p><strong>Conexión directa con tus proveedores:</strong> precios actualizados al dólar BNA, stock en tiempo real y presupuesto inmediato sin necesidad de consultar a gerencia.</p>
+</div>
 
 <!-- LOGIN OVERLAY -->
 <div id="login-overlay">
