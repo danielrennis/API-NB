@@ -316,16 +316,6 @@ var appState = {
 };
 var sbClient = null;
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
-(function init() {
-  loadLocalConfig();
-  initSupa();
-  cargarCotizacion();
-  renderTabs();
-  renderSections();
-  switchProv(0); // activa tab 0, dispara lazy load de prov_213
-})();
-
 function loadLocalConfig() {
   try {
     // Intentar key nueva, si no hay datos migrar desde keys viejas
@@ -334,11 +324,14 @@ function loadLocalConfig() {
       // Migrar desde versiones anteriores
       raw = localStorage.getItem('ryr_prov_config') || localStorage.getItem('nb_config') || '{}';
     }
-    var c = JSON.parse(raw || '{}');
+    var c;
+    try { c = JSON.parse(raw || '{}'); } catch(pe) { c = {}; localStorage.removeItem(STORAGE_KEY); }
     if (c.supaUrl) appState.supaUrl = c.supaUrl;
     if (c.supaKey) appState.supaKey = c.supaKey;
-    document.getElementById('cfg-supa-url').value = appState.supaUrl;
-    document.getElementById('cfg-supa-key').value = appState.supaKey;
+    var elUrl = document.getElementById('cfg-supa-url');
+    var elKey = document.getElementById('cfg-supa-key');
+    if (elUrl) elUrl.value = appState.supaUrl;
+    if (elKey) elKey.value = appState.supaKey;
     // Mergear config guardada sobre defaults
     var saved = c.proveedores || [];
     // Compatibilidad: config vieja tenía nbUser/nbPass sueltos
@@ -368,7 +361,7 @@ function loadLocalConfig() {
     });
     // Guardar en key nueva para próxima vez
     saveLocalConfig();
-  } catch(e) {}
+  } catch(e) { console.error('[loadLocalConfig]', e); }
 }
 
 function saveLocalConfig() {
@@ -1107,6 +1100,16 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function showLoading(id){ document.getElementById(id).innerHTML='<div class="state-msg"><span class="spinner" style="width:22px;height:22px;display:block;margin:0 auto 10px"></span>Cargando...</div>'; }
 function showMsg(id,msg){ document.getElementById(id).innerHTML='<div class="state-msg">'+msg+'</div>'; }
 function showError(id,msg){ document.getElementById(id).innerHTML='<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> '+msg+'</div>'; }
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  loadLocalConfig();
+  initSupa();
+  cargarCotizacion();
+  renderTabs();
+  renderSections();
+  switchProv(0);
+});
 
 document.getElementById('config-pwd-input').addEventListener('keydown', function(e){ if(e.key==='Enter') checkConfigPassword(); });
 document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeLoginOverlay(); cerrarProdModal(); closeConfigPanel(); } });
