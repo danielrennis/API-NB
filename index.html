@@ -342,6 +342,7 @@ function loadLocalConfig() {
       var nb = appState.proveedores.find(function(x){ return x.tipo==='nb'; });
       if (nb) { if (c.nbUser) nb.user = c.nbUser; if (c.nbPass) nb.pass = c.nbPass; if (c.markup) nb.markup = c.markup; }
     }
+    var DEFAULT_IDS = ['prov_213', 'prov_air'];
     saved.forEach(function(sp) {
       var p = appState.proveedores.find(function(x){ return x.id === sp.id; });
       if (p) {
@@ -352,7 +353,8 @@ function loadLocalConfig() {
         if (sp.apiUrl !== undefined) p.apiUrl = sp.apiUrl;
         if (sp.apiKey !== undefined) p.apiKey = sp.apiKey;
         if (sp.endpoint !== undefined) p.endpoint = sp.endpoint;
-        if (sp.nombre !== undefined) p.nombre = sp.nombre;
+        // NO sobreescribir nombre/tipo en proveedores predefinidos
+        if (sp.nombre !== undefined && DEFAULT_IDS.indexOf(sp.id) === -1) p.nombre = sp.nombre;
       } else {
         sp.token = null; sp.productos = []; sp.currentPage = 1; sp.loaded = false;
         appState.proveedores.push(sp);
@@ -416,8 +418,17 @@ function renderSections() {
     var ok = provConectado(p);
     html += '<div class="prov-section" id="sec-' + i + '">';
     // Header
-    html += '<div class="prov-header">' +
-      '<div class="prov-icon ' + cc + '"><i class="fa-solid fa-building-store"></i></div>' +
+    var iconHtml;
+    if (p.id === 'prov_air') {
+      iconHtml = '<div class="prov-icon ' + cc + '" style="background:transparent;border:2px solid #0ea5e9;padding:2px">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="26" height="26">' +
+        '<circle cx="60" cy="60" r="55" fill="none" stroke="#0ea5e9" stroke-width="5"/>' +
+        '<text x="60" y="72" text-anchor="middle" font-family="Arial,sans-serif" font-size="32" font-weight="900" fill="#0ea5e9">A</text>' +
+        '</svg></div>';
+    } else {
+      iconHtml = '<div class="prov-icon ' + cc + '"><i class="fa-solid fa-building-store"></i></div>';
+    }
+    html += '<div class="prov-header">' + iconHtml +
       '<div class="prov-header-info"><h2>' + esc(p.nombre) + '</h2></div>' +
       '<div class="prov-header-right">' +
         (ok ? '<span class="badge badge-ok"><i class="fa-solid fa-circle-check"></i> Conectado</span>'
@@ -508,18 +519,23 @@ async function nbFetch(prov, path) {
 // ── AIR ───────────────────────────────────────────────────────────────────────
 async function precargarAIR(idx) {
   var prov = appState.proveedores[idx];
-  var base = prov.airUrl;
+  var base = prov.airUrl || '/.netlify/functions/air-proxy';
   try {
     var r = await fetch(base + '?action=load');
-    var d = await r.json();
+    var text = await r.text();
+    var d = JSON.parse(text);
     if (d.ok && d.products && d.products.length) {
       prov.productos = normAIR(d.products);
       prov._airDate = d.date;
       prov._filtrados = prov.productos;
       var rc = document.getElementById('rc-' + idx);
       if (rc) rc.textContent = prov.productos.length + ' productos en catálogo' + (d.date ? ' · ' + d.date : '');
+    } else {
+      prov._precargarError = d.error || 'Sin productos en caché';
     }
-  } catch(e) {}
+  } catch(e) {
+    prov._precargarError = e.message;
+  }
 }
 
 function normAIR(arr) {
@@ -544,12 +560,19 @@ async function buscar(idx) {
       prov.currentPage = 1;
       renderTabla(idx);
     } else if (prov.tipo === 'air') {
-      // Filtrar en memoria
-      if (!prov.productos.length) await precargarAIR(idx);
+      // Cargar cache si no hay productos
+      if (!prov.productos || !prov.productos.length) {
+        showLoading('cr-' + idx);
+        await precargarAIR(idx);
+      }
+      if (!prov.productos || !prov.productos.length) {
+        showError('cr-' + idx, 'No hay productos en caché. Usá el botón Diagnóstico y luego "Actualizar catálogo".');
+        return;
+      }
       var q = query.toLowerCase();
-      prov._filtrados = prov.productos.filter(function(p) {
-        return (p.title + ' ' + p.sku).toLowerCase().indexOf(q) >= 0;
-      });
+      prov._filtrados = q
+        ? prov.productos.filter(function(p){ return (p.title+' '+p.sku).toLowerCase().indexOf(q)>=0; })
+        : prov.productos;
       prov.currentPage = 1;
       renderTablaAIR(idx);
     }
