@@ -307,7 +307,11 @@ var appState = {
       token:null, productos:[], currentPage:1, loaded:false },
     { id:'prov_air', nombre:'Proveedor 126', tipo:'air', user:'', pass:'', markup:38,
       airUrl: '/.netlify/functions/air-proxy', apiUrl:'', apiKey:'', endpoint:'',
-      token:null, productos:[], currentPage:1, loaded:false }
+      token:null, productos:[], currentPage:1, loaded:false },
+    { id:'prov_elit', nombre:'Proveedor 4', tipo:'elit', user:'', pass:'', markup:30,
+      elitUserId:'2978', elitToken:'5y1p0twcuz',
+      airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
+      token:null, productos:[], currentPage:1, loaded:false, _elitCatalogo:[], _elitDate:'' }
   ]
 };
 var sbClient = null;
@@ -342,7 +346,7 @@ function loadLocalConfig() {
       var nb = appState.proveedores.find(function(x){ return x.tipo==='nb'; });
       if (nb) { if (c.nbUser) nb.user = c.nbUser; if (c.nbPass) nb.pass = c.nbPass; if (c.markup) nb.markup = c.markup; }
     }
-    var DEFAULT_IDS = ['prov_213', 'prov_air'];
+    var DEFAULT_IDS = ['prov_213', 'prov_air', 'prov_elit'];
     saved.forEach(function(sp) {
       var p = appState.proveedores.find(function(x){ return x.id === sp.id; });
       if (p) {
@@ -353,6 +357,8 @@ function loadLocalConfig() {
         if (sp.apiUrl !== undefined) p.apiUrl = sp.apiUrl;
         if (sp.apiKey !== undefined) p.apiKey = sp.apiKey;
         if (sp.endpoint !== undefined) p.endpoint = sp.endpoint;
+        if (sp.elitUserId !== undefined) p.elitUserId = sp.elitUserId;
+        if (sp.elitToken !== undefined) p.elitToken = sp.elitToken;
         // NO sobreescribir nombre/tipo en proveedores predefinidos
         if (sp.nombre !== undefined && DEFAULT_IDS.indexOf(sp.id) === -1) p.nombre = sp.nombre;
       } else {
@@ -368,7 +374,8 @@ function loadLocalConfig() {
 function saveLocalConfig() {
   var toSave = appState.proveedores.map(function(p) {
     return { id:p.id, nombre:p.nombre, tipo:p.tipo, user:p.user, pass:p.pass,
-             markup:p.markup, airUrl:p.airUrl, apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint };
+             markup:p.markup, airUrl:p.airUrl, apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint,
+             elitUserId:p.elitUserId, elitToken:p.elitToken };
   });
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ supaUrl:appState.supaUrl, supaKey:appState.supaKey, proveedores:toSave }));
 }
@@ -406,6 +413,7 @@ function renderTabs() {
 function provConectado(p) {
   if (p.tipo === 'nb') return !!(p.user && p.pass);
   if (p.tipo === 'air') return !!p.airUrl;
+  if (p.tipo === 'elit') return !!(p.elitUserId && p.elitToken);
   if (p.tipo === 'custom') return !!(p.apiUrl && p.apiKey);
   return false;
 }
@@ -452,12 +460,19 @@ function renderSections() {
                 '<option value="brand">Por marca</option>' +
                 '<option value="category">Por categoría</option>' +
                 '</select>';
+      } else if (p.tipo === 'elit') {
+        html += '<select id="st-' + i + '">' +
+                '<option value="nombre">Por nombre</option>' +
+                '<option value="codigo_alfa">Por código</option>' +
+                '<option value="marca">Por marca</option>' +
+                '<option value="categoria">Por categoría</option>' +
+                '</select>';
       } else {
         html += '<input type="hidden" id="st-' + i + '" value="q"/>';
       }
       html += '<button class="btn btn-red" onclick="buscar(' + i + ')"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button></div>';
-      // Toggle solo con stock (solo NB)
-      if (p.tipo === 'nb') {
+      // Toggle solo con stock (NB y Elit tienen info de stock)
+      if (p.tipo === 'nb' || p.tipo === 'elit') {
         html += '<div class="toggle-row"><label class="toggle-wrap" for="ts-' + i + '">' +
                 '<span class="toggle"><input type="checkbox" id="ts-' + i + '" onchange="renderTabla(' + i + ')"><span class="toggle-slider"></span></span>' +
                 '<label for="ts-' + i + '"><i class="fa-solid fa-boxes-stacked"></i> Solo con stock</label></label>' +
@@ -516,6 +531,145 @@ async function nbFetch(prov, path) {
   return res.json();
 }
 
+
+// ── ELIT ──────────────────────────────────────────────────────────────────────
+async function buscarElit(idx, query, field) {
+  var prov = appState.proveedores[idx];
+  var markup = prov.markup || 30;
+  var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
+  showLoading('cr-' + idx);
+  try {
+    if (!prov._elitCatalogo || !prov._elitCatalogo.length) {
+      document.getElementById('cr-' + idx).innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit (' + (prov._elitCatalogo ? prov._elitCatalogo.length : 0) + ' productos)...</div>';
+      await cargarCatalogoElit(idx);
+    }
+    var catalogo = prov._elitCatalogo || [];
+    var q = query.toLowerCase();
+    var filtrados = catalogo.filter(function(p) {
+      if (field === 'codigo_alfa') return (p.codigo_alfa||'').toLowerCase().indexOf(q) >= 0;
+      if (field === 'marca') return (p.marca||'').toLowerCase().indexOf(q) >= 0;
+      if (field === 'categoria') return ((p.categoria||'') + ' ' + (p.sub_categoria||'')).toLowerCase().indexOf(q) >= 0;
+      return (p.nombre||'').toLowerCase().indexOf(q) >= 0;
+    });
+    if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
+    prov.productos = filtrados;
+    prov.currentPage = 1;
+    renderTablaElit(idx);
+  } catch(e) { showError('cr-' + idx, 'Error Elit: ' + e.message); }
+}
+
+async function cargarCatalogoElit(idx) {
+  var prov = appState.proveedores[idx];
+  var userId = parseInt(prov.elitUserId || '2978');
+  var token = prov.elitToken || '5y1p0twcuz';
+  var all = [], offset = 0, limit = 200;
+  for (var page = 0; page < 30; page++) {
+    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos?limit=' + limit + '&offset=' + offset, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({user_id: userId, token: token})
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    if (d.codigo !== 200) throw new Error('Elit API: ' + (d.mensaje || JSON.stringify(d)));
+    var prods = d.resultado || [];
+    all = all.concat(prods);
+    var total = d.paginador ? d.paginador.total : 0;
+    if (!prods.length || all.length >= total) break;
+    offset += limit;
+  }
+  prov._elitCatalogo = all;
+  prov._elitDate = new Date().toLocaleDateString('es-AR');
+  return all;
+}
+
+function renderTablaElit(idx) {
+  var prov = appState.proveedores[idx];
+  var lista = prov.productos || [];
+  var markup = prov.markup || 30;
+  var cotiz = appState.cotizBNA;
+  var totalCat = (prov._elitCatalogo||[]).length;
+  var rcEl = document.getElementById('rc-' + idx);
+  if (rcEl) rcEl.textContent = lista.length + ' resultado(s) de ' + totalCat + ' productos';
+  if (!lista.length) { showMsg('cr-' + idx, 'Sin resultados.'); document.getElementById('pg-' + idx).innerHTML=''; return; }
+  var ps = 25, page = prov.currentPage || 1, total = lista.length, pages = Math.ceil(total/ps);
+  if (page > pages) page = prov.currentPage = 1;
+  var slice = lista.slice((page-1)*ps, page*ps);
+  var rows = slice.map(function(p) {
+    var precioUSD = parseFloat(p.precio) || 0;
+    var iva = parseFloat(p.iva) || 21;
+    var vp = (precioUSD && cotiz)
+      ? precioUSD * cotiz * (1 + iva/100) * (1 + markup/100)
+      : (p.pvp_ars ? p.pvp_ars * (1 + markup/100) : null);
+    var tieneStock = (p.stock_total||0) > 0;
+    var stockTxt = tieneStock ? (p.nivel_stock || 'En stock') : 'Sin stock';
+    var img = (p.miniaturas && p.miniaturas[0])
+      ? '<img class="img-prod" src="' + esc(p.miniaturas[0]) + '" alt="" loading="lazy" onerror="this.style.display='none'">'
+      : '<div class="img-ph"><i class="fa-solid fa-image"></i></div>';
+    return '<tr onclick="abrirModalElit(' + idx + ',' + p.id + ')" style="cursor:pointer">' +
+      '<td>' + img + '</td>' +
+      '<td><div style="font-weight:700;font-size:12px">' + esc(p.nombre||'—') + '</div><div class="sku">' + esc(p.codigo_alfa||'') + '</div></td>' +
+      '<td><span class="badge badge-info">' + esc(p.sub_categoria||p.categoria||'—') + '</span></td>' +
+      '<td style="color:var(--muted);font-weight:600;font-size:12px">' + esc(p.marca||'—') + '</td>' +
+      '<td><span class="' + (tieneStock?'stock-ok':'stock-no') + '"><i class="fa-solid ' + (tieneStock?'fa-circle-check':'fa-circle-xmark') + '"></i> ' + esc(stockTxt) + '</span></td>' +
+      '<td class="right ' + (tieneStock?'price-ok':'price-no') + '">' + (vp!==null ? '$'+Math.round(vp).toLocaleString('es-AR') : '—') + '</td>' +
+      '</tr>';
+  }).join('');
+  var cotizNote = cotiz ? ' · BNA $'+Math.round(cotiz).toLocaleString('es-AR') : '';
+  document.getElementById('cr-' + idx).innerHTML =
+    '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px">' +
+    lista.length + ' resultado(s)' + cotizNote + (prov._elitDate ? ' · Catálogo: ' + prov._elitDate : '') + '</div>' +
+    '<div class="tbl-wrap"><table><thead><tr>' +
+    '<th class="left" style="width:50px"></th>' +
+    '<th class="left">Producto</th>' +
+    '<th class="left">Categoría</th>' +
+    '<th class="left">Marca</th>' +
+    '<th>Stock</th>' +
+    '<th>Precio Final · $ARS</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  renderPag(idx, pages, page, 'goPageElit');
+}
+
+function goPageElit(idx, n) { appState.proveedores[idx].currentPage = n; renderTablaElit(idx); }
+
+function abrirModalElit(idx, id) {
+  var prov = appState.proveedores[idx];
+  var p = (prov._elitCatalogo||[]).find(function(x){ return x.id === id; });
+  if (!p) return;
+  var cotiz = appState.cotizBNA, markup = prov.markup || 30;
+  var precioUSD = parseFloat(p.precio) || 0;
+  var iva = parseFloat(p.iva) || 21;
+  var vp = (precioUSD && cotiz)
+    ? precioUSD * cotiz * (1+iva/100) * (1+markup/100)
+    : (p.pvp_ars ? p.pvp_ars*(1+markup/100) : null);
+  var tieneStock = (p.stock_total||0) > 0;
+  var imgHtml = (p.imagenes && p.imagenes[0])
+    ? '<img class="prod-modal-img" src="' + esc(p.imagenes[0]) + '" alt="">'
+    : '<div class="prod-modal-img-ph"><i class="fa-solid fa-image"></i></div>';
+  document.getElementById('prod-modal-header').innerHTML =
+    imgHtml +
+    '<div class="prod-modal-meta"><h2>' + esc(p.nombre||'—') + '</h2>' +
+    '<div class="sku" style="margin-bottom:10px"><i class="fa-solid fa-barcode"></i> ' + esc(p.codigo_alfa||'—') + '</div>' +
+    '<div class="prod-modal-badges">' +
+      '<span class="badge badge-info">' + esc(p.sub_categoria||p.categoria||'—') + '</span>' +
+      '<span class="badge badge-purple">' + esc(p.marca||'—') + '</span>' +
+      '<span class="badge '+(tieneStock?'badge-ok':'badge-no')+'">' + (tieneStock?'En stock':'Sin stock') + '</span>' +
+    '</div>' +
+    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+
+    '<small>Precio Final en Pesos · IVA '+iva+'% · BNA oficial</small></div></div>';
+  document.getElementById('prod-modal-body').innerHTML =
+    '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
+    '<div class="prod-detail-grid">' +
+      '<div class="prod-detail-item"><div class="lbl">Código</div><div class="val">'+esc(p.codigo_alfa||'—')+'</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">Garantía</div><div class="val">'+esc(p.garantia||'—')+' meses</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">Stock total</div><div class="val">'+((p.stock_total)||0)+'</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">Nivel stock</div><div class="val">'+esc(p.nivel_stock||'—')+'</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+iva+'%</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">EAN</div><div class="val">'+esc(p.ean||'—')+'</div></div>' +
+    '</div>';
+  document.getElementById('prod-modal').classList.add('open');
+}
+
 // ── AIR ───────────────────────────────────────────────────────────────────────
 async function precargarAIR(idx) {
   var prov = appState.proveedores[idx];
@@ -559,6 +713,9 @@ async function buscar(idx) {
       prov.productos = Array.isArray(raw) ? raw : (raw.products || raw.data || []);
       prov.currentPage = 1;
       renderTabla(idx);
+    } else if (prov.tipo === 'elit') {
+      await buscarElit(idx, query, type);
+      return;
     } else if (prov.tipo === 'air') {
       // Cargar cache si no hay productos
       if (!prov.productos || !prov.productos.length) {

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Círculo exterior -->
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#E30613" stroke-width="7"/>
+  <!-- RyR centrado dentro del círculo, sin "COMPUTACION" -->
+  <!-- R izquierda -->
+  <path d="M38 68 L38 132" stroke="#E30613" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M38 68 Q65 68 65 84 Q65 100 38 100" stroke="#E30613" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M50 100 L65 132" stroke="#E30613" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <!-- y central (la V invertida / chevron) -->
+  <path d="M80 68 L100 100 L120 68" stroke="#E30613" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- R derecha (espejada) -->
+  <path d="M162 68 L162 132" stroke="#E30613" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M162 68 Q135 68 135 84 Q135 100 162 100" stroke="#E30613" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M150 100 L135 132" stroke="#E30613" stroke-width="9" stroke-linecap="round" fill="none"/>
+</svg>
