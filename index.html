@@ -13,67 +13,60 @@
     body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
 
     /* NAV */
-    nav{position:fixed;top:0;left:0;right:0;height:56px;z-index:999;background:#1e293b;display:flex;align-items:center;padding:0 20px;gap:0;border-bottom:1px solid rgba(255,255,255,.06)}
-    .nav-logo{display:flex;align-items:center;gap:10px;margin-right:12px;flex-shrink:0}
-    .nav-logo-svg{flex-shrink:0;animation:pulse-logo 2.8s ease-in-out infinite}
+    nav{position:fixed;top:0;left:0;right:0;height:56px;z-index:999;background:#1e293b;display:flex;align-items:center;padding:0 16px;gap:0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .nav-logo{display:flex;align-items:center;gap:9px;margin-right:10px;flex-shrink:0}
+    .nav-logo-svg{animation:pulse-logo 2.8s ease-in-out infinite;flex-shrink:0}
     @keyframes pulse-logo{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.75;transform:scale(1.06)}}
-    .nav-logo-text{display:flex;flex-direction:column;gap:2px}
-    .nav-logo-name{font-size:17px;font-weight:900;color:#fff;letter-spacing:-.02em;line-height:1;white-space:nowrap}
+    .nav-logo-name{font-size:17px;font-weight:900;color:#fff;letter-spacing:-.02em;white-space:nowrap;line-height:1}
     .nav-logo-name span{color:var(--ryr)}
-    .nav-logo-sub{font-size:9px;font-weight:600;color:#475569;letter-spacing:.01em;white-space:nowrap;line-height:1;max-width:340px;overflow:hidden;text-overflow:ellipsis}
-    .hero-desc{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border-bottom:1px solid rgba(255,255,255,.06);padding:10px 20px 10px 20px;display:flex;align-items:center;gap:12px}
-    .hero-desc p{font-size:12px;font-weight:600;color:#94a3b8;line-height:1.5;max-width:780px}
-    .hero-desc p strong{color:#e2e8f0;font-weight:800}
-    .nav-sep{width:1px;height:24px;background:rgba(255,255,255,.12);margin-right:16px;flex-shrink:0}
+    .nav-sep{width:1px;height:24px;background:rgba(255,255,255,.12);margin:0 12px;flex-shrink:0}
     .nav-tabs{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
     .nav-tabs::-webkit-scrollbar{display:none}
     .nav-tab{background:none;border:none;color:#64748b;cursor:pointer;font-family:'Outfit',sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:7px 13px;border-radius:8px;transition:all .15s;display:flex;align-items:center;gap:7px;white-space:nowrap;flex-shrink:0}
     .nav-tab:hover{background:rgba(255,255,255,.07);color:#94a3b8}
     .nav-tab.active{background:rgba(255,255,255,.1);color:#fff}
     .nav-tab .dot{width:6px;height:6px;border-radius:50%;background:#475569;flex-shrink:0;transition:background .2s}
-    .nav-tab.active .dot{background:#4ade80}
-    .nav-tab.connected .dot{background:#4ade80}
+    .nav-tab.connected .dot,.nav-tab.active.connected .dot{background:#4ade80}
     .nav-tab-add{border:1px dashed rgba(255,255,255,.2)!important;color:#475569!important}
-    .nav-tab-add:hover{border-color:rgba(255,255,255,.35)!important;color:#94a3b8!important}
     .nav-right{display:flex;align-items:center;gap:8px;margin-left:12px;flex-shrink:0}
     .cotiz-badge{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;color:#64748b;display:flex;align-items:center;gap:5px;white-space:nowrap}
     .cotiz-badge strong{color:#4ade80}
     .nav-cfg-btn{background:none;border:none;color:#64748b;cursor:pointer;font-size:14px;padding:6px 8px;border-radius:6px;transition:all .15s}
     .nav-cfg-btn:hover{background:rgba(255,255,255,.07);color:#94a3b8}
 
+    /* HERO */
+    .hero{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border-bottom:1px solid rgba(255,255,255,.06);padding:9px 20px;display:flex;align-items:center;gap:10px;margin-top:56px}
+    .hero p{font-size:12px;font-weight:600;color:#94a3b8;line-height:1.5}
+    .hero p strong{color:#e2e8f0;font-weight:800}
+
     /* PAGE */
     .page{max-width:1400px;margin:0 auto;padding:20px 20px 60px}
     .prov-section{display:none}
     .prov-section.active{display:block}
 
-    /* PROVIDER HEADER */
-    .prov-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:18px 20px;background:var(--surface);border-radius:16px;border:1px solid var(--border)}
-    .prov-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0}
-    .prov-header-info h2{font-size:20px;font-weight:900;letter-spacing:-.03em;line-height:1}
-    .prov-header-info p{font-size:11px;color:var(--muted);margin-top:4px;font-weight:600}
-    .prov-header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-
-    /* UNCONFIGURED STATE */
-    .unconfigured{background:var(--surface);border-radius:16px;border:2px dashed var(--border);padding:48px;text-align:center}
-    .unconfigured i{font-size:36px;color:#cbd5e1;margin-bottom:16px;display:block}
-    .unconfigured h3{font-size:18px;font-weight:800;margin-bottom:8px;color:var(--text)}
-    .unconfigured p{font-size:13px;color:var(--muted);margin-bottom:20px}
-
     /* CARD */
-    .card{background:var(--surface);border-radius:16px;border:1px solid var(--border);padding:18px;margin-bottom:14px}
+    .card{background:var(--surface);border-radius:16px;border:1px solid var(--border);padding:18px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
     .section-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px}
     .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
 
-    /* BOTONES */
+    /* PROVIDER HEADER */
+    .prov-header{display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:16px 20px;background:var(--surface);border-radius:16px;border:1px solid var(--border)}
+    .prov-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0}
+    .prov-header-info h2{font-size:20px;font-weight:900;letter-spacing:-.03em}
+    .prov-header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+    /* UNCONFIGURED */
+    .unconfigured{background:var(--surface);border-radius:16px;border:2px dashed var(--border);padding:48px;text-align:center}
+    .unconfigured i{font-size:36px;color:#cbd5e1;margin-bottom:16px;display:block}
+    .unconfigured h3{font-size:18px;font-weight:800;margin-bottom:8px}
+    .unconfigured p{font-size:13px;color:var(--muted);margin-bottom:20px}
+
+    /* BTNS */
     .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;border:none;cursor:pointer;transition:all .2s}
-    .btn-red{background:var(--ryr);color:#fff}
-    .btn-red:hover{background:var(--ryr-d)}
-    .btn-ghost{background:#f1f5f9;color:var(--muted)}
-    .btn-ghost:hover{background:#e2e8f0;color:var(--text)}
-    .btn-green{background:#16a34a;color:#fff}
-    .btn-green:hover{background:#15803d}
+    .btn-red{background:var(--ryr);color:#fff}.btn-red:hover{background:var(--ryr-d)}
+    .btn-ghost{background:#f1f5f9;color:var(--muted)}.btn-ghost:hover{background:#e2e8f0;color:var(--text)}
+    .btn-green{background:#16a34a;color:#fff}.btn-green:hover{background:#15803d}
     .btn-sm{padding:6px 13px;font-size:12px}
-    .btn:disabled{opacity:.45;cursor:not-allowed}
 
     /* TOGGLE */
     .toggle-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
@@ -111,8 +104,9 @@
     td{padding:8px 10px;vertical-align:middle}
     td.right{text-align:right}
     .img-prod{width:38px;height:38px;object-fit:contain;border-radius:8px;border:1px solid var(--border)}
-    .price-con-stock{color:#16a34a!important;font-size:16px!important;font-weight:900!important;letter-spacing:-.02em}
-    .price-sin-stock{color:var(--muted);font-weight:600;font-size:12px}
+    .img-ph{width:38px;height:38px;border-radius:8px;border:1px solid var(--border);background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:13px}
+    .price-ok{color:#16a34a!important;font-size:15px!important;font-weight:900!important}
+    .price-no{color:var(--muted);font-weight:600;font-size:12px}
     .sku{font-family:monospace;font-size:10px;color:var(--muted)}
     .stock-ok{color:#16a34a;font-weight:700}
     .stock-no{color:#dc2626;font-weight:700}
@@ -120,8 +114,6 @@
     /* SPINNER */
     .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(227,6,19,.2);border-top-color:var(--ryr);border-radius:50%;animation:spin .6s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-
-    /* STATE */
     .state-msg{text-align:center;padding:3rem;color:var(--muted);font-size:13px;font-weight:600}
 
     /* PAGINATION */
@@ -131,22 +123,19 @@
     .pagination button:hover:not(.active){background:#f1f5f9;color:var(--text)}
 
     /* CONFIG PANEL */
-    .config-panel{display:none;position:fixed;top:56px;right:0;bottom:0;width:420px;background:var(--surface);border-left:1px solid var(--border);z-index:900;overflow-y:auto;box-shadow:-4px 0 24px rgba(0,0,0,.08);transition:transform .25s}
+    .config-panel{display:none;position:fixed;top:56px;right:0;bottom:0;width:420px;background:var(--surface);border-left:1px solid var(--border);z-index:900;overflow-y:auto;box-shadow:-4px 0 24px rgba(0,0,0,.08)}
     .config-panel.open{display:block}
     .config-panel-head{display:flex;align-items:center;justify-content:space-between;padding:20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
     .config-panel-head h3{font-size:16px;font-weight:800}
     .config-body{padding:20px}
     .prov-list-item{background:#f8fafc;border-radius:12px;border:1px solid var(--border);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
     .prov-list-item:hover{border-color:#cbd5e1;background:#f1f5f9}
-    .prov-list-item.selected{border-color:var(--ryr);background:#fff5f5}
-    .prov-list-item .pli-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;flex-shrink:0}
-    .prov-list-item .pli-info h4{font-size:13px;font-weight:800}
-    .prov-list-item .pli-info p{font-size:11px;color:var(--muted);margin-top:2px}
-    .prov-list-item .pli-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+    .pli-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;flex-shrink:0}
+    .pli-right{margin-left:auto;display:flex;align-items:center;gap:8px}
     .add-prov-btn{background:#fff;border:2px dashed var(--border);border-radius:12px;padding:14px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;color:var(--muted);cursor:pointer;transition:all .15s;margin-bottom:10px}
     .add-prov-btn:hover{border-color:#94a3b8;color:var(--text)}
 
-    /* CONFIG FORM */
+    /* FORM */
     .form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
     .form-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
     .form-input{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--text);outline:none;background:#fff;width:100%}
@@ -156,7 +145,7 @@
     .alert-error{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5}
     .alert-success{background:#dcfce7;color:#16a34a;border:1px solid #86efac}
 
-    /* MODAL LOGIN */
+    /* LOGIN MODAL */
     #login-overlay{display:none;position:fixed;inset:0;z-index:9990;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px}
     #login-overlay.open{display:flex}
     .modal-box{background:#fff;border-radius:20px;padding:32px;max-width:380px;width:100%;text-align:center}
@@ -167,14 +156,14 @@
     .modal-box input:focus{border-color:var(--ryr)}
     .modal-btns{display:flex;flex-direction:column;gap:8px}
 
-    /* MODAL PRODUCTO */
+    /* PROD MODAL */
     #prod-modal{display:none;position:fixed;inset:0;z-index:9990;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
     #prod-modal.open{display:flex}
     .prod-modal-wrap{position:relative;margin:auto}
     .prod-modal-box{background:#fff;border-radius:20px;max-width:660px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.18)}
     .prod-modal-header{display:flex;gap:18px;padding:22px;border-bottom:1px solid var(--border);background:#fafafa}
     .prod-modal-img{width:110px;height:110px;object-fit:contain;border-radius:12px;border:1px solid var(--border);background:#fff;flex-shrink:0}
-    .prod-modal-img-ph{width:110px;height:110px;border-radius:12px;border:1px solid var(--border);background:#f1f5f9;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--border);font-size:28px}
+    .prod-modal-img-ph{width:110px;height:110px;border-radius:12px;border:1px solid var(--border);background:#f1f5f9;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:28px}
     .prod-modal-meta{flex:1;min-width:0}
     .prod-modal-meta h2{font-size:15px;font-weight:800;line-height:1.35;margin-bottom:8px}
     .prod-modal-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
@@ -184,34 +173,30 @@
     .prod-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .prod-detail-item{background:#f8fafc;border-radius:10px;padding:10px 13px}
     .prod-detail-item .lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px}
-    .prod-detail-item .val{font-size:13px;font-weight:700;color:var(--text)}
-    .prod-modal-close{position:absolute;top:14px;right:14px;background:#f1f5f9;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:13px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .15s}
-    .prod-modal-close:hover{background:#e2e8f0;color:var(--text)}
+    .prod-detail-item .val{font-size:13px;font-weight:700}
+    .prod-modal-close{position:absolute;top:14px;right:14px;background:#f1f5f9;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:13px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+    .prod-modal-close:hover{background:#e2e8f0}
 
-    .contado-badge{display:inline-flex;align-items:center;gap:6px;background:#fffdf0;border:1px solid #f59e0b;color:#b45309;padding:5px 12px;border-radius:10px;font-size:11px;font-weight:800}
-
-    /* COLOR PALETTE para íconos de proveedores */
     .c0{background:#E30613}.c1{background:#0ea5e9}.c2{background:#8b5cf6}.c3{background:#f59e0b}.c4{background:#10b981}.c5{background:#f97316}
   </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
-  <div class="nav-logo"><svg class="nav-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="38" height="38">
+  <div class="nav-logo">
+    <svg class="nav-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="36" height="36">
       <circle cx="60" cy="60" r="55" fill="none" stroke="#E30613" stroke-width="5"/>
-      <!-- R izquierda -->
       <line x1="22" y1="38" x2="22" y2="82" stroke="#E30613" stroke-width="6" stroke-linecap="round"/>
       <path d="M22 38 Q40 38 40 50 Q40 62 22 62" stroke="#E30613" stroke-width="6" stroke-linecap="round" fill="none"/>
       <line x1="31" y1="62" x2="42" y2="82" stroke="#E30613" stroke-width="6" stroke-linecap="round"/>
-      <!-- y central -->
       <polyline points="50,38 60,58 70,38" stroke="#E30613" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
       <line x1="60" y1="58" x2="60" y2="82" stroke="#E30613" stroke-width="6" stroke-linecap="round"/>
-      <!-- R derecha (espejada) -->
       <line x1="98" y1="38" x2="98" y2="82" stroke="#E30613" stroke-width="6" stroke-linecap="round"/>
       <path d="M98 38 Q80 38 80 50 Q80 62 98 62" stroke="#E30613" stroke-width="6" stroke-linecap="round" fill="none"/>
       <line x1="89" y1="62" x2="78" y2="82" stroke="#E30613" stroke-width="6" stroke-linecap="round"/>
-    </svg><div class="nav-logo-text"><div class="nav-logo-name"><span>R</span>y<span>R</span></div></div></div>
+    </svg>
+    <div class="nav-logo-name"><span>R</span>y<span>R</span></div>
+  </div>
   <div class="nav-sep"></div>
   <div class="nav-tabs" id="nav-tabs"></div>
   <div class="nav-right">
@@ -220,13 +205,12 @@
   </div>
 </nav>
 
-<!-- HERO DESC -->
-<div class="hero-desc" style="margin-top:56px">
-  <i class="fa-solid fa-bolt" style="color:var(--ryr);font-size:16px;flex-shrink:0"></i>
+<div class="hero">
+  <i class="fa-solid fa-bolt" style="color:var(--ryr);font-size:15px;flex-shrink:0"></i>
   <p><strong>Conexión directa con tus proveedores:</strong> precios finales <strong>en pesos argentinos</strong> actualizados al dólar BNA, stock en tiempo real y presupuesto inmediato sin necesidad de consultar a gerencia.</p>
 </div>
 
-<!-- LOGIN OVERLAY -->
+<!-- LOGIN -->
 <div id="login-overlay">
   <div class="modal-box">
     <div class="modal-icon"><i class="fa-solid fa-lock"></i></div>
@@ -241,7 +225,7 @@
   </div>
 </div>
 
-<!-- PANEL CONFIGURACIÓN -->
+<!-- CONFIG PANEL -->
 <div class="config-panel" id="config-panel">
   <div class="config-panel-head">
     <h3><i class="fa-solid fa-gear" style="color:var(--ryr);margin-right:8px"></i> Configuración</h3>
@@ -249,21 +233,13 @@
   </div>
   <div class="config-body">
     <div id="cfg-alert"></div>
-
-    <!-- Lista de proveedores -->
     <div class="section-title"><i class="fa-solid fa-building-columns"></i> Proveedores</div>
     <div id="prov-list"></div>
     <button class="add-prov-btn" onclick="agregarProveedor()"><i class="fa-solid fa-plus"></i> Agregar proveedor</button>
-
-    <!-- Form edición proveedor -->
     <div id="prov-form" style="display:none">
-      <div class="section-title" style="margin-top:8px"><i class="fa-solid fa-pen"></i> <span id="prov-form-title">Editar proveedor</span></div>
-      <div class="form-group">
-        <label class="form-label">Nombre</label>
-        <input type="text" class="form-input" id="pf-nombre" placeholder="Ej: Proveedor 2"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Tipo de API</label>
+      <div class="section-title" style="margin-top:8px"><i class="fa-solid fa-pen"></i> <span id="prov-form-title">Editar</span></div>
+      <div class="form-group"><label class="form-label">Nombre</label><input type="text" class="form-input" id="pf-nombre"/></div>
+      <div class="form-group"><label class="form-label">Tipo</label>
         <select class="form-input" id="pf-tipo" onchange="onTipoChange()">
           <option value="nb">New Bytes (nb.com.ar)</option>
           <option value="air">AIR (air-intra.com)</option>
@@ -271,57 +247,31 @@
         </select>
       </div>
       <div id="pf-nb-fields">
-        <div class="form-group">
-          <label class="form-label">Usuario API</label>
-          <input type="text" class="form-input" id="pf-user" placeholder="tu_usuario"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Contraseña API</label>
-          <input type="password" class="form-input" id="pf-pass" placeholder="••••••••"/>
-        </div>
+        <div class="form-group"><label class="form-label">Usuario API</label><input type="text" class="form-input" id="pf-user"/></div>
+        <div class="form-group"><label class="form-label">Contraseña API</label><input type="password" class="form-input" id="pf-pass"/></div>
+      </div>
+      <div id="pf-air-fields" style="display:none">
+        <div class="form-group"><label class="form-label">URL sync2.php</label><input type="text" class="form-input" id="pf-air-url"/></div>
       </div>
       <div id="pf-custom-fields" style="display:none">
-        <div class="form-group">
-          <label class="form-label">URL base de la API</label>
-          <input type="text" class="form-input" id="pf-apiurl" placeholder="https://api.proveedor.com/v1"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Auth token / API Key</label>
-          <input type="text" class="form-input" id="pf-apikey" placeholder="Bearer xxx o apikey"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Endpoint de búsqueda (relativo)</label>
-          <input type="text" class="form-input" id="pf-search-endpoint" placeholder="/products?q={query}"/>
-          <span class="form-hint">Usá {query} donde va el término de búsqueda</span>
-        </div>
+        <div class="form-group"><label class="form-label">URL base API</label><input type="text" class="form-input" id="pf-apiurl"/></div>
+        <div class="form-group"><label class="form-label">API Key / Token</label><input type="text" class="form-input" id="pf-apikey"/></div>
+        <div class="form-group"><label class="form-label">Endpoint búsqueda</label><input type="text" class="form-input" id="pf-endpoint" placeholder="/products?q={query}"/></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Markup de ganancia (%)</label>
-        <input type="number" class="form-input" id="pf-markup" placeholder="30" min="0" max="999" step="0.5"/>
-        <span class="form-hint">Precio Final = Precio con IVA × (1 + markup / 100)</span>
-      </div>
+      <div class="form-group"><label class="form-label">Markup (%)</label><input type="number" class="form-input" id="pf-markup" min="0" max="999" step="0.5"/></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
         <button class="btn btn-green" onclick="guardarProveedor()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
-        <button class="btn btn-ghost" onclick="probarProv()"><i class="fa-solid fa-plug"></i> Probar</button>
-        <button class="btn btn-ghost" onclick="cancelarFormProv()" style="margin-left:auto"><i class="fa-solid fa-xmark"></i></button>
+        <button class="btn btn-ghost" onclick="cancelarFormProv()"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
-
-    <!-- Config global -->
     <div class="section-title" style="margin-top:20px"><i class="fa-solid fa-database"></i> Supabase</div>
-    <div class="form-group">
-      <label class="form-label">URL</label>
-      <input type="text" class="form-input" id="cfg-supa-url" placeholder="https://xxxx.supabase.co"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Anon Key</label>
-      <input type="text" class="form-input" id="cfg-supa-key" placeholder="eyJ..."/>
-    </div>
+    <div class="form-group"><label class="form-label">URL</label><input type="text" class="form-input" id="cfg-supa-url"/></div>
+    <div class="form-group"><label class="form-label">Anon Key</label><input type="text" class="form-input" id="cfg-supa-key"/></div>
     <button class="btn btn-green btn-sm" onclick="guardarSupabase()"><i class="fa-solid fa-floppy-disk"></i> Guardar Supabase</button>
   </div>
 </div>
 
-<!-- MODAL PRODUCTO -->
+<!-- PROD MODAL -->
 <div id="prod-modal">
   <div class="prod-modal-wrap">
     <button class="prod-modal-close" onclick="cerrarProdModal()"><i class="fa-solid fa-xmark"></i></button>
@@ -335,621 +285,445 @@
 <div class="page" id="page-content"></div>
 
 <script>
+// ── CONSTANTES ────────────────────────────────────────────────────────────────
 var CONFIG_PASSWORD = 'da89c261';
-var STORAGE_KEY = 'ryr_prov_config';
+var STORAGE_KEY = 'ryr_config_v2';
+var NB_API = 'https://api.nb.com.ar/v1';
+var AIR_PROXY = 'http://serverres.dyndns.org:81/informes/prueba/Proveedores/sync2.php';
 var DEFAULT_SUPA_URL = 'https://mvbgtzofohhwhhnjqvvg.supabase.co';
 var DEFAULT_SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12Ymd0em9mb2hod2hobmpxdnZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MjI1MjcsImV4cCI6MjA5MzQ5ODUyN30.6GILq6R1rzfX3b6s63TecyfAIebHyOgRih0kBaM0gcA';
-var NB_API = 'https://api.nb.com.ar/v1';
-var COLOR_CLASSES = ['c0','c1','c2','c3','c4','c5'];
+var COLORS = ['c0','c1','c2','c3','c4','c5'];
 
+// ── ESTADO ────────────────────────────────────────────────────────────────────
 var appState = {
   cotizBNA: null,
   supaUrl: DEFAULT_SUPA_URL,
   supaKey: DEFAULT_SUPA_KEY,
-  proveedores: [],          // [{id, nombre, tipo, user, pass, apiUrl, apiKey, searchEndpoint, markup, token, productos, currentPage}]
   activeProv: 0,
-  editingProvId: null
+  editingIdx: null,
+  proveedores: [
+    { id:'prov_213', nombre:'Proveedor 213', tipo:'nb', user:'', pass:'', markup:30,
+      airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
+      token:null, productos:[], currentPage:1, loaded:false },
+    { id:'prov_air', nombre:'AIR', tipo:'air', user:'', pass:'', markup:38,
+      airUrl: AIR_PROXY, apiUrl:'', apiKey:'', endpoint:'',
+      token:null, productos:[], currentPage:1, loaded:false }
+  ]
 };
 var sbClient = null;
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-(async function init() {
-  loadConfig();
+(function init() {
+  loadLocalConfig();
   initSupa();
-  await Promise.all([cargarCotizacion(), cargarProveedoresDesdeSupabase()]);
+  cargarCotizacion();
   renderTabs();
-  renderProvSections();
-  if (appState.proveedores.length > 0) {
-    switchProv(0);
-    // Pre-cargar catálogo AIR en background
-    appState.proveedores.forEach(function(p, i) {
-      if (p.tipo === 'air' && p.apiUrl) {
-        var base = p.apiUrl;
-        fetch(base + '?action=load').then(function(r){ return r.json(); }).then(function(d) {
-          if (d.ok && d.products && d.products.length > 0) {
-            p.productos = normalizarAIR(d.products);
-            p._airDate = d.date;
-            p._filteredAIR = p.productos;
-          }
-        }).catch(function(){});
-      }
-    });
-  }
+  renderSections();
+  switchProv(0); // activa tab 0, dispara lazy load de prov_213
 })();
 
-function loadConfig() {
+function loadLocalConfig() {
   try {
     var c = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    appState.supaUrl = c.supaUrl || DEFAULT_SUPA_URL;
-    appState.supaKey = c.supaKey || DEFAULT_SUPA_KEY;
+    if (c.supaUrl) appState.supaUrl = c.supaUrl;
+    if (c.supaKey) appState.supaKey = c.supaKey;
     document.getElementById('cfg-supa-url').value = appState.supaUrl;
     document.getElementById('cfg-supa-key').value = appState.supaKey;
-    // Partir siempre desde los defaults y mergear lo guardado encima
-    var base = defaultProveedores();
-    var saved = (c.proveedores && c.proveedores.length) ? c.proveedores : [];
-    saved.forEach(function(sp) {
-      var existing = base.find(function(b){ return b.id === sp.id; });
-      if (existing) { Object.assign(existing, sp); existing.token = null; existing.productos = []; existing.currentPage = 1; }
-      else { sp.token = null; sp.productos = []; sp.currentPage = 1; base.push(sp); }
-    });
-    appState.proveedores = base;
-  } catch(e) { appState.proveedores = defaultProveedores(); }
-}
-
-function defaultProveedores() {
-  return [
-    {
-      id: 'prov_213', nombre: 'Proveedor 213', tipo: 'nb',
-      user: '', pass: '', markup: 30, token: null,
-      apiUrl: '', apiKey: '', searchEndpoint: '',
-      productos: [], currentPage: 1
-    },
-    {
-      id: 'prov_air', nombre: 'AIR', tipo: 'air',
-      user: '', pass: '', markup: 38, token: null,
-      apiUrl: 'http://serverres.dyndns.org:81/informes/prueba/Proveedores/sync2.php',
-      apiKey: '', searchEndpoint: '',
-      productos: [], currentPage: 1
+    // Mergear config guardada sobre defaults
+    if (c.proveedores && c.proveedores.length) {
+      c.proveedores.forEach(function(sp) {
+        var p = appState.proveedores.find(function(x){ return x.id === sp.id; });
+        if (p) {
+          if (sp.user !== undefined) p.user = sp.user;
+          if (sp.pass !== undefined) p.pass = sp.pass;
+          if (sp.markup !== undefined) p.markup = sp.markup;
+          if (sp.airUrl !== undefined) p.airUrl = sp.airUrl;
+          if (sp.apiUrl !== undefined) p.apiUrl = sp.apiUrl;
+          if (sp.apiKey !== undefined) p.apiKey = sp.apiKey;
+          if (sp.endpoint !== undefined) p.endpoint = sp.endpoint;
+          if (sp.nombre !== undefined) p.nombre = sp.nombre;
+        } else {
+          sp.token = null; sp.productos = []; sp.currentPage = 1; sp.loaded = false;
+          appState.proveedores.push(sp);
+        }
+      });
     }
-  ];
+  } catch(e) {}
 }
 
-function saveConfig() {
+function saveLocalConfig() {
   var toSave = appState.proveedores.map(function(p) {
-    return {id:p.id,nombre:p.nombre,tipo:p.tipo,user:p.user,pass:p.pass,markup:p.markup,apiUrl:p.apiUrl,apiKey:p.apiKey,searchEndpoint:p.searchEndpoint};
+    return { id:p.id, nombre:p.nombre, tipo:p.tipo, user:p.user, pass:p.pass,
+             markup:p.markup, airUrl:p.airUrl, apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint };
   });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({supaUrl:appState.supaUrl,supaKey:appState.supaKey,proveedores:toSave}));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ supaUrl:appState.supaUrl, supaKey:appState.supaKey, proveedores:toSave }));
 }
 
 function initSupa() {
-  if (appState.supaUrl && appState.supaKey) {
-    try { sbClient = window.supabase.createClient(appState.supaUrl, appState.supaKey); } catch(e) { sbClient = null; }
-  }
+  try { sbClient = window.supabase.createClient(appState.supaUrl, appState.supaKey); } catch(e) { sbClient = null; }
 }
 
-// ── SUPABASE PROVEEDORES ──────────────────────────────────────────────────────
-async function cargarProveedoresDesdeSupabase() {
-  if (!sbClient) return;
-  try {
-    var r = await sbClient.from('config').select('key,value');
-    if (!r.data) return;
-    r.data.forEach(function(row) {
-      if (row.key === 'proveedores') {
-        try {
-          var arr = JSON.parse(row.value);
-          if (arr && arr.length) {
-            // Merge: mantener tokens en memoria, actualizar resto desde Supa
-            arr.forEach(function(sp) {
-              var local = appState.proveedores.find(function(p){ return p.id === sp.id; });
-              if (local) { Object.assign(local, sp); }
-              else { sp.token = null; sp.productos = []; sp.currentPage = 1; appState.proveedores.push(sp); }
-            });
-          }
-        } catch(e) {}
-      } else if (row.key.indexOf('markup_') === 0) {
-        var provId = row.key.replace('markup_','');
-        var prov = appState.proveedores.find(function(p){ return p.id === provId; });
-        if (prov) prov.markup = parseFloat(row.value);
-      }
+// ── COTIZACIÓN BNA ────────────────────────────────────────────────────────────
+function cargarCotizacion() {
+  fetch('https://dolarapi.com/v1/dolares/oficial')
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      appState.cotizBNA = d.venta || null;
+      var el = document.getElementById('cotiz-val');
+      if (el && appState.cotizBNA) el.innerHTML = '$' + parseFloat(appState.cotizBNA).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    })
+    .catch(function() {
+      var el = document.getElementById('cotiz-val'); if (el) el.textContent = 'N/D';
     });
-  } catch(e) {}
 }
 
-async function guardarProveedoresEnSupabase() {
-  if (!sbClient) return;
-  try {
-    var toSave = appState.proveedores.map(function(p) {
-      return {id:p.id,nombre:p.nombre,tipo:p.tipo,user:p.user,pass:p.pass,markup:p.markup,apiUrl:p.apiUrl,apiKey:p.apiKey,searchEndpoint:p.searchEndpoint};
-    });
-    await sbClient.from('config').upsert({key:'proveedores', value:JSON.stringify(toSave)});
-  } catch(e) {}
-}
-
-// ── COTIZACIÓN ────────────────────────────────────────────────────────────────
-async function cargarCotizacion() {
-  try {
-    var res = await fetch('https://dolarapi.com/v1/dolares/oficial');
-    var data = await res.json();
-    appState.cotizBNA = data.venta || null;
-    var el = document.getElementById('cotiz-val');
-    if (appState.cotizBNA && el) el.innerHTML = '$' + parseFloat(appState.cotizBNA).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
-  } catch(e) { var el2 = document.getElementById('cotiz-val'); if(el2) el2.textContent='N/D'; }
-}
-
-// ── RENDER TABS ───────────────────────────────────────────────────────────────
+// ── TABS ──────────────────────────────────────────────────────────────────────
 function renderTabs() {
-  var container = document.getElementById('nav-tabs');
   var html = '';
   appState.proveedores.forEach(function(p, i) {
-    var isConnected = (p.tipo === 'nb' && p.user && p.pass) || (p.tipo === 'custom' && p.apiUrl && p.apiKey) || (p.tipo === 'air' && p.apiUrl);
-    html += '<button class="nav-tab' + (isConnected?' connected':'') + (i===appState.activeProv?' active':'') + '" onclick="switchProv(' + i + ')">' +
-      '<span class="dot"></span>' + escHtml(p.nombre) + '</button>';
+    var ok = provConectado(p);
+    html += '<button class="nav-tab' + (ok?' connected':'') + (i===appState.activeProv?' active':'') +
+            '" onclick="switchProv(' + i + ')"><span class="dot"></span>' + esc(p.nombre) + '</button>';
   });
   html += '<button class="nav-tab nav-tab-add" onclick="openConfig();agregarProveedor()"><i class="fa-solid fa-plus"></i></button>';
-  container.innerHTML = html;
+  document.getElementById('nav-tabs').innerHTML = html;
 }
 
-// ── RENDER SECTIONS ───────────────────────────────────────────────────────────
-function renderProvSections() {
-  var container = document.getElementById('page-content');
+function provConectado(p) {
+  if (p.tipo === 'nb') return !!(p.user && p.pass);
+  if (p.tipo === 'air') return !!p.airUrl;
+  if (p.tipo === 'custom') return !!(p.apiUrl && p.apiKey);
+  return false;
+}
+
+// ── SECTIONS ──────────────────────────────────────────────────────────────────
+function renderSections() {
   var html = '';
   appState.proveedores.forEach(function(p, i) {
-    var colorClass = COLOR_CLASSES[i % COLOR_CLASSES.length];
-    var isConnected = (p.tipo === 'nb' && p.user && p.pass) || (p.tipo === 'custom' && p.apiUrl && p.apiKey) || (p.tipo === 'air' && p.apiUrl);
-    html += '<div class="prov-section" id="section-prov-' + i + '">';
-
+    var cc = COLORS[i % COLORS.length];
+    var ok = provConectado(p);
+    html += '<div class="prov-section" id="sec-' + i + '">';
     // Header
     html += '<div class="prov-header">' +
-      '<div class="prov-icon ' + colorClass + '"><i class="fa-solid fa-building-store"></i></div>' +
-      '<div class="prov-header-info"><h2>' + escHtml(p.nombre) + '</h2>' +
-      '<p>' + (p.tipo==='nb'?'api.nb.com.ar':escHtml(p.apiUrl||'Sin URL')) + ' · markup ' + p.markup + '%</p></div>' +
+      '<div class="prov-icon ' + cc + '"><i class="fa-solid fa-building-store"></i></div>' +
+      '<div class="prov-header-info"><h2>' + esc(p.nombre) + '</h2></div>' +
       '<div class="prov-header-right">' +
-      (isConnected
-        ? '<span class="badge badge-ok"><i class="fa-solid fa-circle-check"></i> Conectado</span>'
-        : '<span class="badge badge-no"><i class="fa-solid fa-circle-xmark"></i> Sin configurar</span>') +
-      '<button class="btn btn-ghost btn-sm" onclick="openConfig();editarProveedor(' + i + ')"><i class="fa-solid fa-pen"></i></button>' +
+        (ok ? '<span class="badge badge-ok"><i class="fa-solid fa-circle-check"></i> Conectado</span>'
+             : '<span class="badge badge-no"><i class="fa-solid fa-circle-xmark"></i> Sin configurar</span>') +
+        '<button class="btn btn-ghost btn-sm" onclick="openConfig();editarProveedor(' + i + ')"><i class="fa-solid fa-pen"></i></button>' +
       '</div></div>';
-
-    if (!isConnected) {
-      html += '<div class="unconfigured">' +
-        '<i class="fa-solid fa-plug"></i>' +
-        '<h3>Proveedor no configurado</h3>' +
-        '<p>Agregá las credenciales para empezar a consultar productos</p>' +
-        '<button class="btn btn-red" onclick="openConfig();editarProveedor(' + i + ')"><i class="fa-solid fa-gear"></i> Configurar ahora</button>' +
-        '</div>';
+    if (!ok) {
+      html += '<div class="unconfigured"><i class="fa-solid fa-plug"></i><h3>Proveedor no configurado</h3>' +
+              '<p>Agregá las credenciales para empezar a consultar</p>' +
+              '<button class="btn btn-red" onclick="openConfig();editarProveedor(' + i + ')"><i class="fa-solid fa-gear"></i> Configurar</button></div>';
     } else {
-      // Search card
-      html += '<div class="card">' +
-        '<div class="section-title"><i class="fa-solid fa-filter"></i> Filtros de búsqueda</div>' +
-        '<div class="search-row">' +
-        '<input type="text" id="si-' + i + '" placeholder="Buscar..." onkeydown="if(event.key===\'Enter\')buscar(' + i + ')"/>' +
-        '<select id="st-' + i + '">';
-      if (p.tipo === 'air') {
-        html += '<option value="q">Buscar por nombre o código</option>';
-      } else if (p.tipo === 'nb') {
-        html += '<option value="title">Por nombre</option><option value="sku">Por SKU</option><option value="product_id">Por ID</option><option value="brand">Por marca</option><option value="category">Por categoría</option>';
-      } else if (p.tipo === 'air') {
-        html += '<option value="q">Buscar por nombre o código</option>';
+      // Búsqueda
+      html += '<div class="card"><div class="section-title"><i class="fa-solid fa-filter"></i> Búsqueda</div>' +
+              '<div class="search-row">' +
+              '<input type="text" id="si-' + i + '" placeholder="Buscar..." onkeydown="if(event.key===\'Enter\')buscar(' + i + ')"/>';
+      if (p.tipo === 'nb') {
+        html += '<select id="st-' + i + '">' +
+                '<option value="title">Por nombre</option>' +
+                '<option value="sku">Por SKU</option>' +
+                '<option value="product_id">Por ID</option>' +
+                '<option value="brand">Por marca</option>' +
+                '<option value="category">Por categoría</option>' +
+                '</select>';
       } else {
-        html += '<option value="q">Buscar</option>';
+        html += '<input type="hidden" id="st-' + i + '" value="q"/>';
       }
-      html += '</select>' +
-        '<button class="btn btn-red" onclick="buscar(' + i + ')"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>' +
-        '</div>' +
-        '<div class="toggle-row">' +
-        '<label class="toggle-wrap" for="ts-' + i + '">' +
-        '<span class="toggle"><input type="checkbox" id="ts-' + i + '" onchange="renderTabla(' + i + ')"><span class="toggle-slider"></span></span>' +
-        '<label for="ts-' + i + '"><i class="fa-solid fa-boxes-stacked"></i> Solo con stock</label>' +
-        '</label>' +
-        '<span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700"></span>' +
-        '</div></div>';
-
-      // Result card
+      html += '<button class="btn btn-red" onclick="buscar(' + i + ')"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button></div>';
+      // Toggle solo con stock (solo NB)
+      if (p.tipo === 'nb') {
+        html += '<div class="toggle-row"><label class="toggle-wrap" for="ts-' + i + '">' +
+                '<span class="toggle"><input type="checkbox" id="ts-' + i + '" onchange="renderTabla(' + i + ')"><span class="toggle-slider"></span></span>' +
+                '<label for="ts-' + i + '"><i class="fa-solid fa-boxes-stacked"></i> Solo con stock</label></label>' +
+                '<span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700"></span></div>';
+      } else {
+        html += '<div style="margin-top:10px"><span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700"></span></div>';
+      }
+      html += '</div>';
+      // Resultados
       html += '<div class="card" style="padding:0;overflow:hidden">' +
-        '<div id="cr-' + i + '" style="padding:20px"><div class="state-msg"><i class="fa-solid fa-box-open" style="font-size:28px;display:block;margin-bottom:10px;opacity:.3"></i>Realizá una búsqueda para ver productos</div></div>' +
-        '<div class="pagination" id="pg-' + i + '"></div>' +
-        '</div>';
+              '<div id="cr-' + i + '"><div class="state-msg"><i class="fa-solid fa-box-open" style="font-size:28px;display:block;margin-bottom:10px;opacity:.3"></i>Realizá una búsqueda</div></div>' +
+              '<div class="pagination" id="pg-' + i + '"></div></div>';
     }
-
     html += '</div>';
   });
-  container.innerHTML = html;
+  document.getElementById('page-content').innerHTML = html;
 }
 
 function switchProv(idx) {
   appState.activeProv = idx;
   document.querySelectorAll('.prov-section').forEach(function(s){ s.classList.remove('active'); });
   document.querySelectorAll('.nav-tab:not(.nav-tab-add)').forEach(function(b,i){ b.classList.toggle('active', i===idx); });
-  var sec = document.getElementById('section-prov-' + idx);
+  var sec = document.getElementById('sec-' + idx);
   if (sec) sec.classList.add('active');
+  // LAZY: si es AIR y tiene catálogo pero no ha cargado aún, cargar en background
+  var prov = appState.proveedores[idx];
+  if (prov && prov.tipo === 'air' && prov.airUrl && !prov.loaded) {
+    prov.loaded = true;
+    precargarAIR(idx);
+  }
 }
 
-// ── API HELPERS ───────────────────────────────────────────────────────────────
-async function getToken(prov) {
-  if (prov.tipo !== 'nb') return null;
+// ── NB API ────────────────────────────────────────────────────────────────────
+async function getNBToken(prov) {
   if (prov.token) return prov.token;
-  if (!prov.user || !prov.pass) throw new Error('Configurá usuario y contraseña primero.');
+  if (!prov.user || !prov.pass) throw new Error('Configurá usuario y contraseña del proveedor.');
   var res = await fetch(NB_API + '/auth/login', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({user:prov.user, password:prov.pass, mode:'api'})
   });
-  if (!res.ok) throw new Error('Login fallido. Verificá las credenciales.');
-  var data = await res.json();
-  prov.token = data.token || data.access_token || (data.data && data.data.token);
-  if (!prov.token) throw new Error('No se recibió token.');
+  if (!res.ok) throw new Error('Login fallido (HTTP ' + res.status + '). Verificá las credenciales.');
+  var d = await res.json();
+  prov.token = d.token || d.access_token || (d.data && d.data.token);
+  if (!prov.token) throw new Error('No se recibió token del proveedor.');
   return prov.token;
 }
 
-async function apiFetchNB(prov, path) {
-  var token = await getToken(prov);
-  var res = await fetch(NB_API + path, {headers:{'Authorization':'Bearer '+token}});
-  if (res.status === 401) { prov.token = null; throw new Error('Token expirado, intentá de nuevo.'); }
-  if (!res.ok) throw new Error('Error API: ' + res.status);
+async function nbFetch(prov, path) {
+  var token = await getNBToken(prov);
+  var res = await fetch(NB_API + path, { headers:{'Authorization':'Bearer '+token} });
+  if (res.status === 401) { prov.token = null; throw new Error('Sesión expirada. Intentá de nuevo.'); }
+  if (!res.ok) throw new Error('Error API ' + res.status);
   return res.json();
 }
 
-async function apiFetchCustom(prov, query) {
-  if (!prov.apiUrl || !prov.searchEndpoint) throw new Error('Configurá la URL y endpoint de búsqueda.');
-  var endpoint = prov.searchEndpoint.replace('{query}', encodeURIComponent(query));
-  var url = prov.apiUrl.replace(/\/$/, '') + endpoint;
-  var headers = {'Content-Type':'application/json'};
-  if (prov.apiKey) headers['Authorization'] = prov.apiKey;
-  var res = await fetch(url, {headers: headers});
-  if (!res.ok) throw new Error('Error API: ' + res.status);
-  return res.json();
+// ── AIR ───────────────────────────────────────────────────────────────────────
+async function precargarAIR(idx) {
+  var prov = appState.proveedores[idx];
+  var base = prov.airUrl;
+  try {
+    var r = await fetch(base + '?action=load');
+    var d = await r.json();
+    if (d.ok && d.products && d.products.length) {
+      prov.productos = normAIR(d.products);
+      prov._airDate = d.date;
+      prov._filtrados = prov.productos;
+      var rc = document.getElementById('rc-' + idx);
+      if (rc) rc.textContent = prov.productos.length + ' productos en catálogo' + (d.date ? ' · ' + d.date : '');
+    }
+  } catch(e) {}
 }
 
-// Normalizar resultado de cualquier API a formato estándar
-function normalizarProductos(data, tipo) {
-  var arr = Array.isArray(data) ? data : (data.products || data.data || data.items || data.results || []);
+function normAIR(arr) {
   return arr.map(function(p) {
-    if (tipo === 'nb') return p; // ya en formato NB
-    // Intento genérico para APIs custom — mapeo flexible
-    return {
-      id: p.id || p.product_id || p.codigo || '',
-      title: p.title || p.nombre || p.name || p.descripcion || p.description || '—',
-      sku: p.sku || p.codigo || p.code || '',
-      category: p.category || p.categoria || p.rubro || '—',
-      brand: p.brand || p.marca || '—',
-      stock: p.stock !== undefined ? (p.stock > 0 ? 'En stock' : 'Sin stock') : (p.disponible ? 'En stock' : 'Sin stock'),
-      amountStock: p.stock || p.cantidad || p.qty || null,
-      mainImage: p.mainImage || p.imagen || p.image || p.img || null,
-      warranty: p.warranty || p.garantia || '—',
-      cotizacion: p.cotizacion || null,
-      price: p.price || (p.precio !== undefined ? {
-        value: p.precio / 1.21,
-        iva: 21,
-        finalPrice: p.precio,
-        percepcion: null
-      } : null)
-    };
+    return { id:p.c, title:p.d||'—', sku:p.c||'', _usd:parseFloat(p.p)||0, _iva:parseFloat(p.i)||21 };
   });
 }
 
-// ── BÚSQUEDA ──────────────────────────────────────────────────────────────────
+// ── BUSCAR ────────────────────────────────────────────────────────────────────
 async function buscar(idx) {
   var prov = appState.proveedores[idx];
-  var query = document.getElementById('si-' + idx).value.trim();
+  var query = (document.getElementById('si-' + idx).value || '').trim();
   var type = document.getElementById('st-' + idx).value;
-  if (!query) return showMsg('cr-' + idx, 'Ingresá un término de búsqueda.');
+  if (!query) return;
   showLoading('cr-' + idx);
   document.getElementById('pg-' + idx).innerHTML = '';
   document.getElementById('rc-' + idx).textContent = '';
   try {
-    var raw;
     if (prov.tipo === 'nb') {
-      raw = await apiFetchNB(prov, '/?' + encodeURIComponent(type) + '=' + encodeURIComponent(query));
-      prov.productos = normalizarProductos(raw, prov.tipo);
+      var raw = await nbFetch(prov, '/?' + encodeURIComponent(type) + '=' + encodeURIComponent(query));
+      prov.productos = Array.isArray(raw) ? raw : (raw.products || raw.data || []);
+      prov.currentPage = 1;
+      renderTabla(idx);
     } else if (prov.tipo === 'air') {
-      await cargarCatalogoAIR(prov, idx, query);
-      return; // cargarCatalogoAIR ya llama renderTabla
-    } else {
-      raw = await apiFetchCustom(prov, query);
-      prov.productos = normalizarProductos(raw, prov.tipo);
+      // Filtrar en memoria
+      if (!prov.productos.length) await precargarAIR(idx);
+      var q = query.toLowerCase();
+      prov._filtrados = prov.productos.filter(function(p) {
+        return (p.title + ' ' + p.sku).toLowerCase().indexOf(q) >= 0;
+      });
+      prov.currentPage = 1;
+      renderTablaAIR(idx);
     }
-    prov.currentPage = 1;
-    renderTabla(idx);
   } catch(e) { showError('cr-' + idx, e.message); }
 }
 
-// ── AIR ADAPTER ──────────────────────────────────────────────────────────────
-async function cargarCatalogoAIR(prov, idx, query) {
-  var base = prov.apiUrl || 'http://serverres.dyndns.org:81/informes/prueba/Proveedores/sync2.php';
-  // Intentar cargar cache primero si no hay productos
-  if (!prov.productos || prov.productos.length === 0) {
-    showLoading('cr-' + idx);
-    try {
-      var r = await fetch(base + '?action=load');
-      var d = await r.json();
-      if (d.ok && d.products && d.products.length > 0) {
-        prov.productos = normalizarAIR(d.products);
-        prov._airDate = d.date;
-      }
-    } catch(e) {}
-  }
-  // Filtrar en memoria por query
-  var q = (query || '').toLowerCase().trim();
-  if (q) {
-    prov._filteredAIR = (prov.productos || []).filter(function(p) {
-      return (p.title + ' ' + p.sku).toLowerCase().indexOf(q) >= 0;
-    });
-  } else {
-    prov._filteredAIR = prov.productos || [];
-  }
-  prov.currentPage = 1;
-  renderTablaAIR(idx);
-}
-
-function normalizarAIR(products) {
-  return products.map(function(p) {
-    return {
-      id: p.c || '',
-      title: p.d || '—',
-      sku: p.c || '',
-      category: '—',
-      brand: '—',
-      stock: 'En stock',
-      amountStock: null,
-      mainImage: null,
-      warranty: '—',
-      _precioUSD: parseFloat(p.p) || 0,
-      _iva: parseFloat(p.i) || 21,
-      price: { value: parseFloat(p.p) || 0, iva: parseFloat(p.i) || 21 }
-    };
-  });
-}
-
-function renderTablaAIR(idx) {
+// ── RENDER TABLA NB ───────────────────────────────────────────────────────────
+function renderTabla(idx) {
   var prov = appState.proveedores[idx];
   var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
-  var todos = prov._filteredAIR || prov.productos || [];
-  // AIR no tiene info de stock real — solo con stock no filtra
-  var filtrados = todos;
+  var todos = prov.productos || [];
+  var filtrados = soloStock ? todos.filter(function(p) {
+    var s = (p.stock || '').toLowerCase(); return s && s.indexOf('sin') < 0;
+  }) : todos;
   var rcEl = document.getElementById('rc-' + idx);
-  if (rcEl) rcEl.textContent = filtrados.length + ' productos' + (prov._airDate ? ' · actualizado ' + prov._airDate : '');
-  if (!filtrados.length) {
-    showMsg('cr-' + idx, 'Sin resultados. Probá otra búsqueda.');
-    var pgEl = document.getElementById('pg-' + idx); if(pgEl) pgEl.innerHTML=''; return;
-  }
-  var pageSize = 50, currentPage = prov.currentPage || 1;
-  var total = filtrados.length, pages = Math.ceil(total / pageSize);
-  if (currentPage > pages) currentPage = prov.currentPage = 1;
-  var slice = filtrados.slice((currentPage-1)*pageSize, currentPage*pageSize);
-  var markup = prov.markup || 38;
-  var cotiz = appState.cotizBNA;
-
+  if (rcEl) rcEl.textContent = filtrados.length + ' / ' + todos.length + ' productos';
+  if (!filtrados.length) { showMsg('cr-' + idx, 'Sin resultados.'); document.getElementById('pg-' + idx).innerHTML=''; return; }
+  var ps = 25, page = prov.currentPage || 1, total = filtrados.length, pages = Math.ceil(total/ps);
+  if (page > pages) page = prov.currentPage = 1;
+  var slice = filtrados.slice((page-1)*ps, page*ps);
+  var markup = prov.markup || 30, cotiz = appState.cotizBNA;
   var rows = slice.map(function(p) {
-    var precioUSD = p._precioUSD || 0;
-    var iva = p._iva || 21;
-    var ventaPesos = cotiz ? precioUSD * cotiz * (1 + iva/100) * (1 + markup/100) : null;
-    var precioTxt = ventaPesos !== null ? '$' + Math.round(ventaPesos).toLocaleString('es-AR') : '—';
-    return '<tr onclick="abrirProdModalAIR(' + idx + ','' + escHtml(p.sku) + '')" title="Ver detalle">' +
-      '<td class="left"><div style="width:38px;height:38px;background:#f1f5f9;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:14px"><i class="fa-solid fa-box"></i></div></td>' +
-      '<td class="left"><div style="font-weight:700;font-size:12px">' + escHtml(p.title) + '</div><div class="sku">' + escHtml(p.sku) + '</div></td>' +
-      '<td class="left"><span class="badge badge-info">—</span></td>' +
-      '<td class="left" style="color:var(--muted);font-weight:600;font-size:12px">—</td>' +
-      '<td><span class="stock-ok"><i class="fa-solid fa-circle-check"></i> Disponible</span></td>' +
-      '<td class="right price-con-stock">' + precioTxt + '</td>' +
+    var precioUSD = p.price && p.price.value != null ? p.price.value : null;
+    var iva = p.price && p.price.iva != null ? p.price.iva : 21;
+    var vp = (precioUSD !== null && cotiz) ? precioUSD * cotiz * (1+iva/100) * (1+markup/100) : null;
+    var stock = p.stock || 'Sin stock';
+    var ok = stock.toLowerCase().indexOf('sin') < 0 && stock !== '' && stock !== '0';
+    var img = p.mainImage ? '<img class="img-prod" src="' + esc(p.mainImage) + '" alt="" onerror="this.style.display=\'none\'">'
+                          : '<div class="img-ph"><i class="fa-solid fa-image"></i></div>';
+    return '<tr onclick="abrirModalNB(' + idx + ',' + p.id + ')">' +
+      '<td>' + img + '</td>' +
+      '<td><div style="font-weight:700;font-size:12px">' + esc(p.title||'—') + '</div><div class="sku">' + esc(p.sku||'') + '</div></td>' +
+      '<td><span class="badge badge-info">' + esc(p.category||'—') + '</span></td>' +
+      '<td style="color:var(--muted);font-weight:600;font-size:12px">' + esc(p.brand||'—') + '</td>' +
+      '<td><span class="' + (ok?'stock-ok':'stock-no') + '"><i class="fa-solid ' + (ok?'fa-circle-check':'fa-circle-xmark') + '"></i> ' + esc(stock) + '</span></td>' +
+      '<td class="right ' + (ok?'price-ok':'price-no') + '">' + (vp!==null ? '$'+Math.round(vp).toLocaleString('es-AR') : '—') + '</td>' +
       '</tr>';
   }).join('');
-
-  var cotizNote = cotiz ? ' · BNA $' + Math.round(cotiz).toLocaleString('es-AR') : '';
+  var cotizNote = cotiz ? ' · BNA $'+Math.round(cotiz).toLocaleString('es-AR') : '';
   document.getElementById('cr-' + idx).innerHTML =
-    '<div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:12px">' +
-    '<span><i class="fa-solid fa-box"></i> ' + total + ' resultado(s)' + cotizNote + '</span>' +
-    '<button class="btn btn-ghost btn-sm" onclick="sincronizarAIR(' + idx + ')"><i class="fa-solid fa-rotate"></i> Actualizar catálogo</button>' +
-    '</div>' +
+    '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px">' + total + ' resultado(s)' + cotizNote + '</div>' +
+    '<div class="tbl-wrap"><table><thead><tr>' +
+    '<th class="left" style="width:50px"></th><th class="left">Producto</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado · $ARS</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  renderPag(idx, pages, page, 'goPage');
+}
+
+function goPage(idx, n) { appState.proveedores[idx].currentPage = n; renderTabla(idx); }
+
+// ── RENDER TABLA AIR ──────────────────────────────────────────────────────────
+function renderTablaAIR(idx) {
+  var prov = appState.proveedores[idx];
+  var lista = prov._filtrados || prov.productos || [];
+  var rcEl = document.getElementById('rc-' + idx);
+  if (rcEl) rcEl.textContent = lista.length + ' producto(s)' + (prov._airDate ? ' · ' + prov._airDate : '');
+  if (!lista.length) { showMsg('cr-' + idx, 'Sin resultados.'); document.getElementById('pg-' + idx).innerHTML=''; return; }
+  var ps = 50, page = prov.currentPage || 1, total = lista.length, pages = Math.ceil(total/ps);
+  if (page > pages) page = prov.currentPage = 1;
+  var slice = lista.slice((page-1)*ps, page*ps);
+  var markup = prov.markup || 38, cotiz = appState.cotizBNA;
+  var rows = slice.map(function(p) {
+    var vp = (cotiz && p._usd) ? p._usd * cotiz * (1+p._iva/100) * (1+markup/100) : null;
+    return '<tr onclick="abrirModalAIR(' + idx + ',\'' + esc(p.sku) + '\')">' +
+      '<td><div class="img-ph"><i class="fa-solid fa-box"></i></div></td>' +
+      '<td><div style="font-weight:700;font-size:12px">' + esc(p.title) + '</div><div class="sku">' + esc(p.sku) + '</div></td>' +
+      '<td><span class="badge badge-info">—</span></td>' +
+      '<td style="color:var(--muted);font-weight:600;font-size:12px">—</td>' +
+      '<td><span class="stock-ok"><i class="fa-solid fa-circle-check"></i> Disponible</span></td>' +
+      '<td class="right price-ok">' + (vp!==null ? '$'+Math.round(vp).toLocaleString('es-AR') : '—') + '</td>' +
+      '</tr>';
+  }).join('');
+  var cotizNote = cotiz ? ' · BNA $'+Math.round(cotiz).toLocaleString('es-AR') : '';
+  document.getElementById('cr-' + idx).innerHTML =
+    '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px;display:flex;align-items:center;gap:12px">' +
+    '<span>' + total + ' resultado(s)' + cotizNote + '</span>' +
+    '<button class="btn btn-ghost btn-sm" onclick="sincronizarAIR(' + idx + ')"><i class="fa-solid fa-rotate"></i> Actualizar catálogo</button></div>' +
     '<div class="tbl-wrap"><table><thead><tr>' +
     '<th class="left" style="width:50px"></th><th class="left">Producto / Código</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado · $ARS</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>';
-
-  var pagDiv = document.getElementById('pg-' + idx);
-  if (pages <= 1) { if(pagDiv) pagDiv.innerHTML=''; return; }
-  var btns = '';
-  for (var i = 1; i <= pages; i++)
-    btns += '<button class="' + (i===currentPage?'active':'') + '" onclick="goPageAIR(' + idx + ',' + i + ')">' + i + '</button>';
-  if (pagDiv) pagDiv.innerHTML = btns;
+  renderPag(idx, pages, page, 'goPageAIR');
 }
 
 function goPageAIR(idx, n) { appState.proveedores[idx].currentPage = n; renderTablaAIR(idx); }
 
 async function sincronizarAIR(idx) {
   var prov = appState.proveedores[idx];
-  var base = prov.apiUrl || 'http://serverres.dyndns.org:81/informes/prueba/Proveedores/sync2.php';
-  showMsg('cr-' + idx, '<span class="spinner" style="width:18px;height:18px;display:inline-block;margin-right:8px"></span> Sincronizando catálogo con AIR...');
+  var base = prov.airUrl;
+  showMsg('cr-' + idx, '<span class="spinner" style="width:18px;height:18px;display:inline-block;margin-right:8px;vertical-align:middle"></span> Sincronizando con AIR...');
   try {
     var r = await fetch(base + '?action=sync');
     var d = await r.json();
     if (!d.ok) throw new Error(d.error || 'Error al sincronizar');
-    // Recargar
     var r2 = await fetch(base + '?action=load');
     var d2 = await r2.json();
     if (d2.ok && d2.products) {
-      prov.productos = normalizarAIR(d2.products);
+      prov.productos = normAIR(d2.products);
       prov._airDate = d2.date;
-      prov._filteredAIR = prov.productos;
+      prov._filtrados = prov.productos;
       prov.currentPage = 1;
     }
     renderTablaAIR(idx);
   } catch(e) { showError('cr-' + idx, 'Sincronización fallida: ' + e.message); }
 }
 
-function abrirProdModalAIR(idx, sku) {
-  var prov = appState.proveedores[idx];
-  var p = (prov.productos || []).find(function(x){ return x.sku === sku; });
-  if (!p) return;
-  var markup = prov.markup || 38;
-  var cotiz = appState.cotizBNA;
-  var iva = p._iva || 21;
-  var ventaPesos = cotiz ? p._precioUSD * cotiz * (1 + iva/100) * (1 + markup/100) : null;
-  document.getElementById('prod-modal-header').innerHTML =
-    '<div class="prod-modal-img-ph"><i class="fa-solid fa-box"></i></div>' +
-    '<div class="prod-modal-meta">' +
-      '<h2>' + escHtml(p.title) + '</h2>' +
-      '<div class="sku" style="margin-bottom:10px"><i class="fa-solid fa-barcode"></i> ' + escHtml(p.sku) + '</div>' +
-      '<div class="prod-modal-badges">' +
-        '<span class="badge badge-ok"><i class="fa-solid fa-circle-check"></i> Disponible</span>' +
-      '</div>' +
-      '<div class="prod-modal-price">' +
-        (ventaPesos !== null ? '$' + Math.round(ventaPesos).toLocaleString('es-AR') : '—') +
-        '<small>Precio Final en Pesos · IVA ' + iva + '% · cotización BNA oficial</small>' +
-      '</div>' +
-    '</div>';
-  document.getElementById('prod-modal-body').innerHTML =
-    '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
-    '<div class="prod-detail-grid">' +
-      '<div class="prod-detail-item"><div class="lbl">Código</div><div class="val">' + escHtml(p.sku) + '</div></div>' +
-      '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">' + iva + '%</div></div>' +
-      '<div class="prod-detail-item"><div class="lbl">Entrega estimada</div><div class="val">5 a 7 días hábiles</div></div>' +
-      '<div class="prod-detail-item"><div class="lbl">Proveedor</div><div class="val">AIR</div></div>' +
-    '</div>' +
-    '<div style="margin-top:14px;background:#fffdf0;border:1px solid #f59e0b;border-radius:10px;padding:10px 14px;font-size:11px;font-weight:700;color:#b45309">' +
-      '<i class="fa-solid fa-clock"></i> Entrega en 5 a 7 días hábiles · Precios de lista Contado' +
-    '</div>';
-  document.getElementById('prod-modal').classList.add('open');
-}
-
-// ── RENDER TABLA ──────────────────────────────────────────────────────────────
-function renderTabla(idx) {
-  var prov = appState.proveedores[idx];
-  var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
-  var todos = prov.productos || [];
-  var filtrados = soloStock ? todos.filter(function(p) {
-    var s = (p.stock || '').toLowerCase();
-    return s.indexOf('sin') < 0 && s !== '' && s !== '0';
-  }) : todos;
-
-  var rcEl = document.getElementById('rc-' + idx);
-  if (rcEl) rcEl.textContent = filtrados.length + ' / ' + todos.length + ' productos';
-
-  if (!filtrados.length) {
-    showMsg('cr-' + idx, 'Sin resultados' + (soloStock ? ' con stock disponible' : '') + '.');
-    var pgEl = document.getElementById('pg-' + idx); if(pgEl) pgEl.innerHTML = ''; return;
-  }
-
-  var pageSize = 25, currentPage = prov.currentPage || 1;
-  var total = filtrados.length, pages = Math.ceil(total / pageSize);
-  if (currentPage > pages) currentPage = prov.currentPage = 1;
-  var slice = filtrados.slice((currentPage-1)*pageSize, currentPage*pageSize);
-  var markup = prov.markup || 30;
-  var cotiz = appState.cotizBNA;
-
-  var rows = slice.map(function(p) {
-    var fp = p.price && p.price.finalPrice != null ? p.price.finalPrice : null;
-    var precioUSD = p.price && p.price.value != null ? p.price.value : null;
-    var iva = p.price && p.price.iva != null ? p.price.iva : 21;
-    var ventaPesos = null;
-    if (precioUSD !== null && cotiz) {
-      ventaPesos = precioUSD * cotiz * (1 + iva/100) * (1 + markup/100);
-    } else if (fp !== null) {
-      ventaPesos = fp * (1 + markup/100);
-    }
-    var stockTxt = p.stock || 'Sin stock';
-    var tieneStock = stockTxt.toLowerCase().indexOf('sin') < 0 && stockTxt !== '' && stockTxt !== '0';
-    var img = p.mainImage
-      ? '<img class="img-prod" src="' + escHtml(p.mainImage) + '" alt="" onerror="this.style.display=\'none\'">'
-      : '<div style="width:38px;height:38px;background:#f1f5f9;border-radius:8px;border:1px solid var(--border)"></div>';
-    var precioTxt = ventaPesos !== null ? '$' + Math.round(ventaPesos).toLocaleString('es-AR') : '—';
-    return '<tr onclick="abrirProdModal(' + idx + ',' + p.id + ')" title="Ver ficha">' +
-      '<td class="left">' + img + '</td>' +
-      '<td class="left"><div style="font-weight:700;font-size:12px">' + escHtml(p.title||'—') + '</div><div class="sku">' + escHtml(p.sku||'') + '</div></td>' +
-      '<td class="left"><span class="badge badge-info">' + escHtml(p.category||'—') + '</span></td>' +
-      '<td class="left" style="color:var(--muted);font-weight:600;font-size:12px">' + escHtml(p.brand||'—') + '</td>' +
-      '<td><span class="' + (tieneStock?'stock-ok':'stock-no') + '"><i class="fa-solid ' + (tieneStock?'fa-circle-check':'fa-circle-xmark') + '"></i> ' + escHtml(stockTxt) + '</span></td>' +
-      '<td class="right ' + (tieneStock?'price-con-stock':'price-sin-stock') + '">' + precioTxt + '</td>' +
-      '</tr>';
-  }).join('');
-
-  var cotizNote = cotiz ? ' · BNA $' + Math.round(cotiz).toLocaleString('es-AR') : ' · cotiz. proveedor';
-  document.getElementById('cr-' + idx).innerHTML =
-    '<div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:12px"><i class="fa-solid fa-box"></i> ' + total + ' resultado(s)' + cotizNote + '</div>' +
-    '<div class="tbl-wrap"><table><thead><tr>' +
-    '<th class="left" style="width:50px"></th><th class="left">Producto</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado · $ARS</th>' +
-    '</tr></thead><tbody>' + rows + '</tbody></table></div>';
-
-  var pagDiv = document.getElementById('pg-' + idx);
-  if (pages <= 1) { if(pagDiv) pagDiv.innerHTML = ''; return; }
+// ── PAGINATION ────────────────────────────────────────────────────────────────
+function renderPag(idx, pages, current, fn) {
+  if (pages <= 1) { document.getElementById('pg-' + idx).innerHTML=''; return; }
   var btns = '';
-  for (var i = 1; i <= pages; i++)
-    btns += '<button class="' + (i===currentPage?'active':'') + '" onclick="goPage(' + idx + ',' + i + ')">' + i + '</button>';
-  if (pagDiv) pagDiv.innerHTML = btns;
+  for (var i=1; i<=pages; i++)
+    btns += '<button class="'+(i===current?'active':'')+'" onclick="'+fn+'('+idx+','+i+')">' + i + '</button>';
+  document.getElementById('pg-' + idx).innerHTML = btns;
 }
 
-function goPage(idx, n) { appState.proveedores[idx].currentPage = n; renderTabla(idx); }
-
-// ── MODAL PRODUCTO ────────────────────────────────────────────────────────────
-async function abrirProdModal(idx, id) {
-  document.getElementById('prod-modal-header').innerHTML = '<div class="state-msg" style="padding:1rem"><span class="spinner" style="width:20px;height:20px"></span></div>';
+// ── MODALES PRODUCTO ──────────────────────────────────────────────────────────
+async function abrirModalNB(idx, id) {
+  document.getElementById('prod-modal-header').innerHTML = '<div class="state-msg" style="padding:1rem"><span class="spinner" style="width:20px;height:20px;display:block;margin:0 auto"></span></div>';
   document.getElementById('prod-modal-body').innerHTML = '';
   document.getElementById('prod-modal').classList.add('open');
   var prov = appState.proveedores[idx];
   try {
-    var data, p;
-    if (prov.tipo === 'nb') {
-      data = await apiFetchNB(prov, '/?product_id=' + id);
-      p = Array.isArray(data) ? data[0] : data;
-    } else {
-      p = (prov.productos || []).find(function(x){ return String(x.id) === String(id); });
-    }
+    var data = await nbFetch(prov, '/?product_id=' + id);
+    var p = Array.isArray(data) ? data[0] : data;
     if (!p) throw new Error('Sin datos');
-    var fp = p.price && p.price.finalPrice != null ? p.price.finalPrice : null;
     var precioUSD = p.price && p.price.value != null ? p.price.value : null;
     var iva = p.price && p.price.iva != null ? p.price.iva : 21;
-    var cotiz = appState.cotizBNA;
-    var markup = prov.markup || 30;
-    var ventaPesos = null;
-    if (precioUSD !== null && cotiz) ventaPesos = precioUSD * cotiz * (1 + iva/100) * (1 + markup/100);
-    else if (fp !== null) ventaPesos = fp * (1 + markup/100);
-    var stockTxt = p.stock || 'Sin stock';
-    var tieneStock = stockTxt.toLowerCase().indexOf('sin') < 0;
-    var imgHtml = p.mainImage
-      ? '<img class="prod-modal-img" src="' + escHtml(p.mainImage) + '" alt="">'
-      : '<div class="prod-modal-img-ph"><i class="fa-solid fa-image"></i></div>';
+    var cotiz = appState.cotizBNA, markup = prov.markup || 30;
+    var vp = (precioUSD !== null && cotiz) ? precioUSD * cotiz * (1+iva/100) * (1+markup/100) : null;
+    var stock = p.stock || 'Sin stock';
+    var ok = stock.toLowerCase().indexOf('sin') < 0;
     document.getElementById('prod-modal-header').innerHTML =
-      imgHtml +
-      '<div class="prod-modal-meta">' +
-        '<h2>' + escHtml(p.title||'—') + '</h2>' +
-        '<div class="sku" style="margin-bottom:10px"><i class="fa-solid fa-barcode"></i> ' + escHtml(p.sku||'—') + '</div>' +
-        '<div class="prod-modal-badges">' +
-          '<span class="badge badge-info"><i class="fa-solid fa-tag"></i> ' + escHtml(p.category||'—') + '</span>' +
-          '<span class="badge badge-purple"><i class="fa-solid fa-industry"></i> ' + escHtml(p.brand||'—') + '</span>' +
-          '<span class="badge ' + (tieneStock?'badge-ok':'badge-no') + '"><i class="fa-solid ' + (tieneStock?'fa-circle-check':'fa-circle-xmark') + '"></i> ' + escHtml(stockTxt) + '</span>' +
-        '</div>' +
-        '<div class="prod-modal-price">' +
-          (ventaPesos !== null ? '$' + Math.round(ventaPesos).toLocaleString('es-AR') : '—') +
-          '<small>Precio Final en Pesos · IVA ' + iva + '% · cotización BNA oficial</small>' +
-        '</div>' +
-      '</div>';
+      (p.mainImage ? '<img class="prod-modal-img" src="'+esc(p.mainImage)+'" alt="">' : '<div class="prod-modal-img-ph"><i class="fa-solid fa-image"></i></div>') +
+      '<div class="prod-modal-meta"><h2>' + esc(p.title||'—') + '</h2>' +
+      '<div class="sku" style="margin-bottom:10px"><i class="fa-solid fa-barcode"></i> ' + esc(p.sku||'—') + '</div>' +
+      '<div class="prod-modal-badges">' +
+        '<span class="badge badge-info">' + esc(p.category||'—') + '</span>' +
+        '<span class="badge badge-purple">' + esc(p.brand||'—') + '</span>' +
+        '<span class="badge '+(ok?'badge-ok':'badge-no')+'"><i class="fa-solid '+(ok?'fa-circle-check':'fa-circle-xmark')+'"></i> '+esc(stock)+'</span>' +
+      '</div>' +
+      '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'<small>Precio Final en Pesos · IVA '+iva+'% · cotización BNA oficial</small></div></div>';
     document.getElementById('prod-modal-body').innerHTML =
       '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
       '<div class="prod-detail-grid">' +
-        '<div class="prod-detail-item"><div class="lbl">ID</div><div class="val">' + (p.id||'—') + '</div></div>' +
-        '<div class="prod-detail-item"><div class="lbl">Garantía</div><div class="val"><i class="fa-solid fa-shield-halved" style="color:var(--ryr);margin-right:4px"></i>' + escHtml(p.warranty||'—') + '</div></div>' +
-        '<div class="prod-detail-item"><div class="lbl">Cantidad en stock</div><div class="val">' + (p.amountStock != null ? p.amountStock : '—') + '</div></div>' +
-        '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">' + iva + '%</div></div>' +
+        '<div class="prod-detail-item"><div class="lbl">ID</div><div class="val">'+(p.id||'—')+'</div></div>' +
+        '<div class="prod-detail-item"><div class="lbl">Garantía</div><div class="val">'+esc(p.warranty||'—')+'</div></div>' +
+        '<div class="prod-detail-item"><div class="lbl">Cant. en stock</div><div class="val">'+(p.amountStock!=null?p.amountStock:'—')+'</div></div>' +
+        '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+iva+'%</div></div>' +
       '</div>';
-  } catch(e) {
-    document.getElementById('prod-modal-header').innerHTML = '<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> ' + e.message + '</div>';
-  }
+  } catch(e) { document.getElementById('prod-modal-header').innerHTML = '<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> '+e.message+'</div>'; }
+}
+
+function abrirModalAIR(idx, sku) {
+  var prov = appState.proveedores[idx];
+  var p = (prov.productos||[]).find(function(x){ return x.sku === sku; });
+  if (!p) return;
+  var cotiz = appState.cotizBNA, markup = prov.markup || 38;
+  var vp = (cotiz && p._usd) ? p._usd * cotiz * (1+p._iva/100) * (1+markup/100) : null;
+  document.getElementById('prod-modal-header').innerHTML =
+    '<div class="prod-modal-img-ph"><i class="fa-solid fa-box"></i></div>' +
+    '<div class="prod-modal-meta"><h2>' + esc(p.title) + '</h2>' +
+    '<div class="sku" style="margin-bottom:10px"><i class="fa-solid fa-barcode"></i> ' + esc(p.sku) + '</div>' +
+    '<div class="prod-modal-badges"><span class="badge badge-ok"><i class="fa-solid fa-circle-check"></i> Disponible</span></div>' +
+    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'<small>Precio Final en Pesos · IVA '+p._iva+'% · cotización BNA oficial</small></div></div>';
+  document.getElementById('prod-modal-body').innerHTML =
+    '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
+    '<div class="prod-detail-grid">' +
+      '<div class="prod-detail-item"><div class="lbl">Código</div><div class="val">'+esc(p.sku)+'</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+p._iva+'%</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">Entrega</div><div class="val">5-7 días hábiles</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">Proveedor</div><div class="val">AIR</div></div>' +
+    '</div>' +
+    '<div style="margin-top:14px;background:#fffdf0;border:1px solid #f59e0b;border-radius:10px;padding:10px 14px;font-size:11px;font-weight:700;color:#b45309">' +
+      '<i class="fa-solid fa-clock"></i> Entrega 5 a 7 días hábiles · Precios de lista Contado</div>';
+  document.getElementById('prod-modal').classList.add('open');
 }
 
 function cerrarProdModal() { document.getElementById('prod-modal').classList.remove('open'); }
 
-// ── CONFIG PANEL ──────────────────────────────────────────────────────────────
+// ── CONFIG ────────────────────────────────────────────────────────────────────
 function openConfig() {
   document.getElementById('login-overlay').classList.add('open');
-  setTimeout(function(){ document.getElementById('config-pwd-input').focus(); },100);
+  setTimeout(function(){ document.getElementById('config-pwd-input').focus(); }, 100);
 }
-
 function closeLoginOverlay() {
   document.getElementById('login-overlay').classList.remove('open');
   document.getElementById('config-pwd-input').value = '';
   document.getElementById('login-error').style.display = 'none';
 }
-
 function checkConfigPassword() {
-  var pwd = document.getElementById('config-pwd-input').value;
-  if (pwd === CONFIG_PASSWORD) {
+  if (document.getElementById('config-pwd-input').value === CONFIG_PASSWORD) {
     closeLoginOverlay();
     document.getElementById('config-panel').classList.add('open');
     renderProvList();
@@ -959,35 +733,32 @@ function checkConfigPassword() {
     document.getElementById('config-pwd-input').focus();
   }
 }
-
 function closeConfigPanel() { document.getElementById('config-panel').classList.remove('open'); }
 
 function renderProvList() {
   var html = '';
   appState.proveedores.forEach(function(p, i) {
-    var isConnected = (p.tipo==='nb'&&p.user&&p.pass)||(p.tipo==='custom'&&p.apiUrl&&p.apiKey)||(p.tipo==='air'&&p.apiUrl);
-    var colorClass = COLOR_CLASSES[i % COLOR_CLASSES.length];
-    html += '<div class="prov-list-item" onclick="editarProveedor(' + i + ')">' +
-      '<div class="pli-icon ' + colorClass + '"><i class="fa-solid fa-building-store"></i></div>' +
-      '<div class="pli-info"><h4>' + escHtml(p.nombre) + '</h4><p>' + (p.tipo==='nb'?'New Bytes':'API custom') + ' · ' + p.markup + '% markup</p></div>' +
-      '<div class="pli-right">' +
-        '<span class="badge ' + (isConnected?'badge-ok':'badge-no') + '">' + (isConnected?'OK':'Sin config') + '</span>' +
-      '</div>' +
-      '</div>';
+    var ok = provConectado(p);
+    var cc = COLORS[i % COLORS.length];
+    html += '<div class="prov-list-item" onclick="editarProveedor('+i+')">' +
+      '<div class="pli-icon '+cc+'"><i class="fa-solid fa-building-store"></i></div>' +
+      '<div><div style="font-weight:800;font-size:13px">'+esc(p.nombre)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+p.tipo+' · '+p.markup+'% markup</div></div>' +
+      '<div class="pli-right"><span class="badge '+(ok?'badge-ok':'badge-no')+'">'+(ok?'OK':'Sin config')+'</span></div></div>';
   });
   document.getElementById('prov-list').innerHTML = html;
 }
 
 function editarProveedor(idx) {
   var p = appState.proveedores[idx];
-  appState.editingProvId = idx;
+  appState.editingIdx = idx;
   document.getElementById('pf-nombre').value = p.nombre || '';
   document.getElementById('pf-tipo').value = p.tipo || 'nb';
   document.getElementById('pf-user').value = p.user || '';
   document.getElementById('pf-pass').value = p.pass || '';
+  document.getElementById('pf-air-url').value = p.airUrl || AIR_PROXY;
   document.getElementById('pf-apiurl').value = p.apiUrl || '';
   document.getElementById('pf-apikey').value = p.apiKey || '';
-  document.getElementById('pf-search-endpoint').value = p.searchEndpoint || '';
+  document.getElementById('pf-endpoint').value = p.endpoint || '';
   document.getElementById('pf-markup').value = p.markup || 30;
   document.getElementById('prov-form-title').textContent = 'Editar: ' + p.nombre;
   onTipoChange();
@@ -995,14 +766,15 @@ function editarProveedor(idx) {
 }
 
 function agregarProveedor() {
-  appState.editingProvId = null;
+  appState.editingIdx = null;
   document.getElementById('pf-nombre').value = 'Proveedor ' + (appState.proveedores.length + 1);
   document.getElementById('pf-tipo').value = 'nb';
   document.getElementById('pf-user').value = '';
   document.getElementById('pf-pass').value = '';
+  document.getElementById('pf-air-url').value = AIR_PROXY;
   document.getElementById('pf-apiurl').value = '';
   document.getElementById('pf-apikey').value = '';
-  document.getElementById('pf-search-endpoint').value = '';
+  document.getElementById('pf-endpoint').value = '';
   document.getElementById('pf-markup').value = 30;
   document.getElementById('prov-form-title').textContent = 'Nuevo proveedor';
   onTipoChange();
@@ -1012,88 +784,68 @@ function agregarProveedor() {
 function cancelarFormProv() { document.getElementById('prov-form').style.display = 'none'; }
 
 function onTipoChange() {
-  var tipo = document.getElementById('pf-tipo').value;
-  document.getElementById('pf-nb-fields').style.display = tipo === 'nb' ? 'block' : 'none';
-  document.getElementById('pf-custom-fields').style.display = (tipo === 'custom' || tipo === 'air') ? 'block' : 'none';
-  if (tipo === 'air') {
-    document.getElementById('pf-apiurl').value = document.getElementById('pf-apiurl').value || 'http://serverres.dyndns.org:81/informes/prueba/Proveedores/sync2.php';
-    document.getElementById('pf-search-endpoint').value = '';
-  }
+  var t = document.getElementById('pf-tipo').value;
+  document.getElementById('pf-nb-fields').style.display = t==='nb' ? 'block' : 'none';
+  document.getElementById('pf-air-fields').style.display = t==='air' ? 'block' : 'none';
+  document.getElementById('pf-custom-fields').style.display = t==='custom' ? 'block' : 'none';
 }
 
-async function guardarProveedor() {
+function guardarProveedor() {
   var nombre = document.getElementById('pf-nombre').value.trim();
+  if (!nombre) return showCfgAlert('error', 'El nombre es obligatorio');
   var tipo = document.getElementById('pf-tipo').value;
-  var user = document.getElementById('pf-user').value.trim();
-  var pass = document.getElementById('pf-pass').value;
-  var apiUrl = document.getElementById('pf-apiurl').value.trim();
-  var apiKey = document.getElementById('pf-apikey').value.trim();
-  var searchEndpoint = document.getElementById('pf-search-endpoint').value.trim();
-  var markup = parseFloat(document.getElementById('pf-markup').value) || 30;
-  if (!nombre) return showCfgAlert('error','El nombre es obligatorio');
-  if (appState.editingProvId !== null) {
-    var p = appState.proveedores[appState.editingProvId];
-    p.nombre = nombre; p.tipo = tipo; p.user = user; p.pass = pass;
-    p.apiUrl = apiUrl; p.apiKey = apiKey; p.searchEndpoint = searchEndpoint;
-    p.markup = markup; p.token = null;
+  var datos = {
+    nombre: nombre, tipo: tipo,
+    user: document.getElementById('pf-user').value.trim(),
+    pass: document.getElementById('pf-pass').value,
+    airUrl: document.getElementById('pf-air-url').value.trim(),
+    apiUrl: document.getElementById('pf-apiurl').value.trim(),
+    apiKey: document.getElementById('pf-apikey').value.trim(),
+    endpoint: document.getElementById('pf-endpoint').value.trim(),
+    markup: parseFloat(document.getElementById('pf-markup').value) || 30
+  };
+  if (appState.editingIdx !== null) {
+    Object.assign(appState.proveedores[appState.editingIdx], datos);
+    appState.proveedores[appState.editingIdx].token = null;
   } else {
-    appState.proveedores.push({
-      id: 'prov_' + Date.now(), nombre: nombre, tipo: tipo,
-      user: user, pass: pass, apiUrl: apiUrl, apiKey: apiKey,
-      searchEndpoint: searchEndpoint, markup: markup,
-      token: null, productos: [], currentPage: 1
-    });
+    datos.id = 'prov_' + Date.now();
+    datos.token = null; datos.productos = []; datos.currentPage = 1; datos.loaded = false;
+    appState.proveedores.push(datos);
   }
-  saveConfig();
-  await guardarProveedoresEnSupabase();
+  saveLocalConfig();
   renderTabs();
-  renderProvSections();
-  switchProv(appState.editingProvId !== null ? appState.editingProvId : appState.proveedores.length - 1);
+  renderSections();
+  var activeIdx = appState.editingIdx !== null ? appState.editingIdx : appState.proveedores.length - 1;
+  switchProv(activeIdx);
   renderProvList();
   document.getElementById('prov-form').style.display = 'none';
   showCfgAlert('success', 'Proveedor guardado');
 }
 
-async function probarProv() {
-  var tipo = document.getElementById('pf-tipo').value;
-  var user = document.getElementById('pf-user').value.trim();
-  var pass = document.getElementById('pf-pass').value;
-  var tempProv = {tipo:tipo, user:user, pass:pass, token:null};
-  try {
-    await getToken(tempProv);
-    showCfgAlert('success','Conexión exitosa');
-  } catch(e) { showCfgAlert('error', e.message); }
-}
-
-async function guardarSupabase() {
+function guardarSupabase() {
   appState.supaUrl = document.getElementById('cfg-supa-url').value.trim();
   appState.supaKey = document.getElementById('cfg-supa-key').value.trim();
-  saveConfig();
+  saveLocalConfig();
   initSupa();
-  await guardarProveedoresEnSupabase();
-  showCfgAlert('success','Supabase guardado');
+  showCfgAlert('success', 'Supabase guardado');
 }
 
 function showCfgAlert(type, msg) {
   var el = document.getElementById('cfg-alert');
   el.className = 'alert alert-' + type;
-  el.innerHTML = '<i class="fa-solid ' + (type==='success'?'fa-circle-check':'fa-circle-xmark') + '"></i> ' + msg;
+  el.innerHTML = '<i class="fa-solid '+(type==='success'?'fa-circle-check':'fa-circle-xmark')+'"></i> ' + msg;
   el.style.display = 'flex';
-  setTimeout(function(){ el.style.display = 'none'; }, 4000);
+  setTimeout(function(){ el.style.display='none'; }, 3500);
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function showLoading(id) { document.getElementById(id).innerHTML = '<div class="state-msg"><span class="spinner" style="width:22px;height:22px;display:block;margin:0 auto 10px"></span>Cargando...</div>'; }
-function showMsg(id, msg) { document.getElementById(id).innerHTML = '<div class="state-msg">' + msg + '</div>'; }
-function showError(id, msg) { document.getElementById(id).innerHTML = '<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> ' + msg + '</div>'; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showLoading(id){ document.getElementById(id).innerHTML='<div class="state-msg"><span class="spinner" style="width:22px;height:22px;display:block;margin:0 auto 10px"></span>Cargando...</div>'; }
+function showMsg(id,msg){ document.getElementById(id).innerHTML='<div class="state-msg">'+msg+'</div>'; }
+function showError(id,msg){ document.getElementById(id).innerHTML='<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> '+msg+'</div>'; }
 
 document.getElementById('config-pwd-input').addEventListener('keydown', function(e){ if(e.key==='Enter') checkConfigPassword(); });
-document.addEventListener('keydown', function(e){
-  if (e.key==='Escape') { closeLoginOverlay(); cerrarProdModal(); closeConfigPanel(); }
-});
+document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeLoginOverlay(); cerrarProdModal(); closeConfigPanel(); } });
 </script>
 </body>
 </html>
