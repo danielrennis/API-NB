@@ -243,6 +243,7 @@
         <select class="form-input" id="pf-tipo" onchange="onTipoChange()">
           <option value="nb">New Bytes (nb.com.ar)</option>
           <option value="air">Proveedor 126 (air-intra.com)</option>
+          <option value="elit">Elit (elit.com.ar)</option>
           <option value="custom">API personalizada</option>
         </select>
       </div>
@@ -252,6 +253,10 @@
       </div>
       <div id="pf-air-fields" style="display:none">
         <div class="form-group"><label class="form-label">URL sync2.php</label><input type="text" class="form-input" id="pf-air-url"/></div>
+      </div>
+      <div id="pf-elit-fields" style="display:none">
+        <div class="form-group"><label class="form-label">User ID</label><input type="text" class="form-input" id="pf-elit-userid" placeholder="2978"/></div>
+        <div class="form-group"><label class="form-label">Token</label><input type="text" class="form-input" id="pf-elit-token" placeholder="5y1p0twcuz"/></div>
       </div>
       <div id="pf-custom-fields" style="display:none">
         <div class="form-group"><label class="form-label">URL base API</label><input type="text" class="form-input" id="pf-apiurl"/></div>
@@ -557,10 +562,10 @@ async function cargarCatalogoElit(idx) {
   var token = prov.elitToken || '5y1p0twcuz';
   var all = [], offset = 0, limit = 200;
   for (var page = 0; page < 30; page++) {
-    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos?limit=' + limit + '&offset=' + offset, {
+    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({user_id: userId, token: token})
+      body: JSON.stringify({user_id: userId, token: token, limit: limit, offset: offset})
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var d = await r.json();
@@ -944,6 +949,8 @@ function editarProveedor(idx) {
   document.getElementById('pf-user').value = p.user || '';
   document.getElementById('pf-pass').value = p.pass || '';
   document.getElementById('pf-air-url').value = p.airUrl || AIR_PROXY;
+  document.getElementById('pf-elit-userid').value = p.elitUserId || '';
+  document.getElementById('pf-elit-token').value = p.elitToken || '';
   document.getElementById('pf-apiurl').value = p.apiUrl || '';
   document.getElementById('pf-apikey').value = p.apiKey || '';
   document.getElementById('pf-endpoint').value = p.endpoint || '';
@@ -960,6 +967,8 @@ function agregarProveedor() {
   document.getElementById('pf-user').value = '';
   document.getElementById('pf-pass').value = '';
   document.getElementById('pf-air-url').value = AIR_PROXY;
+  document.getElementById('pf-elit-userid').value = '';
+  document.getElementById('pf-elit-token').value = '';
   document.getElementById('pf-apiurl').value = '';
   document.getElementById('pf-apikey').value = '';
   document.getElementById('pf-endpoint').value = '';
@@ -975,6 +984,7 @@ function onTipoChange() {
   var t = document.getElementById('pf-tipo').value;
   document.getElementById('pf-nb-fields').style.display = t==='nb' ? 'block' : 'none';
   document.getElementById('pf-air-fields').style.display = t==='air' ? 'block' : 'none';
+  document.getElementById('pf-elit-fields').style.display = t==='elit' ? 'block' : 'none';
   document.getElementById('pf-custom-fields').style.display = t==='custom' ? 'block' : 'none';
 }
 
@@ -990,7 +1000,9 @@ function guardarProveedor() {
     apiUrl: document.getElementById('pf-apiurl').value.trim(),
     apiKey: document.getElementById('pf-apikey').value.trim(),
     endpoint: document.getElementById('pf-endpoint').value.trim(),
-    markup: parseFloat(document.getElementById('pf-markup').value) || 30
+    markup: parseFloat(document.getElementById('pf-markup').value) || 30,
+    elitUserId: document.getElementById('pf-elit-userid').value.trim(),
+    elitToken: document.getElementById('pf-elit-token').value.trim()
   };
   if (appState.editingIdx !== null) {
     Object.assign(appState.proveedores[appState.editingIdx], datos);
