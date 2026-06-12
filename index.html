@@ -597,7 +597,7 @@ function renderTablaElit(idx) {
     var tieneStock = (p.stock_total||0) > 0;
     var stockTxt = tieneStock ? (p.nivel_stock || 'En stock') : 'Sin stock';
     var img = (p.miniaturas && p.miniaturas[0])
-      ? '<img class="img-prod" src="' + esc(p.miniaturas[0]) + '" alt="" loading="lazy" onerror="this.style.display='none'">'
+      ? '<img class="img-prod" src="' + esc(p.miniaturas[0]) + '" alt="" loading="lazy" onerror="this.remove()">'
       : '<div class="img-ph"><i class="fa-solid fa-image"></i></div>';
     return '<tr onclick="abrirModalElit(' + idx + ',' + p.id + ')" style="cursor:pointer">' +
       '<td>' + img + '</td>' +
@@ -750,7 +750,7 @@ function renderTabla(idx) {
     var vp = (precioUSD !== null && cotiz) ? precioUSD * cotiz * (1+iva/100) * (1+markup/100) : null;
     var stock = p.stock || 'Sin stock';
     var ok = stock.toLowerCase().indexOf('sin') < 0 && stock !== '' && stock !== '0';
-    var img = p.mainImage ? '<img class="img-prod" src="' + esc(p.mainImage) + '" alt="" onerror="this.style.display=\'none\'">'
+    var img = p.mainImage ? '<img class="img-prod" src="' + esc(p.mainImage) + '" alt="" onerror="this.remove()">'
                           : '<div class="img-ph"><i class="fa-solid fa-image"></i></div>';
     return '<tr onclick="abrirModalNB(' + idx + ',' + p.id + ')">' +
       '<td>' + img + '</td>' +
