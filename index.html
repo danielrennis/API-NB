@@ -305,7 +305,7 @@ var appState = {
     { id:'prov_213', nombre:'Proveedor 213', tipo:'nb', user:'', pass:'', markup:30,
       airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
-    { id:'prov_air', nombre:'AIR', tipo:'air', user:'', pass:'', markup:38,
+    { id:'prov_air', nombre:'Proveedor 126', tipo:'air', user:'', pass:'', markup:38,
       airUrl: AIR_PROXY, apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false }
   ]
@@ -324,30 +324,42 @@ var sbClient = null;
 
 function loadLocalConfig() {
   try {
-    var c = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    // Intentar key nueva, si no hay datos migrar desde keys viejas
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      // Migrar desde versiones anteriores
+      raw = localStorage.getItem('ryr_prov_config') || localStorage.getItem('nb_config') || '{}';
+    }
+    var c = JSON.parse(raw || '{}');
     if (c.supaUrl) appState.supaUrl = c.supaUrl;
     if (c.supaKey) appState.supaKey = c.supaKey;
     document.getElementById('cfg-supa-url').value = appState.supaUrl;
     document.getElementById('cfg-supa-key').value = appState.supaKey;
     // Mergear config guardada sobre defaults
-    if (c.proveedores && c.proveedores.length) {
-      c.proveedores.forEach(function(sp) {
-        var p = appState.proveedores.find(function(x){ return x.id === sp.id; });
-        if (p) {
-          if (sp.user !== undefined) p.user = sp.user;
-          if (sp.pass !== undefined) p.pass = sp.pass;
-          if (sp.markup !== undefined) p.markup = sp.markup;
-          if (sp.airUrl !== undefined) p.airUrl = sp.airUrl;
-          if (sp.apiUrl !== undefined) p.apiUrl = sp.apiUrl;
-          if (sp.apiKey !== undefined) p.apiKey = sp.apiKey;
-          if (sp.endpoint !== undefined) p.endpoint = sp.endpoint;
-          if (sp.nombre !== undefined) p.nombre = sp.nombre;
-        } else {
-          sp.token = null; sp.productos = []; sp.currentPage = 1; sp.loaded = false;
-          appState.proveedores.push(sp);
-        }
-      });
+    var saved = c.proveedores || [];
+    // Compatibilidad: config vieja tenía nbUser/nbPass sueltos
+    if (c.nbUser || c.nbPass) {
+      var nb = appState.proveedores.find(function(x){ return x.tipo==='nb'; });
+      if (nb) { if (c.nbUser) nb.user = c.nbUser; if (c.nbPass) nb.pass = c.nbPass; if (c.markup) nb.markup = c.markup; }
     }
+    saved.forEach(function(sp) {
+      var p = appState.proveedores.find(function(x){ return x.id === sp.id; });
+      if (p) {
+        if (sp.user !== undefined) p.user = sp.user;
+        if (sp.pass !== undefined) p.pass = sp.pass;
+        if (sp.markup !== undefined) p.markup = sp.markup;
+        if (sp.airUrl !== undefined) p.airUrl = sp.airUrl;
+        if (sp.apiUrl !== undefined) p.apiUrl = sp.apiUrl;
+        if (sp.apiKey !== undefined) p.apiKey = sp.apiKey;
+        if (sp.endpoint !== undefined) p.endpoint = sp.endpoint;
+        if (sp.nombre !== undefined) p.nombre = sp.nombre;
+      } else {
+        sp.token = null; sp.productos = []; sp.currentPage = 1; sp.loaded = false;
+        appState.proveedores.push(sp);
+      }
+    });
+    // Guardar en key nueva para próxima vez
+    saveLocalConfig();
   } catch(e) {}
 }
 
