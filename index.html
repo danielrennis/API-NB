@@ -384,9 +384,15 @@ function loadConfig() {
     appState.supaKey = c.supaKey || DEFAULT_SUPA_KEY;
     document.getElementById('cfg-supa-url').value = appState.supaUrl;
     document.getElementById('cfg-supa-key').value = appState.supaKey;
-    // Proveedores locales como fallback
-    if (c.proveedores && c.proveedores.length) appState.proveedores = c.proveedores;
-    else appState.proveedores = defaultProveedores();
+    // Partir siempre desde los defaults y mergear lo guardado encima
+    var base = defaultProveedores();
+    var saved = (c.proveedores && c.proveedores.length) ? c.proveedores : [];
+    saved.forEach(function(sp) {
+      var existing = base.find(function(b){ return b.id === sp.id; });
+      if (existing) { Object.assign(existing, sp); existing.token = null; existing.productos = []; existing.currentPage = 1; }
+      else { sp.token = null; sp.productos = []; sp.currentPage = 1; base.push(sp); }
+    });
+    appState.proveedores = base;
   } catch(e) { appState.proveedores = defaultProveedores(); }
 }
 
@@ -959,7 +965,7 @@ function closeConfigPanel() { document.getElementById('config-panel').classList.
 function renderProvList() {
   var html = '';
   appState.proveedores.forEach(function(p, i) {
-    var isConnected = (p.tipo==='nb'&&p.user&&p.pass)||(p.tipo==='custom'&&p.apiUrl&&p.apiKey);
+    var isConnected = (p.tipo==='nb'&&p.user&&p.pass)||(p.tipo==='custom'&&p.apiUrl&&p.apiKey)||(p.tipo==='air'&&p.apiUrl);
     var colorClass = COLOR_CLASSES[i % COLOR_CLASSES.length];
     html += '<div class="prov-list-item" onclick="editarProveedor(' + i + ')">' +
       '<div class="pli-icon ' + colorClass + '"><i class="fa-solid fa-building-store"></i></div>' +
