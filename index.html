@@ -560,8 +560,8 @@ async function cargarCatalogoElit(idx) {
   var prov = appState.proveedores[idx];
   var userId = parseInt(prov.elitUserId || '2978');
   var token = prov.elitToken || '5y1p0twcuz';
-  var all = [], offset = 0, limit = 200;
-  for (var page = 0; page < 30; page++) {
+  var all = [], offset = 0, limit = 100;
+  for (var page = 0; page < 50; page++) {
     var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
@@ -571,9 +571,11 @@ async function cargarCatalogoElit(idx) {
     var d = await r.json();
     if (d.codigo !== 200) throw new Error('Elit API: ' + (d.mensaje || JSON.stringify(d)));
     var prods = d.resultado || [];
+    console.log('[Elit] pag ' + page + ' offset ' + offset + ': ' + prods.length + ' prods | paginador:', JSON.stringify(d.paginador));
+    if (!prods.length) break;
     all = all.concat(prods);
     var total = d.paginador ? d.paginador.total : 0;
-    if (!prods.length || all.length >= total) break;
+    if (all.length >= total) break;
     offset += limit;
   }
   prov._elitCatalogo = all;
