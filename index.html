@@ -223,7 +223,7 @@
 <!-- HERO DESC -->
 <div class="hero-desc" style="margin-top:56px">
   <i class="fa-solid fa-bolt" style="color:var(--ryr);font-size:16px;flex-shrink:0"></i>
-  <p><strong>Conexión directa con tus proveedores:</strong> precios actualizados al dólar BNA, stock en tiempo real y presupuesto inmediato sin necesidad de consultar a gerencia.</p>
+  <p><strong>Conexión directa con tus proveedores:</strong> precios finales <strong>en pesos argentinos</strong> actualizados al dólar BNA, stock en tiempo real y presupuesto inmediato sin necesidad de consultar a gerencia.</p>
 </div>
 
 <!-- LOGIN OVERLAY -->
@@ -668,7 +668,7 @@ function renderTabla(idx) {
   document.getElementById('cr-' + idx).innerHTML =
     '<div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:12px"><i class="fa-solid fa-box"></i> ' + total + ' resultado(s)' + cotizNote + '</div>' +
     '<div class="tbl-wrap"><table><thead><tr>' +
-    '<th class="left" style="width:50px"></th><th class="left">Producto</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado</th>' +
+    '<th class="left" style="width:50px"></th><th class="left">Producto</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado · $ARS</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>';
 
   var pagDiv = document.getElementById('pg-' + idx);
@@ -721,7 +721,7 @@ async function abrirProdModal(idx, id) {
         '</div>' +
         '<div class="prod-modal-price">' +
           (ventaPesos !== null ? '$' + Math.round(ventaPesos).toLocaleString('es-AR') : '—') +
-          '<small>Precio Final Contado · IVA ' + iva + '% · cotización BNA</small>' +
+          '<small>Precio Final en Pesos · IVA ' + iva + '% · cotización BNA oficial</small>' +
         '</div>' +
       '</div>';
     document.getElementById('prod-modal-body').innerHTML =
