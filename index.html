@@ -562,7 +562,7 @@ async function cargarCatalogoElit(idx) {
   var token = prov.elitToken || '5y1p0twcuz';
   var all = [], page = 0, limit = 40, total = 99999;
   while (all.length < total) {
-    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos?limit=' + limit + '&page=' + page, {
+    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos?page=' + page, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({user_id: userId, token: token})
