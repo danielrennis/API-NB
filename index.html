@@ -560,23 +560,21 @@ async function cargarCatalogoElit(idx) {
   var prov = appState.proveedores[idx];
   var userId = parseInt(prov.elitUserId || '2978');
   var token = prov.elitToken || '5y1p0twcuz';
-  var all = [], offset = 0, limit = 100;
-  for (var page = 0; page < 50; page++) {
-    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
+  var all = [], page = 0, limit = 40, total = 99999;
+  while (all.length < total) {
+    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos?limit=' + limit + '&page=' + page, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({user_id: userId, token: token, limit: limit, offset: offset})
+      body: JSON.stringify({user_id: userId, token: token})
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var d = await r.json();
     if (d.codigo !== 200) throw new Error('Elit API: ' + (d.mensaje || JSON.stringify(d)));
     var prods = d.resultado || [];
-    console.log('[Elit] pag ' + page + ' offset ' + offset + ': ' + prods.length + ' prods | paginador:', JSON.stringify(d.paginador));
     if (!prods.length) break;
     all = all.concat(prods);
-    var total = d.paginador ? d.paginador.total : 0;
-    if (all.length >= total) break;
-    offset += limit;
+    total = d.paginador ? d.paginador.total : all.length;
+    page++;
   }
   prov._elitCatalogo = all;
   prov._elitDate = new Date().toLocaleDateString('es-AR');
