@@ -242,7 +242,7 @@
       <div class="form-group"><label class="form-label">Tipo</label>
         <select class="form-input" id="pf-tipo" onchange="onTipoChange()">
           <option value="nb">New Bytes (nb.com.ar)</option>
-          <option value="air">AIR (air-intra.com)</option>
+          <option value="air">Proveedor 126 (air-intra.com)</option>
           <option value="custom">API personalizada</option>
         </select>
       </div>
@@ -455,9 +455,12 @@ function renderSections() {
         html += '<div style="margin-top:10px"><span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700"></span></div>';
       }
       html += '</div>';
-      // Resultados
+      // Resultados + diagnostico para AIR
+      var diagBtn = (p.tipo === 'air')
+        ? '<button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="diagAIR(' + i + ')"><i class="fa-solid fa-stethoscope"></i> Diagnóstico</button>'
+        : '';
       html += '<div class="card" style="padding:0;overflow:hidden">' +
-              '<div id="cr-' + i + '"><div class="state-msg"><i class="fa-solid fa-box-open" style="font-size:28px;display:block;margin-bottom:10px;opacity:.3"></i>Realizá una búsqueda</div></div>' +
+              '<div id="cr-' + i + '"><div class="state-msg"><i class="fa-solid fa-box-open" style="font-size:28px;display:block;margin-bottom:10px;opacity:.3"></i>Realizá una búsqueda' + diagBtn + '</div></div>' +
               '<div class="pagination" id="pg-' + i + '"></div></div>';
     }
     html += '</div>';
@@ -715,7 +718,7 @@ function abrirModalAIR(idx, sku) {
       '<div class="prod-detail-item"><div class="lbl">Código</div><div class="val">'+esc(p.sku)+'</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+p._iva+'%</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">Entrega</div><div class="val">5-7 días hábiles</div></div>' +
-      '<div class="prod-detail-item"><div class="lbl">Proveedor</div><div class="val">AIR</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">Proveedor</div><div class="val">Proveedor 126</div></div>' +
     '</div>' +
     '<div style="margin-top:14px;background:#fffdf0;border:1px solid #f59e0b;border-radius:10px;padding:10px 14px;font-size:11px;font-weight:700;color:#b45309">' +
       '<i class="fa-solid fa-clock"></i> Entrega 5 a 7 días hábiles · Precios de lista Contado</div>';
@@ -848,6 +851,75 @@ function showCfgAlert(type, msg) {
   el.innerHTML = '<i class="fa-solid '+(type==='success'?'fa-circle-check':'fa-circle-xmark')+'"></i> ' + msg;
   el.style.display = 'flex';
   setTimeout(function(){ el.style.display='none'; }, 3500);
+}
+
+// ── DIAGNÓSTICO AIR ──────────────────────────────────────────────────────────
+async function diagAIR(idx) {
+  var prov = appState.proveedores[idx];
+  var base = prov.airUrl || '/.netlify/functions/air-proxy';
+  var cr = document.getElementById('cr-' + idx);
+  cr.innerHTML = '<div class="state-msg"><span class="spinner" style="width:18px;height:18px;display:inline-block;margin-right:8px;vertical-align:middle"></span> Probando conexión...</div>';
+  var resultados = [];
+
+  // Test 1: load_config
+  try {
+    var r1 = await fetch(base + '?action=load_config');
+    var t1 = await r1.text();
+    var d1 = JSON.parse(t1);
+    resultados.push({ test:'load_config', ok:true, data: JSON.stringify(d1) });
+  } catch(e) { resultados.push({ test:'load_config', ok:false, data: e.message }); }
+
+  // Test 2: load (cache)
+  try {
+    var r2 = await fetch(base + '?action=load');
+    var t2 = await r2.text();
+    var d2 = JSON.parse(t2);
+    if (d2.ok && d2.products) {
+      resultados.push({ test:'load (caché)', ok:true, data: d2.products.length + ' productos, fecha: ' + d2.date });
+    } else {
+      resultados.push({ test:'load (caché)', ok:false, data: d2.error || 'Sin productos en caché' });
+    }
+  } catch(e) { resultados.push({ test:'load (caché)', ok:false, data: e.message }); }
+
+  // Render resultados
+  var html = '<div style="padding:16px">' +
+    '<div class="section-title"><i class="fa-solid fa-stethoscope"></i> Diagnóstico Proveedor 126</div>';
+  resultados.forEach(function(r) {
+    html += '<div style="background:' + (r.ok?'#dcfce7':'#fee2e2') + ';border:1px solid ' + (r.ok?'#86efac':'#fca5a5') + ';border-radius:10px;padding:10px 14px;margin-bottom:8px">' +
+      '<div style="font-weight:800;font-size:11px;color:' + (r.ok?'#16a34a':'#dc2626') + '">' +
+      '<i class="fa-solid ' + (r.ok?'fa-circle-check':'fa-circle-xmark') + '"></i> ' + r.test + '</div>' +
+      '<div style="font-size:11px;color:var(--text);margin-top:4px;word-break:break-all">' + esc(r.data) + '</div></div>';
+  });
+
+  var hayCache = resultados.find(function(r){ return r.test==='load (caché)' && r.ok; });
+  if (!hayCache) {
+    html += '<div style="margin-top:8px;padding:12px;background:#fffdf0;border:1px solid #f59e0b;border-radius:10px;font-size:12px;font-weight:700;color:#b45309">' +
+      '<i class="fa-solid fa-triangle-exclamation"></i> No hay caché. Hacé click en "Actualizar catálogo" para descargar los productos del servidor.</div>' +
+      '<div style="margin-top:10px"><button class="btn btn-red" onclick="sincronizarAIR(' + idx + ')"><i class="fa-solid fa-rotate"></i> Actualizar catálogo ahora</button></div>';
+  } else {
+    html += '<div style="margin-top:8px"><button class="btn btn-green" onclick="cargarDesdeCache(' + idx + ')"><i class="fa-solid fa-download"></i> Cargar productos del caché</button></div>';
+  }
+  html += '</div>';
+  cr.innerHTML = html;
+}
+
+async function cargarDesdeCache(idx) {
+  var prov = appState.proveedores[idx];
+  var base = prov.airUrl || '/.netlify/functions/air-proxy';
+  showLoading('cr-' + idx);
+  try {
+    var r = await fetch(base + '?action=load');
+    var d = await r.json();
+    if (d.ok && d.products && d.products.length) {
+      prov.productos = normAIR(d.products);
+      prov._airDate = d.date;
+      prov._filtrados = prov.productos;
+      prov.currentPage = 1;
+      renderTablaAIR(idx);
+    } else {
+      showError('cr-' + idx, d.error || 'Sin productos en caché');
+    }
+  } catch(e) { showError('cr-' + idx, e.message); }
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
