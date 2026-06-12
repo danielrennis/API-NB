@@ -1,33 +1,44 @@
 const http = require('http');
+const dns = require('dns');
 
 exports.handler = async function(event) {
   const qs = event.queryStringParameters || {};
   const action = qs.action || 'load';
-
-  // Pasar todos los query params al servidor destino
   const params = Object.keys(qs).map(k => k + '=' + encodeURIComponent(qs[k])).join('&');
-  const target = 'http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php?' + params;
+  const targetUrl = 'http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php?' + params;
 
-  // sync puede tardar mucho — usar background function no es posible en free plan
-  // timeout generoso de 25s (límite netlify functions es 26s)
+  // Primero resolver el DNS para ver si llega
+  const resolvedIp = await new Promise(function(resolve) {
+    dns.lookup('serverres.dyndns.org', function(err, address) {
+      resolve(err ? ('DNS_ERROR:' + err.message) : address);
+    });
+  });
+
   const timeoutMs = action === 'sync' ? 25000 : 15000;
 
   return new Promise(function(resolve) {
-    const req = http.get(target, { timeout: timeoutMs }, function(res) {
+    const options = {
+      hostname: 'serverres.dyndns.org',
+      port: 81,
+      path: '/prueba/Proveedores/sync2.php?' + params,
+      method: 'GET',
+      timeout: timeoutMs,
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        'Accept': 'application/json'
+      }
+    };
+
+    const req = http.request(options, function(res) {
       var body = '';
       res.on('data', function(chunk){ body += chunk; });
       res.on('end', function(){
-        // Verificar que sea JSON válido
         try { JSON.parse(body); } catch(e) {
-          body = JSON.stringify({ ok: false, error: 'Respuesta no-JSON del servidor: ' + body.substring(0, 200) });
+          body = JSON.stringify({ ok: false, error: 'Respuesta no-JSON: ' + body.substring(0, 300), resolvedIp: resolvedIp });
         }
         resolve({
           statusCode: 200,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          },
+          headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' },
           body: body
         });
       });
@@ -38,7 +49,7 @@ exports.handler = async function(event) {
       resolve({
         statusCode: 200,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify({ ok: false, error: 'Timeout: el servidor no respondió a tiempo. Si estás sincronizando, esperá unos minutos y recargá.' })
+        body: JSON.stringify({ ok: false, error: 'Timeout conectando a ' + targetUrl, resolvedIp: resolvedIp })
       });
     });
 
@@ -46,8 +57,10 @@ exports.handler = async function(event) {
       resolve({
         statusCode: 200,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify({ ok: false, error: 'No se pudo conectar al servidor: ' + e.message })
+        body: JSON.stringify({ ok: false, error: e.message + ' (code:' + e.code + ')', resolvedIp: resolvedIp, target: targetUrl })
       });
     });
+
+    req.end();
   });
 };
