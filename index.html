@@ -289,7 +289,7 @@
 var CONFIG_PASSWORD = 'da89c261';
 var STORAGE_KEY = 'ryr_config_v2';
 var NB_API = 'https://api.nb.com.ar/v1';
-var AIR_PROXY = 'http://serverres.dyndns.org:81/informes/prueba/Proveedores/sync2.php';
+var AIR_PROXY = '/.netlify/functions/air-proxy';
 var DEFAULT_SUPA_URL = 'https://mvbgtzofohhwhhnjqvvg.supabase.co';
 var DEFAULT_SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12Ymd0em9mb2hod2hobmpxdnZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MjI1MjcsImV4cCI6MjA5MzQ5ODUyN30.6GILq6R1rzfX3b6s63TecyfAIebHyOgRih0kBaM0gcA';
 var COLORS = ['c0','c1','c2','c3','c4','c5'];
@@ -306,7 +306,7 @@ var appState = {
       airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
     { id:'prov_air', nombre:'Proveedor 126', tipo:'air', user:'', pass:'', markup:38,
-      airUrl: AIR_PROXY, apiUrl:'', apiKey:'', endpoint:'',
+      airUrl: '/.netlify/functions/air-proxy', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false }
   ]
 };
