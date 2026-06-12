@@ -6,7 +6,7 @@ exports.handler = async function(event) {
 
   // Pasar todos los query params al servidor destino
   const params = Object.keys(qs).map(k => k + '=' + encodeURIComponent(qs[k])).join('&');
-  const target = 'http://serverres.dyndns.org:81/informes/prueba/Proveedores/sync2.php?' + params;
+  const target = 'http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php?' + params;
 
   // sync puede tardar mucho — usar background function no es posible en free plan
   // timeout generoso de 25s (límite netlify functions es 26s)
