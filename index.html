@@ -266,6 +266,7 @@
         <label class="form-label">Tipo de API</label>
         <select class="form-input" id="pf-tipo" onchange="onTipoChange()">
           <option value="nb">New Bytes (nb.com.ar)</option>
+          <option value="air">AIR (air-intra.com)</option>
           <option value="custom">API personalizada</option>
         </select>
       </div>
@@ -358,7 +359,22 @@ var sbClient = null;
   await Promise.all([cargarCotizacion(), cargarProveedoresDesdeSupabase()]);
   renderTabs();
   renderProvSections();
-  if (appState.proveedores.length > 0) switchProv(0);
+  if (appState.proveedores.length > 0) {
+    switchProv(0);
+    // Pre-cargar catálogo AIR en background
+    appState.proveedores.forEach(function(p, i) {
+      if (p.tipo === 'air' && p.apiUrl) {
+        var base = p.apiUrl;
+        fetch(base + '?action=load').then(function(r){ return r.json(); }).then(function(d) {
+          if (d.ok && d.products && d.products.length > 0) {
+            p.productos = normalizarAIR(d.products);
+            p._airDate = d.date;
+            p._filteredAIR = p.productos;
+          }
+        }).catch(function(){});
+      }
+    });
+  }
 })();
 
 function loadConfig() {
@@ -375,12 +391,21 @@ function loadConfig() {
 }
 
 function defaultProveedores() {
-  return [{
-    id: 'prov_213', nombre: 'Proveedor 213', tipo: 'nb',
-    user: '', pass: '', markup: 30, token: null,
-    apiUrl: '', apiKey: '', searchEndpoint: '',
-    productos: [], currentPage: 1
-  }];
+  return [
+    {
+      id: 'prov_213', nombre: 'Proveedor 213', tipo: 'nb',
+      user: '', pass: '', markup: 30, token: null,
+      apiUrl: '', apiKey: '', searchEndpoint: '',
+      productos: [], currentPage: 1
+    },
+    {
+      id: 'prov_air', nombre: 'AIR', tipo: 'air',
+      user: '', pass: '', markup: 38, token: null,
+      apiUrl: 'http://serverres.dyndns.org:81/informes/prueba/Proveedores/sync2.php',
+      apiKey: '', searchEndpoint: '',
+      productos: [], currentPage: 1
+    }
+  ];
 }
 
 function saveConfig() {
@@ -450,7 +475,7 @@ function renderTabs() {
   var container = document.getElementById('nav-tabs');
   var html = '';
   appState.proveedores.forEach(function(p, i) {
-    var isConnected = (p.tipo === 'nb' && p.user && p.pass) || (p.tipo === 'custom' && p.apiUrl && p.apiKey);
+    var isConnected = (p.tipo === 'nb' && p.user && p.pass) || (p.tipo === 'custom' && p.apiUrl && p.apiKey) || (p.tipo === 'air' && p.apiUrl);
     html += '<button class="nav-tab' + (isConnected?' connected':'') + (i===appState.activeProv?' active':'') + '" onclick="switchProv(' + i + ')">' +
       '<span class="dot"></span>' + escHtml(p.nombre) + '</button>';
   });
@@ -464,7 +489,7 @@ function renderProvSections() {
   var html = '';
   appState.proveedores.forEach(function(p, i) {
     var colorClass = COLOR_CLASSES[i % COLOR_CLASSES.length];
-    var isConnected = (p.tipo === 'nb' && p.user && p.pass) || (p.tipo === 'custom' && p.apiUrl && p.apiKey);
+    var isConnected = (p.tipo === 'nb' && p.user && p.pass) || (p.tipo === 'custom' && p.apiUrl && p.apiKey) || (p.tipo === 'air' && p.apiUrl);
     html += '<div class="prov-section" id="section-prov-' + i + '">';
 
     // Header
@@ -493,8 +518,12 @@ function renderProvSections() {
         '<div class="search-row">' +
         '<input type="text" id="si-' + i + '" placeholder="Buscar..." onkeydown="if(event.key===\'Enter\')buscar(' + i + ')"/>' +
         '<select id="st-' + i + '">';
-      if (p.tipo === 'nb') {
+      if (p.tipo === 'air') {
+        html += '<option value="q">Buscar por nombre o código</option>';
+      } else if (p.tipo === 'nb') {
         html += '<option value="title">Por nombre</option><option value="sku">Por SKU</option><option value="product_id">Por ID</option><option value="brand">Por marca</option><option value="category">Por categoría</option>';
+      } else if (p.tipo === 'air') {
+        html += '<option value="q">Buscar por nombre o código</option>';
       } else {
         html += '<option value="q">Buscar</option>';
       }
@@ -604,13 +633,174 @@ async function buscar(idx) {
     var raw;
     if (prov.tipo === 'nb') {
       raw = await apiFetchNB(prov, '/?' + encodeURIComponent(type) + '=' + encodeURIComponent(query));
+      prov.productos = normalizarProductos(raw, prov.tipo);
+    } else if (prov.tipo === 'air') {
+      await cargarCatalogoAIR(prov, idx, query);
+      return; // cargarCatalogoAIR ya llama renderTabla
     } else {
       raw = await apiFetchCustom(prov, query);
+      prov.productos = normalizarProductos(raw, prov.tipo);
     }
-    prov.productos = normalizarProductos(raw, prov.tipo);
     prov.currentPage = 1;
     renderTabla(idx);
   } catch(e) { showError('cr-' + idx, e.message); }
+}
+
+// ── AIR ADAPTER ──────────────────────────────────────────────────────────────
+async function cargarCatalogoAIR(prov, idx, query) {
+  var base = prov.apiUrl || 'http://serverres.dyndns.org:81/informes/prueba/Proveedores/sync2.php';
+  // Intentar cargar cache primero si no hay productos
+  if (!prov.productos || prov.productos.length === 0) {
+    showLoading('cr-' + idx);
+    try {
+      var r = await fetch(base + '?action=load');
+      var d = await r.json();
+      if (d.ok && d.products && d.products.length > 0) {
+        prov.productos = normalizarAIR(d.products);
+        prov._airDate = d.date;
+      }
+    } catch(e) {}
+  }
+  // Filtrar en memoria por query
+  var q = (query || '').toLowerCase().trim();
+  if (q) {
+    prov._filteredAIR = (prov.productos || []).filter(function(p) {
+      return (p.title + ' ' + p.sku).toLowerCase().indexOf(q) >= 0;
+    });
+  } else {
+    prov._filteredAIR = prov.productos || [];
+  }
+  prov.currentPage = 1;
+  renderTablaAIR(idx);
+}
+
+function normalizarAIR(products) {
+  return products.map(function(p) {
+    return {
+      id: p.c || '',
+      title: p.d || '—',
+      sku: p.c || '',
+      category: '—',
+      brand: '—',
+      stock: 'En stock',
+      amountStock: null,
+      mainImage: null,
+      warranty: '—',
+      _precioUSD: parseFloat(p.p) || 0,
+      _iva: parseFloat(p.i) || 21,
+      price: { value: parseFloat(p.p) || 0, iva: parseFloat(p.i) || 21 }
+    };
+  });
+}
+
+function renderTablaAIR(idx) {
+  var prov = appState.proveedores[idx];
+  var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
+  var todos = prov._filteredAIR || prov.productos || [];
+  // AIR no tiene info de stock real — solo con stock no filtra
+  var filtrados = todos;
+  var rcEl = document.getElementById('rc-' + idx);
+  if (rcEl) rcEl.textContent = filtrados.length + ' productos' + (prov._airDate ? ' · actualizado ' + prov._airDate : '');
+  if (!filtrados.length) {
+    showMsg('cr-' + idx, 'Sin resultados. Probá otra búsqueda.');
+    var pgEl = document.getElementById('pg-' + idx); if(pgEl) pgEl.innerHTML=''; return;
+  }
+  var pageSize = 50, currentPage = prov.currentPage || 1;
+  var total = filtrados.length, pages = Math.ceil(total / pageSize);
+  if (currentPage > pages) currentPage = prov.currentPage = 1;
+  var slice = filtrados.slice((currentPage-1)*pageSize, currentPage*pageSize);
+  var markup = prov.markup || 38;
+  var cotiz = appState.cotizBNA;
+
+  var rows = slice.map(function(p) {
+    var precioUSD = p._precioUSD || 0;
+    var iva = p._iva || 21;
+    var ventaPesos = cotiz ? precioUSD * cotiz * (1 + iva/100) * (1 + markup/100) : null;
+    var precioTxt = ventaPesos !== null ? '$' + Math.round(ventaPesos).toLocaleString('es-AR') : '—';
+    return '<tr onclick="abrirProdModalAIR(' + idx + ','' + escHtml(p.sku) + '')" title="Ver detalle">' +
+      '<td class="left"><div style="width:38px;height:38px;background:#f1f5f9;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:14px"><i class="fa-solid fa-box"></i></div></td>' +
+      '<td class="left"><div style="font-weight:700;font-size:12px">' + escHtml(p.title) + '</div><div class="sku">' + escHtml(p.sku) + '</div></td>' +
+      '<td class="left"><span class="badge badge-info">—</span></td>' +
+      '<td class="left" style="color:var(--muted);font-weight:600;font-size:12px">—</td>' +
+      '<td><span class="stock-ok"><i class="fa-solid fa-circle-check"></i> Disponible</span></td>' +
+      '<td class="right price-con-stock">' + precioTxt + '</td>' +
+      '</tr>';
+  }).join('');
+
+  var cotizNote = cotiz ? ' · BNA $' + Math.round(cotiz).toLocaleString('es-AR') : '';
+  document.getElementById('cr-' + idx).innerHTML =
+    '<div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:12px">' +
+    '<span><i class="fa-solid fa-box"></i> ' + total + ' resultado(s)' + cotizNote + '</span>' +
+    '<button class="btn btn-ghost btn-sm" onclick="sincronizarAIR(' + idx + ')"><i class="fa-solid fa-rotate"></i> Actualizar catálogo</button>' +
+    '</div>' +
+    '<div class="tbl-wrap"><table><thead><tr>' +
+    '<th class="left" style="width:50px"></th><th class="left">Producto / Código</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado · $ARS</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+
+  var pagDiv = document.getElementById('pg-' + idx);
+  if (pages <= 1) { if(pagDiv) pagDiv.innerHTML=''; return; }
+  var btns = '';
+  for (var i = 1; i <= pages; i++)
+    btns += '<button class="' + (i===currentPage?'active':'') + '" onclick="goPageAIR(' + idx + ',' + i + ')">' + i + '</button>';
+  if (pagDiv) pagDiv.innerHTML = btns;
+}
+
+function goPageAIR(idx, n) { appState.proveedores[idx].currentPage = n; renderTablaAIR(idx); }
+
+async function sincronizarAIR(idx) {
+  var prov = appState.proveedores[idx];
+  var base = prov.apiUrl || 'http://serverres.dyndns.org:81/informes/prueba/Proveedores/sync2.php';
+  showMsg('cr-' + idx, '<span class="spinner" style="width:18px;height:18px;display:inline-block;margin-right:8px"></span> Sincronizando catálogo con AIR...');
+  try {
+    var r = await fetch(base + '?action=sync');
+    var d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Error al sincronizar');
+    // Recargar
+    var r2 = await fetch(base + '?action=load');
+    var d2 = await r2.json();
+    if (d2.ok && d2.products) {
+      prov.productos = normalizarAIR(d2.products);
+      prov._airDate = d2.date;
+      prov._filteredAIR = prov.productos;
+      prov.currentPage = 1;
+    }
+    renderTablaAIR(idx);
+  } catch(e) { showError('cr-' + idx, 'Sincronización fallida: ' + e.message); }
+}
+
+function abrirProdModalAIR(idx, sku) {
+  var prov = appState.proveedores[idx];
+  var p = (prov.productos || []).find(function(x){ return x.sku === sku; });
+  if (!p) return;
+  var markup = prov.markup || 38;
+  var cotiz = appState.cotizBNA;
+  var iva = p._iva || 21;
+  var ventaPesos = cotiz ? p._precioUSD * cotiz * (1 + iva/100) * (1 + markup/100) : null;
+  document.getElementById('prod-modal-header').innerHTML =
+    '<div class="prod-modal-img-ph"><i class="fa-solid fa-box"></i></div>' +
+    '<div class="prod-modal-meta">' +
+      '<h2>' + escHtml(p.title) + '</h2>' +
+      '<div class="sku" style="margin-bottom:10px"><i class="fa-solid fa-barcode"></i> ' + escHtml(p.sku) + '</div>' +
+      '<div class="prod-modal-badges">' +
+        '<span class="badge badge-ok"><i class="fa-solid fa-circle-check"></i> Disponible</span>' +
+      '</div>' +
+      '<div class="prod-modal-price">' +
+        (ventaPesos !== null ? '$' + Math.round(ventaPesos).toLocaleString('es-AR') : '—') +
+        '<small>Precio Final en Pesos · IVA ' + iva + '% · cotización BNA oficial</small>' +
+      '</div>' +
+    '</div>';
+  document.getElementById('prod-modal-body').innerHTML =
+    '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
+    '<div class="prod-detail-grid">' +
+      '<div class="prod-detail-item"><div class="lbl">Código</div><div class="val">' + escHtml(p.sku) + '</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">' + iva + '%</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">Entrega estimada</div><div class="val">5 a 7 días hábiles</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">Proveedor</div><div class="val">AIR</div></div>' +
+    '</div>' +
+    '<div style="margin-top:14px;background:#fffdf0;border:1px solid #f59e0b;border-radius:10px;padding:10px 14px;font-size:11px;font-weight:700;color:#b45309">' +
+      '<i class="fa-solid fa-clock"></i> Entrega en 5 a 7 días hábiles · Precios de lista Contado' +
+    '</div>';
+  document.getElementById('prod-modal').classList.add('open');
 }
 
 // ── RENDER TABLA ──────────────────────────────────────────────────────────────
@@ -818,7 +1008,11 @@ function cancelarFormProv() { document.getElementById('prov-form').style.display
 function onTipoChange() {
   var tipo = document.getElementById('pf-tipo').value;
   document.getElementById('pf-nb-fields').style.display = tipo === 'nb' ? 'block' : 'none';
-  document.getElementById('pf-custom-fields').style.display = tipo === 'custom' ? 'block' : 'none';
+  document.getElementById('pf-custom-fields').style.display = (tipo === 'custom' || tipo === 'air') ? 'block' : 'none';
+  if (tipo === 'air') {
+    document.getElementById('pf-apiurl').value = document.getElementById('pf-apiurl').value || 'http://serverres.dyndns.org:81/informes/prueba/Proveedores/sync2.php';
+    document.getElementById('pf-search-endpoint').value = '';
+  }
 }
 
 async function guardarProveedor() {
