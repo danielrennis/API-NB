@@ -599,6 +599,7 @@ async function cargarCatalogoElit(idx) {
   var prov = appState.proveedores[idx];
   var userId = parseInt(prov.elitUserId || '2978');
   var token = prov.elitToken || '5y1p0twcuz';
+  prov._elitCatalogo = []; // limpiar antes de recargar
   var all = [], offset = 0, total = null;
   while (true) {
     var crEl = document.getElementById('cr-' + idx);
