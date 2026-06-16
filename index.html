@@ -748,7 +748,7 @@ async function buscar(idx) {
   var query = (document.getElementById('si-' + idx).value || '').trim();
   var type = document.getElementById('st-' + idx).value;
   var prov0 = appState.proveedores[idx];
-  if (!query && prov0 && prov0.tipo !== 'elit') return; // Elit permite búsqueda vacía (muestra todos)
+  if (!query && prov0 && prov0.tipo !== 'elit' && prov0.tipo !== 'air') return; // Elit y AIR permiten búsqueda vacía
   showLoading('cr-' + idx);
   document.getElementById('pg-' + idx).innerHTML = '';
   document.getElementById('rc-' + idx).textContent = '';
