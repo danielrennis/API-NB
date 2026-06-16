@@ -601,15 +601,14 @@ async function cargarCatalogoElit(idx) {
   var prov = appState.proveedores[idx];
   var userId = parseInt(prov.elitUserId || '2978');
   var token = prov.elitToken || '5y1p0twcuz';
-  var all = [], offset = 0, limit = 100, total = null;
+  var all = [], offset = 0, total = null;
   while (true) {
     var crEl = document.getElementById('cr-' + idx);
     if (crEl) crEl.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit... ' + all.length + (total ? ' / ' + total : '') + ' productos</div>';
-    var page = Math.floor(offset / limit) + 1;
     var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Accept':'application/json'},
-      body: JSON.stringify({user_id: userId, token: token, limit: limit, offset: offset, page: page})
+      body: JSON.stringify({user_id: userId, token: token, offset: offset})
     });
     if (!r.ok) {
       var errBody = ''; try { errBody = await r.text(); } catch(x){}
@@ -621,12 +620,14 @@ async function cargarCatalogoElit(idx) {
     if (!prods.length) break;
     all = all.concat(prods);
     if (total === null && d.paginador) {
-      total = d.paginador.total || d.paginador.cantidad || d.paginador.count || null;
-      console.log('[Elit] total según paginador:', total, '| keys paginador:', Object.keys(d.paginador));
+      total = d.paginador.total;
+      console.log('[Elit] total:', total, 'limit real:', d.paginador.limit);
     }
-    offset += prods.length;
+    // Usar el offset que devuelve el paginador + limit real para el próximo request
+    var realLimit = (d.paginador && d.paginador.limit) ? d.paginador.limit : prods.length;
+    offset += realLimit;
     if (total && all.length >= total) break;
-    if (prods.length < limit) break;
+    if (prods.length < realLimit) break;
     if (all.length > 50000) break;
   }
   if (!all.length) throw new Error('Elit no devolvió productos. Verificá credenciales en Configurar.');
