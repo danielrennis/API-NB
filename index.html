@@ -24,8 +24,7 @@
     .nav-tabs::-webkit-scrollbar{display:none}
     .nav-tab{background:none;border:none;color:#64748b;cursor:pointer;font-family:'Outfit',sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:7px 13px;border-radius:8px;transition:all .15s;display:flex;align-items:center;gap:7px;white-space:nowrap;flex-shrink:0}
     .nav-tab:hover{background:rgba(255,255,255,.07);color:#94a3b8}
-    .nav-tab.active{background:rgba(227,6,19,.18);color:#fff;border:1px solid rgba(227,6,19,.7);box-shadow:0 0 10px rgba(227,6,19,.45),0 0 22px rgba(227,6,19,.2);animation:tab-neon 2s ease-in-out infinite}
-    @keyframes tab-neon{0%,100%{box-shadow:0 0 8px rgba(227,6,19,.4),0 0 18px rgba(227,6,19,.15)}50%{box-shadow:0 0 14px rgba(227,6,19,.75),0 0 30px rgba(227,6,19,.35)}}
+    .nav-tab.active{background:rgba(255,255,255,.1);color:#fff}
     .nav-tab .dot{width:6px;height:6px;border-radius:50%;background:#475569;flex-shrink:0;transition:background .2s}
     .nav-tab.connected .dot,.nav-tab.active.connected .dot{background:#4ade80}
     .nav-tab-add{border:1px dashed rgba(255,255,255,.2)!important;color:#475569!important}
@@ -376,46 +375,7 @@ function saveLocalConfig() {
              markup:p.markup, airUrl:p.airUrl, apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint,
              elitUserId:p.elitUserId, elitToken:p.elitToken };
   });
-  var payload = { supaUrl:appState.supaUrl, supaKey:appState.supaKey, proveedores:toSave };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  // Sync a Supabase para compartir entre PCs
-  if (sbClient) {
-    sbClient.from('config').upsert({ key: 'ryr_proveedores', value: JSON.stringify(payload), updated_at: new Date().toISOString() }, { onConflict: 'key' })
-      .then(function(res){ if (res.error) console.warn('[supa save]', res.error.message); });
-  }
-}
-
-async function loadSupaConfig() {
-  if (!sbClient) return false;
-  try {
-    var res = await sbClient.from('config').select('value').eq('key','ryr_proveedores').single();
-    if (res.error || !res.data) return false;
-    var c = typeof res.data.value === 'string' ? JSON.parse(res.data.value) : res.data.value;
-    if (!c || !c.proveedores) return false;
-    // Mergear sobre defaults (sin pisar supaUrl/supaKey)
-    var saved = c.proveedores || [];
-    var DEFAULT_IDS = ['prov_213', 'prov_air', 'prov_elit'];
-    saved.forEach(function(sp) {
-      var p = appState.proveedores.find(function(x){ return x.id === sp.id; });
-      if (p) {
-        if (sp.user !== undefined) p.user = sp.user;
-        if (sp.pass !== undefined) p.pass = sp.pass;
-        if (sp.markup !== undefined) p.markup = sp.markup;
-        if (sp.airUrl !== undefined) p.airUrl = sp.airUrl;
-        if (sp.apiUrl !== undefined) p.apiUrl = sp.apiUrl;
-        if (sp.apiKey !== undefined) p.apiKey = sp.apiKey;
-        if (sp.endpoint !== undefined) p.endpoint = sp.endpoint;
-        if (sp.elitUserId !== undefined) p.elitUserId = sp.elitUserId;
-        if (sp.elitToken !== undefined) p.elitToken = sp.elitToken;
-        if (sp.nombre !== undefined && DEFAULT_IDS.indexOf(sp.id) === -1) p.nombre = sp.nombre;
-      } else {
-        sp.token = null; sp.productos = []; sp.currentPage = 1; sp.loaded = false;
-        appState.proveedores.push(sp);
-      }
-    });
-    saveLocalConfig(); // actualizar localStorage con lo de Supa
-    return true;
-  } catch(e) { console.warn('[supa load]', e); return false; }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ supaUrl:appState.supaUrl, supaKey:appState.supaKey, proveedores:toSave }));
 }
 
 function initSupa() {
@@ -538,20 +498,11 @@ function switchProv(idx) {
   document.querySelectorAll('.nav-tab:not(.nav-tab-add)').forEach(function(b,i){ b.classList.toggle('active', i===idx); });
   var sec = document.getElementById('sec-' + idx);
   if (sec) sec.classList.add('active');
+  // LAZY: si es AIR y tiene catálogo pero no ha cargado aún, cargar en background
   var prov = appState.proveedores[idx];
-  // LAZY AIR
   if (prov && prov.tipo === 'air' && prov.airUrl && !prov.loaded) {
     prov.loaded = true;
     precargarAIR(idx);
-  }
-  // AUTO-LOAD ELIT: al activar pestaña, cargar catálogo y mostrar todo
-  if (prov && prov.tipo === 'elit' && prov.elitUserId && prov.elitToken) {
-    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
-    if (!cacheOk) {
-      buscarElit(idx, '', 'nombre');
-    } else if (!prov.productos || !prov.productos.length) {
-      buscarElit(idx, '', 'nombre');
-    }
   }
 }
 
@@ -582,23 +533,24 @@ async function nbFetch(prov, path) {
 // ── ELIT ──────────────────────────────────────────────────────────────────────
 async function buscarElit(idx, query, field) {
   var prov = appState.proveedores[idx];
+  var markup = prov.markup || 30;
   var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
+  showLoading('cr-' + idx);
   try {
-    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
-    if (!cacheOk) await cargarCatalogoElit(idx);
+    if (!prov._elitCatalogo || !prov._elitCatalogo.length) {
+      document.getElementById('cr-' + idx).innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit (' + (prov._elitCatalogo ? prov._elitCatalogo.length : 0) + ' productos)...</div>';
+      await cargarCatalogoElit(idx);
+    }
     var catalogo = prov._elitCatalogo || [];
-    var words = (query||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
-    var filtrados = !words.length ? catalogo.slice() : catalogo.filter(function(p) {
-      var haystack;
-      if (field === 'codigo_alfa') haystack = (p.codigo_alfa||'').toLowerCase();
-      else if (field === 'marca') haystack = (p.marca||'').toLowerCase();
-      else if (field === 'categoria') haystack = ((p.categoria||'')+' '+(p.sub_categoria||'')).toLowerCase();
-      else haystack = ((p.nombre||'')+' '+(p.marca||'')+' '+(p.codigo_alfa||'')+' '+(p.categoria||'')).toLowerCase();
-      return words.every(function(w){ return haystack.indexOf(w) >= 0; });
+    var q = query.toLowerCase();
+    var filtrados = catalogo.filter(function(p) {
+      if (field === 'codigo_alfa') return (p.codigo_alfa||'').toLowerCase().indexOf(q) >= 0;
+      if (field === 'marca') return (p.marca||'').toLowerCase().indexOf(q) >= 0;
+      if (field === 'categoria') return ((p.categoria||'') + ' ' + (p.sub_categoria||'')).toLowerCase().indexOf(q) >= 0;
+      return (p.nombre||'').toLowerCase().indexOf(q) >= 0;
     });
     if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
     prov.productos = filtrados;
-    prov._filtrados = filtrados;
     prov.currentPage = 1;
     renderTablaElit(idx);
   } catch(e) { showError('cr-' + idx, 'Error Elit: ' + e.message); }
@@ -608,41 +560,23 @@ async function cargarCatalogoElit(idx) {
   var prov = appState.proveedores[idx];
   var userId = parseInt(prov.elitUserId || '2978');
   var token = prov.elitToken || '5y1p0twcuz';
-  prov._elitCatalogo = []; // limpiar antes de recargar
-  var all = [], offset = 0, total = null;
-  while (true) {
-    var crEl = document.getElementById('cr-' + idx);
-    if (crEl) crEl.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit... ' + all.length + (total ? ' / ' + total : '') + ' productos</div>';
-    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
+  var all = [], page = 0, limit = 40, total = 99999;
+  while (all.length < total) {
+    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos?page=' + page, {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Accept':'application/json'},
-      body: JSON.stringify({user_id: userId, token: token, offset: offset})
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({user_id: userId, token: token})
     });
-    if (!r.ok) {
-      var errBody = ''; try { errBody = await r.text(); } catch(x){}
-      throw new Error('HTTP ' + r.status + ': ' + errBody.substring(0,300));
-    }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     var d = await r.json();
-    if (d.codigo !== 200) throw new Error('Elit: ' + (d.mensaje || JSON.stringify(d).substring(0,150)));
+    if (d.codigo !== 200) throw new Error('Elit API: ' + (d.mensaje || JSON.stringify(d)));
     var prods = d.resultado || [];
     if (!prods.length) break;
     all = all.concat(prods);
-    if (total === null && d.paginador) {
-      total = d.paginador.total;
-    }
-    // Usar el offset que devuelve el paginador + limit real para el próximo request
-    var realLimit = (d.paginador && d.paginador.limit) ? parseInt(d.paginador.limit) : prods.length;
-    offset += realLimit;
-    if (total && all.length >= total) break;
-    if (prods.length < realLimit) { break; }
-    if (all.length > 50000) break;
+    total = d.paginador ? d.paginador.total : all.length;
+    page++;
   }
-  if (!all.length) throw new Error('Elit no devolvió productos. Verificá credenciales en Configurar.');
-  // Deduplicar por id
-  var seen = {};
-  all = all.filter(function(p){ if(seen[p.id]) return false; seen[p.id]=1; return true; });
   prov._elitCatalogo = all;
-  prov._elitCacheTs = Date.now();
   prov._elitDate = new Date().toLocaleDateString('es-AR');
   return all;
 }
@@ -650,7 +584,7 @@ async function cargarCatalogoElit(idx) {
 function renderTablaElit(idx) {
   var prov = appState.proveedores[idx];
   var lista = prov.productos || [];
-  var markup = (prov.markup !== undefined && prov.markup !== null) ? prov.markup : 30;
+  var markup = prov.markup || 30;
   var cotiz = appState.cotizBNA;
   var totalCat = (prov._elitCatalogo||[]).length;
   var rcEl = document.getElementById('rc-' + idx);
@@ -660,9 +594,11 @@ function renderTablaElit(idx) {
   if (page > pages) page = prov.currentPage = 1;
   var slice = lista.slice((page-1)*ps, page*ps);
   var rows = slice.map(function(p) {
-    // Elit devuelve pvp_ars ya con IVA y cotización aplicados — solo aplicamos markup
-    var pvpBase = parseFloat(p.pvp_ars) || 0;
-    var vp = pvpBase ? pvpBase * (1 + markup/100) : null;
+    var precioUSD = parseFloat(p.precio) || 0;
+    var iva = parseFloat(p.iva) || 21;
+    var vp = (precioUSD && cotiz)
+      ? precioUSD * cotiz * (1 + iva/100) * (1 + markup/100)
+      : (p.pvp_ars ? p.pvp_ars * (1 + markup/100) : null);
     var tieneStock = (p.stock_total||0) > 0;
     var stockTxt = tieneStock ? (p.nivel_stock || 'En stock') : 'Sin stock';
     var img = (p.miniaturas && p.miniaturas[0])
@@ -852,9 +788,11 @@ function renderTablaAIR(idx) {
   if (page > pages) page = prov.currentPage = 1;
   var slice = lista.slice((page-1)*ps, page*ps);
   var markup = prov.markup || 38, cotiz = appState.cotizBNA;
-  var rows = slice.map(function(p) {
+  var rows = slice.map(function(p, i) {
     var vp = (cotiz && p._usd) ? p._usd * cotiz * (1+p._iva/100) * (1+markup/100) : null;
-    return '<tr onclick="abrirModalAIR(' + idx + ',\'' + esc(p.sku) + '\')">' +
+    // Usar data-idx (posición en slice) para evitar problemas con caracteres especiales en SKU
+    var sliceStart = (page-1)*ps;
+    return '<tr data-provid="' + idx + '" data-listidx="' + (sliceStart + i) + '" style="cursor:pointer">' +
       '<td><div class="img-ph"><i class="fa-solid fa-box"></i></div></td>' +
       '<td><div style="font-weight:700;font-size:12px">' + esc(p.title) + '</div><div class="sku">' + esc(p.sku) + '</div></td>' +
       '<td><span class="badge badge-info">—</span></td>' +
@@ -872,6 +810,17 @@ function renderTablaAIR(idx) {
     '<th class="left" style="width:50px"></th><th class="left">Producto / Código</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado · $ARS</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>';
   renderPag(idx, pages, page, 'goPageAIR');
+  // Event listeners con data-listidx para evitar problemas con caracteres en SKU
+  var tbody = document.querySelector('#cr-' + idx + ' tbody');
+  if (tbody) {
+    tbody.querySelectorAll('tr[data-listidx]').forEach(function(tr) {
+      tr.addEventListener('click', function() {
+        var listIdx = parseInt(this.getAttribute('data-listidx'));
+        var provId = parseInt(this.getAttribute('data-provid'));
+        abrirModalAIR(provId, listIdx);
+      });
+    });
+  }
 }
 
 function goPageAIR(idx, n) { appState.proveedores[idx].currentPage = n; renderTablaAIR(idx); }
@@ -942,9 +891,11 @@ async function abrirModalNB(idx, id) {
   } catch(e) { document.getElementById('prod-modal-header').innerHTML = '<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> '+e.message+'</div>'; }
 }
 
-function abrirModalAIR(idx, sku) {
+function abrirModalAIR(idx, listIdx) {
   var prov = appState.proveedores[idx];
-  var p = (prov.productos||[]).find(function(x){ return x.sku === sku; });
+  // listIdx es la posición en _filtrados (o productos si no hay filtro)
+  var lista = prov._filtrados || prov.productos || [];
+  var p = lista[listIdx];
   if (!p) return;
   var cotiz = appState.cotizBNA, markup = prov.markup || 38;
   var vp = (cotiz && p._usd) ? p._usd * cotiz * (1+p._iva/100) * (1+markup/100) : null;
@@ -1018,7 +969,7 @@ function editarProveedor(idx) {
   document.getElementById('pf-apiurl').value = p.apiUrl || '';
   document.getElementById('pf-apikey').value = p.apiKey || '';
   document.getElementById('pf-endpoint').value = p.endpoint || '';
-  document.getElementById('pf-markup').value = (p.markup !== undefined && p.markup !== null) ? p.markup : 30;
+  document.getElementById('pf-markup').value = p.markup || 30;
   document.getElementById('prov-form-title').textContent = 'Editar: ' + p.nombre;
   onTipoChange();
   document.getElementById('prov-form').style.display = 'block';
@@ -1064,7 +1015,7 @@ function guardarProveedor() {
     apiUrl: document.getElementById('pf-apiurl').value.trim(),
     apiKey: document.getElementById('pf-apikey').value.trim(),
     endpoint: document.getElementById('pf-endpoint').value.trim(),
-    markup: (document.getElementById('pf-markup').value !== '' ? parseFloat(document.getElementById('pf-markup').value) : 30),
+    markup: parseFloat(document.getElementById('pf-markup').value) || 30,
     elitUserId: document.getElementById('pf-elit-userid').value.trim(),
     elitToken: document.getElementById('pf-elit-token').value.trim()
   };
@@ -1178,20 +1129,13 @@ function showMsg(id,msg){ document.getElementById(id).innerHTML='<div class="sta
 function showError(id,msg){ document.getElementById(id).innerHTML='<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> '+msg+'</div>'; }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', function() {
   loadLocalConfig();
   initSupa();
   cargarCotizacion();
   renderTabs();
   renderSections();
   switchProv(0);
-  // Cargar config desde Supabase (sincroniza entre PCs)
-  var supaLoaded = await loadSupaConfig();
-  if (supaLoaded) {
-    renderTabs();
-    renderSections();
-    switchProv(appState.activeProv);
-  }
 });
 
 document.getElementById('config-pwd-input').addEventListener('keydown', function(e){ if(e.key==='Enter') checkConfigPassword(); });
