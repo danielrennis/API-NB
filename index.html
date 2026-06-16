@@ -605,10 +605,11 @@ async function cargarCatalogoElit(idx) {
   while (true) {
     var crEl = document.getElementById('cr-' + idx);
     if (crEl) crEl.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit... ' + all.length + (total ? ' / ' + total : '') + ' productos</div>';
+    var page = Math.floor(offset / limit) + 1;
     var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Accept':'application/json'},
-      body: JSON.stringify({user_id: userId, token: token, limit: limit, offset: offset})
+      body: JSON.stringify({user_id: userId, token: token, limit: limit, offset: offset, page: page})
     });
     if (!r.ok) {
       var errBody = ''; try { errBody = await r.text(); } catch(x){}
@@ -619,13 +620,11 @@ async function cargarCatalogoElit(idx) {
     var prods = d.resultado || [];
     if (!prods.length) break;
     all = all.concat(prods);
-    // Leer total del paginador la primera vez
     if (total === null && d.paginador) {
       total = d.paginador.total || d.paginador.cantidad || d.paginador.count || null;
-      console.log('[Elit] total según paginador:', total);
+      console.log('[Elit] total según paginador:', total, '| keys paginador:', Object.keys(d.paginador));
     }
     offset += prods.length;
-    // Parar si ya tenemos todo o si la página fue incompleta
     if (total && all.length >= total) break;
     if (prods.length < limit) break;
     if (all.length > 50000) break;
