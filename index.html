@@ -628,6 +628,9 @@ async function cargarCatalogoElit(idx) {
     if (all.length > 50000) break;
   }
   if (!all.length) throw new Error('Elit no devolvió productos. Verificá credenciales en Configurar.');
+  // Deduplicar por id
+  var seen = {};
+  all = all.filter(function(p){ if(seen[p.id]) return false; seen[p.id]=1; return true; });
   prov._elitCatalogo = all;
   prov._elitCacheTs = Date.now();
   prov._elitDate = new Date().toLocaleDateString('es-AR');
