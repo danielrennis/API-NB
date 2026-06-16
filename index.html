@@ -472,10 +472,7 @@ function renderSections() {
       html += '<button class="btn btn-red" onclick="buscar(' + i + ')"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button></div>';
       // Toggle solo con stock (NB y Elit tienen info de stock)
       if (p.tipo === 'nb' || p.tipo === 'elit') {
-        var mkVal = (p.markup !== undefined && p.markup !== null ? p.markup : 30);
-        var mkInput = p.tipo === 'elit'
-          ? '<label style="font-size:12px;color:var(--muted);font-weight:600;margin-left:16px;display:flex;align-items:center;gap:6px"><i class="fa-solid fa-percent"></i> Markup: <input type="number" min="0" max="999" step="0.5" value="' + mkVal + '" id="mk-' + i + '" style="width:64px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:700" onchange="setMarkupElit(' + i + ',this.value)"> %</label>'
-          : '';
+        var mkInput = '';
         html += '<div class="toggle-row"><label class="toggle-wrap" for="ts-' + i + '">' +
                 '<span class="toggle"><input type="checkbox" id="ts-' + i + '" onchange="renderTabla(' + i + ')"><span class="toggle-slider"></span></span>' +
                 '<label for="ts-' + i + '"><i class="fa-solid fa-boxes-stacked"></i> Solo con stock</label></label>' +
@@ -639,10 +636,10 @@ function renderTablaElit(idx) {
       '<td class="right ' + (tieneStock?'price-ok':'price-no') + '">' + (vp!==null ? '$'+Math.round(vp).toLocaleString('es-AR') : '—') + '</td>' +
       '</tr>';
   }).join('');
-  var cotizNote = cotiz ? ' · BNA $'+Math.round(cotiz).toLocaleString('es-AR') : '';
+  var cotizNote = '';
   document.getElementById('cr-' + idx).innerHTML =
     '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px">' +
-    lista.length + ' resultado(s)' + cotizNote + (prov._elitDate ? ' · Catálogo: ' + prov._elitDate : '') + '</div>' +
+    lista.length + ' resultado(s)' + (prov._elitDate ? ' · Catálogo: ' + prov._elitDate : '') + '</div>' +
     '<div class="tbl-wrap"><table><thead><tr>' +
     '<th class="left" style="width:50px"></th>' +
     '<th class="left">Producto</th>' +
@@ -692,8 +689,7 @@ function abrirModalElit(idx, id) {
       '<span class="badge badge-purple">' + esc(p.marca||'—') + '</span>' +
       '<span class="badge '+(tieneStock?'badge-ok':'badge-no')+'">' + (tieneStock?'En stock':'Sin stock') + '</span>' +
     '</div>' +
-    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+
-    '<small>Precio Final en Pesos · IVA '+iva+'% · BNA oficial</small></div></div>';
+    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'</div></div>';
   document.getElementById('prod-modal-body').innerHTML =
     '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
     '<div class="prod-detail-grid">' +
@@ -701,7 +697,6 @@ function abrirModalElit(idx, id) {
       '<div class="prod-detail-item"><div class="lbl">Garantía</div><div class="val">'+esc(p.garantia||'—')+' meses</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">Stock total</div><div class="val">'+((p.stock_total)||0)+'</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">Nivel stock</div><div class="val">'+esc(p.nivel_stock||'—')+'</div></div>' +
-      '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+iva+'%</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">EAN</div><div class="val">'+esc(p.ean||'—')+'</div></div>' +
     '</div>';
   renderModalFooter(p.nombre||'—', vp!==null?Math.round(vp).toLocaleString('es-AR'):null);
@@ -807,9 +802,9 @@ function renderTabla(idx) {
       '<td class="right ' + (ok?'price-ok':'price-no') + '">' + (vp!==null ? '$'+Math.round(vp).toLocaleString('es-AR') : '—') + '</td>' +
       '</tr>';
   }).join('');
-  var cotizNote = cotiz ? ' · BNA $'+Math.round(cotiz).toLocaleString('es-AR') : '';
+  var cotizNote = '';
   document.getElementById('cr-' + idx).innerHTML =
-    '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px">' + total + ' resultado(s)' + cotizNote + '</div>' +
+    '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px">' + total + ' resultado(s)' + '</div>' +
     '<div class="tbl-wrap"><table><thead><tr>' +
     '<th class="left" style="width:50px"></th><th class="left">Producto</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado · $ARS</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>';
@@ -842,10 +837,10 @@ function renderTablaAIR(idx) {
       '<td class="right price-ok">' + (vp!==null ? '$'+Math.round(vp).toLocaleString('es-AR') : '—') + '</td>' +
       '</tr>';
   }).join('');
-  var cotizNote = cotiz ? ' · BNA $'+Math.round(cotiz).toLocaleString('es-AR') : '';
+  var cotizNote = '';
   document.getElementById('cr-' + idx).innerHTML =
     '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px;display:flex;align-items:center;gap:12px">' +
-    '<span>' + total + ' resultado(s)' + cotizNote + '</span>' +
+    '<span>' + total + ' resultado(s)' + '</span>' +
     '<button class="btn btn-ghost btn-sm" onclick="sincronizarAIR(' + idx + ')"><i class="fa-solid fa-rotate"></i> Actualizar catálogo</button></div>' +
     '<div class="tbl-wrap"><table><thead><tr>' +
     '<th class="left" style="width:50px"></th><th class="left">Producto / Código</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado · $ARS</th>' +
@@ -920,15 +915,14 @@ async function abrirModalNB(idx, id) {
         '<span class="badge badge-purple">' + esc(p.brand||'—') + '</span>' +
         '<span class="badge '+(ok?'badge-ok':'badge-no')+'"><i class="fa-solid '+(ok?'fa-circle-check':'fa-circle-xmark')+'"></i> '+esc(stock)+'</span>' +
       '</div>' +
-      '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'<small>Precio Final en Pesos · IVA '+iva+'% · cotización BNA oficial</small></div></div>';
+      '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'</div></div>';
     document.getElementById('prod-modal-body').innerHTML =
       '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
       '<div class="prod-detail-grid">' +
         '<div class="prod-detail-item"><div class="lbl">ID</div><div class="val">'+(p.id||'—')+'</div></div>' +
         '<div class="prod-detail-item"><div class="lbl">Garantía</div><div class="val">'+esc(p.warranty||'—')+'</div></div>' +
         '<div class="prod-detail-item"><div class="lbl">Cant. en stock</div><div class="val">'+(p.amountStock!=null?p.amountStock:'—')+'</div></div>' +
-        '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+iva+'%</div></div>' +
-      '</div>';
+        '</div>';
     renderModalFooter(p.title||p.name||'—', vp!==null?Math.round(vp).toLocaleString('es-AR'):null);
   } catch(e) { document.getElementById('prod-modal-header').innerHTML = '<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> '+e.message+'</div>'; }
 }
@@ -946,12 +940,12 @@ function abrirModalAIR(idx, listIdx) {
     '<div class="prod-modal-meta"><h2>' + esc(p.title) + '</h2>' +
     '<div class="sku" style="margin-bottom:10px"><i class="fa-solid fa-barcode"></i> ' + esc(p.sku) + '</div>' +
     '<div class="prod-modal-badges"><span class="badge badge-ok"><i class="fa-solid fa-circle-check"></i> Disponible</span></div>' +
-    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'<small>Precio Final en Pesos · IVA '+p._iva+'% · cotización BNA oficial</small></div></div>';
+    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'</div></div>';
   document.getElementById('prod-modal-body').innerHTML =
     '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
     '<div class="prod-detail-grid">' +
       '<div class="prod-detail-item"><div class="lbl">Código</div><div class="val">'+esc(p.sku)+'</div></div>' +
-      '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+p._iva+'%</div></div>' +
+      
       '<div class="prod-detail-item"><div class="lbl">Entrega</div><div class="val">5-7 días hábiles</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">Proveedor</div><div class="val">Proveedor 126</div></div>' +
     '</div>' +
@@ -993,7 +987,7 @@ function renderProvList() {
     var cc = COLORS[i % COLORS.length];
     html += '<div class="prov-list-item" onclick="editarProveedor('+i+')">' +
       '<div class="pli-icon '+cc+'"><i class="fa-solid fa-building-store"></i></div>' +
-      '<div><div style="font-weight:800;font-size:13px">'+esc(p.nombre)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+p.tipo+' · '+p.markup+'% markup</div></div>' +
+      '<div><div style="font-weight:800;font-size:13px">'+esc(p.nombre)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+p.tipo+'</div></div>' +
       '<div class="pli-right"><span class="badge '+(ok?'badge-ok':'badge-no')+'">'+(ok?'OK':'Sin config')+'</span></div></div>';
   });
   document.getElementById('prov-list').innerHTML = html;
