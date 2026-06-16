@@ -575,31 +575,19 @@ async function buscarElit(idx, query, field) {
   var prov = appState.proveedores[idx];
   var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
   try {
-    // Cargar catálogo completo si no está cacheado
-    if (!prov._elitCatalogo || !prov._elitCatalogo.length) {
-      await cargarCatalogoElit(idx);
-    }
+    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
+    if (!cacheOk) await cargarCatalogoElit(idx);
     var catalogo = prov._elitCatalogo || [];
-    // Filtro client-side por todas las palabras
-    var words = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-    var filtrados = !words.length ? catalogo : catalogo.filter(function(p) {
+    var words = (query||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
+    var filtrados = !words.length ? catalogo.slice() : catalogo.filter(function(p) {
       var haystack;
       if (field === 'codigo_alfa') haystack = (p.codigo_alfa||'').toLowerCase();
       else if (field === 'marca') haystack = (p.marca||'').toLowerCase();
       else if (field === 'categoria') haystack = ((p.categoria||'')+' '+(p.sub_categoria||'')).toLowerCase();
-      else haystack = ((p.nombre||'')+' '+(p.marca||'')+' '+(p.codigo_alfa||'')).toLowerCase();
+      else haystack = ((p.nombre||'')+' '+(p.marca||'')+' '+(p.codigo_alfa||'')+' '+(p.categoria||'')).toLowerCase();
       return words.every(function(w){ return haystack.indexOf(w) >= 0; });
     });
     if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
-    if (!filtrados.length && catalogo.length) {
-      var sample = catalogo.slice(0,3).map(function(p){ return JSON.stringify(p.nombre); }).join(' | ');
-      // Buscar manualmente el query ignorando encoding
-      var qNorm = query.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-      var found = catalogo.filter(function(p){
-        var n = (p.nombre||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-        return n.indexOf(qNorm) >= 0;
-      });
-    }
     prov.productos = filtrados;
     prov._filtrados = filtrados;
     prov.currentPage = 1;
