@@ -648,6 +648,8 @@ async function cargarCatalogoElit(idx) {
   prov._elitCatalogo = all;
   prov._elitDate = new Date().toLocaleDateString('es-AR');
   console.log('[Elit] catálogo cargado:', all.length, 'productos');
+  console.log('[Elit] primeros 10 nombres:', all.slice(0,10).map(function(p){return p.nombre;}));
+  console.log('[Elit] keys producto[0]:', Object.keys(all[0]||{}));
   return all;
 }
 
