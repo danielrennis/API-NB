@@ -576,30 +576,23 @@ async function buscarElit(idx, query, field) {
   var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
   showLoading('cr-' + idx);
   try {
-    var userId = parseInt(prov.elitUserId || '2978');
-    var token = prov.elitToken || '5y1p0twcuz';
-    // Construir body con filtro según campo — Elit busca server-side
-    var body = { user_id: userId, token: token, limit: 100, offset: 0 };
-    if (query) {
-      if (field === 'codigo_alfa') body.codigo_alfa = query;
-      else if (field === 'marca') body.marca = query;
-      else if (field === 'categoria') body.categoria = query;
-      else body.nombre = query;
+    // Cargar catálogo completo si no está en cache
+    if (!prov._elitCatalogo || !prov._elitCatalogo.length) {
+      document.getElementById('cr-' + idx).innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit...</div>';
+      await cargarCatalogoElit(idx);
     }
-    document.getElementById('cr-' + idx).innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Buscando en Elit...</div>';
-    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Accept':'application/json'},
-      body: JSON.stringify(body)
+    var catalogo = prov._elitCatalogo || [];
+    var words = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    var filtrados = catalogo.filter(function(p) {
+      var haystack = '';
+      if (field === 'codigo_alfa') haystack = (p.codigo_alfa||'').toLowerCase();
+      else if (field === 'marca') haystack = (p.marca||'').toLowerCase();
+      else if (field === 'categoria') haystack = ((p.categoria||'')+' '+(p.sub_categoria||'')).toLowerCase();
+      else haystack = ((p.nombre||'')+' '+(p.marca||'')+' '+(p.codigo_alfa||'')+' '+(p.categoria||'')).toLowerCase();
+      return words.every(function(w){ return haystack.indexOf(w) >= 0; });
     });
-    if (!r.ok) { var t=''; try{t=await r.text();}catch(x){} throw new Error('HTTP ' + r.status + ': ' + t.substring(0,200)); }
-    var d = await r.json();
-    console.log('[Elit buscar]', JSON.stringify(d).substring(0,300));
-    if (d.codigo !== 200) throw new Error('Elit: ' + (d.mensaje || JSON.stringify(d).substring(0,150)));
-    var prods = d.resultado || d.data || d.productos || d.items || [];
-    if (soloStock) prods = prods.filter(function(p){ return (p.stock_total||0) > 0; });
-    prov.productos = prods;
-    prov._elitCatalogo = prods; // cache para modal
+    if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
+    prov.productos = filtrados;
     prov.currentPage = 1;
     renderTablaElit(idx);
   } catch(e) { showError('cr-' + idx, 'Error Elit: ' + e.message); }
