@@ -591,17 +591,14 @@ async function buscarElit(idx, query, field) {
       return words.every(function(w){ return haystack.indexOf(w) >= 0; });
     });
     if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
-    console.log('[Elit filtro] query="'+query+'" resultados='+filtrados.length+' de '+catalogo.length);
     if (!filtrados.length && catalogo.length) {
       var sample = catalogo.slice(0,3).map(function(p){ return JSON.stringify(p.nombre); }).join(' | ');
-      console.log('[Elit sample nombres]', sample);
       // Buscar manualmente el query ignorando encoding
       var qNorm = query.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
       var found = catalogo.filter(function(p){
         var n = (p.nombre||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
         return n.indexOf(qNorm) >= 0;
       });
-      console.log('[Elit normalizado] "'+qNorm+'" encontró', found.length, found.length?'primer: '+found[0].nombre:'');
     }
     prov.productos = filtrados;
     prov._filtrados = filtrados;
@@ -634,22 +631,18 @@ async function cargarCatalogoElit(idx) {
     all = all.concat(prods);
     if (total === null && d.paginador) {
       total = d.paginador.total;
-      console.log('[Elit] total:', total, 'limit real:', d.paginador.limit);
     }
     // Usar el offset que devuelve el paginador + limit real para el próximo request
     var realLimit = (d.paginador && d.paginador.limit) ? parseInt(d.paginador.limit) : prods.length;
-    console.log('[Elit] page ok: prods=' + prods.length + ' realLimit=' + realLimit + ' offset=' + offset + ' total=' + total + ' all=' + all.length);
     offset += realLimit;
     if (total && all.length >= total) break;
-    if (prods.length < realLimit) { console.log('[Elit] corte: prods < realLimit'); break; }
+    if (prods.length < realLimit) { break; }
     if (all.length > 50000) break;
   }
   if (!all.length) throw new Error('Elit no devolvió productos. Verificá credenciales en Configurar.');
   prov._elitCatalogo = all;
+  prov._elitCacheTs = Date.now();
   prov._elitDate = new Date().toLocaleDateString('es-AR');
-  console.log('[Elit] catálogo cargado:', all.length, 'productos');
-  console.log('[Elit] primeros 10 nombres:', all.slice(0,10).map(function(p){return p.nombre;}));
-  console.log('[Elit] keys producto[0]:', Object.keys(all[0]||{}));
   return all;
 }
 
