@@ -591,7 +591,9 @@ async function buscarElit(idx, query, field) {
       return words.every(function(w){ return haystack.indexOf(w) >= 0; });
     });
     if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
+    console.log('[Elit filtro] query="'+query+'" resultados='+filtrados.length+' de '+catalogo.length);
     prov.productos = filtrados;
+    prov._filtrados = filtrados;
     prov.currentPage = 1;
     renderTablaElit(idx);
   } catch(e) { showError('cr-' + idx, 'Error Elit: ' + e.message); }
