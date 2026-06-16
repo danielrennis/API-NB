@@ -24,7 +24,8 @@
     .nav-tabs::-webkit-scrollbar{display:none}
     .nav-tab{background:none;border:none;color:#64748b;cursor:pointer;font-family:'Outfit',sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:7px 13px;border-radius:8px;transition:all .15s;display:flex;align-items:center;gap:7px;white-space:nowrap;flex-shrink:0}
     .nav-tab:hover{background:rgba(255,255,255,.07);color:#94a3b8}
-    .nav-tab.active{background:rgba(255,255,255,.1);color:#fff}
+    .nav-tab.active{background:rgba(227,6,19,.18);color:#fff;border:1px solid rgba(227,6,19,.7);box-shadow:0 0 10px rgba(227,6,19,.45),0 0 22px rgba(227,6,19,.2);animation:tab-neon 2s ease-in-out infinite}
+    @keyframes tab-neon{0%,100%{box-shadow:0 0 8px rgba(227,6,19,.4),0 0 18px rgba(227,6,19,.15)}50%{box-shadow:0 0 14px rgba(227,6,19,.75),0 0 30px rgba(227,6,19,.35)}}
     .nav-tab .dot{width:6px;height:6px;border-radius:50%;background:#475569;flex-shrink:0;transition:background .2s}
     .nav-tab.connected .dot,.nav-tab.active.connected .dot{background:#4ade80}
     .nav-tab-add{border:1px dashed rgba(255,255,255,.2)!important;color:#475569!important}
@@ -375,7 +376,46 @@ function saveLocalConfig() {
              markup:p.markup, airUrl:p.airUrl, apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint,
              elitUserId:p.elitUserId, elitToken:p.elitToken };
   });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ supaUrl:appState.supaUrl, supaKey:appState.supaKey, proveedores:toSave }));
+  var payload = { supaUrl:appState.supaUrl, supaKey:appState.supaKey, proveedores:toSave };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  // Sync a Supabase para compartir entre PCs
+  if (sbClient) {
+    sbClient.from('config').upsert({ key: 'ryr_proveedores', value: JSON.stringify(payload), updated_at: new Date().toISOString() }, { onConflict: 'key' })
+      .then(function(res){ if (res.error) console.warn('[supa save]', res.error.message); });
+  }
+}
+
+async function loadSupaConfig() {
+  if (!sbClient) return false;
+  try {
+    var res = await sbClient.from('config').select('value').eq('key','ryr_proveedores').single();
+    if (res.error || !res.data) return false;
+    var c = typeof res.data.value === 'string' ? JSON.parse(res.data.value) : res.data.value;
+    if (!c || !c.proveedores) return false;
+    // Mergear sobre defaults (sin pisar supaUrl/supaKey)
+    var saved = c.proveedores || [];
+    var DEFAULT_IDS = ['prov_213', 'prov_air', 'prov_elit'];
+    saved.forEach(function(sp) {
+      var p = appState.proveedores.find(function(x){ return x.id === sp.id; });
+      if (p) {
+        if (sp.user !== undefined) p.user = sp.user;
+        if (sp.pass !== undefined) p.pass = sp.pass;
+        if (sp.markup !== undefined) p.markup = sp.markup;
+        if (sp.airUrl !== undefined) p.airUrl = sp.airUrl;
+        if (sp.apiUrl !== undefined) p.apiUrl = sp.apiUrl;
+        if (sp.apiKey !== undefined) p.apiKey = sp.apiKey;
+        if (sp.endpoint !== undefined) p.endpoint = sp.endpoint;
+        if (sp.elitUserId !== undefined) p.elitUserId = sp.elitUserId;
+        if (sp.elitToken !== undefined) p.elitToken = sp.elitToken;
+        if (sp.nombre !== undefined && DEFAULT_IDS.indexOf(sp.id) === -1) p.nombre = sp.nombre;
+      } else {
+        sp.token = null; sp.productos = []; sp.currentPage = 1; sp.loaded = false;
+        appState.proveedores.push(sp);
+      }
+    });
+    saveLocalConfig(); // actualizar localStorage con lo de Supa
+    return true;
+  } catch(e) { console.warn('[supa load]', e); return false; }
 }
 
 function initSupa() {
@@ -560,21 +600,22 @@ async function cargarCatalogoElit(idx) {
   var prov = appState.proveedores[idx];
   var userId = parseInt(prov.elitUserId || '2978');
   var token = prov.elitToken || '5y1p0twcuz';
-  var all = [], page = 0, limit = 40, total = 99999;
+  var all = [], page = 1, limit = 50, total = 99999;
   while (all.length < total) {
-    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos?page=' + page, {
+    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos?page=' + page + '&limit=' + limit, {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({user_id: userId, token: token})
+      headers: {'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify({user_id: userId, token: token, page: page, limit: limit})
     });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!r.ok) throw new Error('HTTP ' + r.status + ' — verificá user_id/token en Configurar');
     var d = await r.json();
-    if (d.codigo !== 200) throw new Error('Elit API: ' + (d.mensaje || JSON.stringify(d)));
-    var prods = d.resultado || [];
+    if (d.codigo !== 200) throw new Error('Elit: ' + (d.mensaje || JSON.stringify(d).substring(0,120)));
+    var prods = d.resultado || d.data || d.productos || [];
     if (!prods.length) break;
     all = all.concat(prods);
-    total = d.paginador ? d.paginador.total : all.length;
+    total = (d.paginador && d.paginador.total) ? d.paginador.total : all.length;
     page++;
+    if (page > 50) break; // safety cap
   }
   prov._elitCatalogo = all;
   prov._elitDate = new Date().toLocaleDateString('es-AR');
@@ -1114,13 +1155,20 @@ function showMsg(id,msg){ document.getElementById(id).innerHTML='<div class="sta
 function showError(id,msg){ document.getElementById(id).innerHTML='<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> '+msg+'</div>'; }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   loadLocalConfig();
   initSupa();
   cargarCotizacion();
   renderTabs();
   renderSections();
   switchProv(0);
+  // Cargar config desde Supabase (sincroniza entre PCs)
+  var supaLoaded = await loadSupaConfig();
+  if (supaLoaded) {
+    renderTabs();
+    renderSections();
+    switchProv(appState.activeProv);
+  }
 });
 
 document.getElementById('config-pwd-input').addEventListener('keydown', function(e){ if(e.key==='Enter') checkConfigPassword(); });
