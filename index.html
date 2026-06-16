@@ -501,7 +501,7 @@ function switchProv(idx) {
   var prov = appState.proveedores[idx];
   if (prov && prov.tipo === 'air' && prov.airUrl && !prov.loaded) { prov.loaded = true; precargarAIR(idx); }
   if (prov && prov.tipo === 'elit' && prov.elitUserId && prov.elitToken) {
-    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
+    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length > 100 && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
     if (!cacheOk || !prov.productos || !prov.productos.length) buscarElit(idx, '', 'nombre');
   }
 }
@@ -535,7 +535,7 @@ async function buscarElit(idx, query, field) {
   var prov = appState.proveedores[idx];
   var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
   try {
-    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
+    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length > 100 && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
     if (!cacheOk) await cargarCatalogoElit(idx);
     var catalogo = prov._elitCatalogo || [];
     console.log('[buscarElit] catalogo='+catalogo.length+' query="'+query+'"');
