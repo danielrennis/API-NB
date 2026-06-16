@@ -568,22 +568,22 @@ async function cargarCatalogoElit(idx) {
   prov._elitCatalogo = [];
   var userId = parseInt(prov.elitUserId || '2978');
   var token = prov.elitToken || '5y1p0twcuz';
-  var all = [], offset = 0, total = null, realLimit = 40;
+  var all = [], offset = 0, total = null, realLimit = 100;
   try {
     while (true) {
       var crEl = document.getElementById('cr-' + idx);
       if (crEl) crEl.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit... ' + all.length + (total?' / '+total:'') + ' productos</div>';
-      var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
+      var r = await fetch('https://clientes.elit.com.ar/v1/api/productos?offset=' + offset + '&limit=100', {
         method: 'POST',
         headers: {'Content-Type':'application/json','Accept':'application/json'},
-        body: JSON.stringify({user_id: userId, token: token, offset: offset})
+        body: JSON.stringify({user_id: userId, token: token})
       });
       if (!r.ok) { var e=''; try{e=await r.text();}catch(x){} throw new Error('HTTP '+r.status+': '+e.substring(0,200)); }
       var d = await r.json();
       if (d.codigo !== 200) throw new Error('Elit: '+(d.mensaje||JSON.stringify(d).substring(0,120)));
       var prods = d.resultado || [];
       if (!prods.length) break;
-      if (total === null && d.paginador) { total = d.paginador.total; realLimit = d.paginador.limit || prods.length; }
+      if (total === null && d.paginador) { total = d.paginador.total; realLimit = prods.length || 100; }
       all = all.concat(prods);
       offset += realLimit;
       if (total && all.length >= total) break;
