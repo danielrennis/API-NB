@@ -252,7 +252,8 @@
         <div class="form-group"><label class="form-label">Contraseña API</label><input type="password" class="form-input" id="pf-pass"/></div>
       </div>
       <div id="pf-air-fields" style="display:none">
-        <div class="form-group"><label class="form-label">URL sync2.php</label><input type="text" class="form-input" id="pf-air-url"/></div>
+        <div class="form-group"><label class="form-label">URL load (via Netlify)</label><input type="text" class="form-input" id="pf-air-url"/></div>
+        <div class="form-group"><label class="form-label">URL sync directo (servidor local)</label><input type="text" class="form-input" id="pf-air-sync-url" placeholder="http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php"/></div>
       </div>
       <div id="pf-elit-fields" style="display:none">
         <div class="form-group"><label class="form-label">User ID</label><input type="text" class="form-input" id="pf-elit-userid" placeholder="2978"/></div>
@@ -312,7 +313,7 @@ var appState = {
       airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
     { id:'prov_air', nombre:'Proveedor 126', tipo:'air', user:'', pass:'', markup:38,
-      airUrl: '/.netlify/functions/air-proxy', apiUrl:'', apiKey:'', endpoint:'',
+      airUrl: '/.netlify/functions/air-proxy', airSyncUrl:'http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
     { id:'prov_elit', nombre:'Proveedor 4', tipo:'elit', user:'', pass:'', markup:30,
       elitUserId:'2978', elitToken:'5y1p0twcuz',
@@ -353,6 +354,7 @@ function loadLocalConfig() {
         if (sp.pass !== undefined) p.pass = sp.pass;
         if (sp.markup !== undefined) p.markup = sp.markup;
         if (sp.airUrl !== undefined) p.airUrl = sp.airUrl;
+        if (sp.airSyncUrl !== undefined) p.airSyncUrl = sp.airSyncUrl;
         if (sp.apiUrl !== undefined) p.apiUrl = sp.apiUrl;
         if (sp.apiKey !== undefined) p.apiKey = sp.apiKey;
         if (sp.endpoint !== undefined) p.endpoint = sp.endpoint;
@@ -373,7 +375,7 @@ function loadLocalConfig() {
 function saveLocalConfig() {
   var toSave = appState.proveedores.map(function(p) {
     return { id:p.id, nombre:p.nombre, tipo:p.tipo, user:p.user, pass:p.pass,
-             markup:p.markup, airUrl:p.airUrl, apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint,
+             markup:p.markup, airUrl:p.airUrl, airSyncUrl:p.airSyncUrl||'', apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint,
              elitUserId:p.elitUserId, elitToken:p.elitToken };
   });
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ supaUrl:appState.supaUrl, supaKey:appState.supaKey, proveedores:toSave }));
@@ -875,7 +877,7 @@ function goPageAIR(idx, n) { appState.proveedores[idx].currentPage = n; renderTa
 
 async function sincronizarAIR(idx) {
   var prov = appState.proveedores[idx];
-  var base = prov.airUrl;
+  var base = prov.airSyncUrl || prov.airUrl;
   showMsg('cr-' + idx, '<span class="spinner" style="width:18px;height:18px;display:inline-block;margin-right:8px;vertical-align:middle"></span> Sincronizando con AIR...');
   try {
     var r = await fetch(base + '?action=sync');
@@ -1008,6 +1010,7 @@ function editarProveedor(idx) {
   document.getElementById('pf-user').value = p.user || '';
   document.getElementById('pf-pass').value = p.pass || '';
   document.getElementById('pf-air-url').value = p.airUrl || AIR_PROXY;
+  document.getElementById('pf-air-sync-url').value = p.airSyncUrl || 'http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php';
   document.getElementById('pf-elit-userid').value = p.elitUserId || '';
   document.getElementById('pf-elit-token').value = p.elitToken || '';
   document.getElementById('pf-apiurl').value = p.apiUrl || '';
@@ -1056,6 +1059,7 @@ function guardarProveedor() {
     user: document.getElementById('pf-user').value.trim(),
     pass: document.getElementById('pf-pass').value,
     airUrl: document.getElementById('pf-air-url').value.trim(),
+    airSyncUrl: document.getElementById('pf-air-sync-url').value.trim(),
     apiUrl: document.getElementById('pf-apiurl').value.trim(),
     apiKey: document.getElementById('pf-apikey').value.trim(),
     endpoint: document.getElementById('pf-endpoint').value.trim(),
