@@ -538,11 +538,20 @@ function switchProv(idx) {
   document.querySelectorAll('.nav-tab:not(.nav-tab-add)').forEach(function(b,i){ b.classList.toggle('active', i===idx); });
   var sec = document.getElementById('sec-' + idx);
   if (sec) sec.classList.add('active');
-  // LAZY: si es AIR y tiene catálogo pero no ha cargado aún, cargar en background
   var prov = appState.proveedores[idx];
+  // LAZY AIR
   if (prov && prov.tipo === 'air' && prov.airUrl && !prov.loaded) {
     prov.loaded = true;
     precargarAIR(idx);
+  }
+  // AUTO-LOAD ELIT: al activar pestaña, cargar catálogo y mostrar todo
+  if (prov && prov.tipo === 'elit' && prov.elitUserId && prov.elitToken) {
+    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
+    if (!cacheOk) {
+      buscarElit(idx, '', 'nombre');
+    } else if (!prov.productos || !prov.productos.length) {
+      buscarElit(idx, '', 'nombre');
+    }
   }
 }
 
