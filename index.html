@@ -600,25 +600,25 @@ async function cargarCatalogoElit(idx) {
   var prov = appState.proveedores[idx];
   var userId = parseInt(prov.elitUserId || '2978');
   var token = prov.elitToken || '5y1p0twcuz';
-  var all = [], page = 1, limit = 50, total = 99999;
-  while (all.length < total) {
-    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos?page=' + page + '&limit=' + limit, {
+  var all = [], offset = 0, limit = 100;
+  while (true) {
+    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Accept':'application/json'},
-      body: JSON.stringify({user_id: userId, token: token, page: page, limit: limit})
+      body: JSON.stringify({user_id: userId, token: token, limit: limit, offset: offset})
     });
     if (!r.ok) {
       var errBody = ''; try { errBody = await r.text(); } catch(x){}
-      throw new Error('HTTP ' + r.status + ': ' + errBody.substring(0,200));
+      throw new Error('HTTP ' + r.status + ': ' + errBody.substring(0,300));
     }
     var d = await r.json();
-    if (d.codigo !== 200) throw new Error('Elit: ' + (d.mensaje || JSON.stringify(d).substring(0,120)));
+    if (d.codigo !== 200) throw new Error('Elit: ' + (d.mensaje || JSON.stringify(d).substring(0,150)));
     var prods = d.resultado || d.data || d.productos || [];
     if (!prods.length) break;
     all = all.concat(prods);
-    total = (d.paginador && d.paginador.total) ? d.paginador.total : all.length;
-    page++;
-    if (page > 50) break; // safety cap
+    offset += prods.length;
+    if (prods.length < limit) break; // última página
+    if (all.length > 50000) break;   // safety cap
   }
   prov._elitCatalogo = all;
   prov._elitDate = new Date().toLocaleDateString('es-AR');
@@ -638,11 +638,9 @@ function renderTablaElit(idx) {
   if (page > pages) page = prov.currentPage = 1;
   var slice = lista.slice((page-1)*ps, page*ps);
   var rows = slice.map(function(p) {
-    var precioUSD = parseFloat(p.precio) || 0;
-    var iva = parseFloat(p.iva) || 21;
-    var vp = (precioUSD && cotiz)
-      ? precioUSD * cotiz * (1 + iva/100) * (1 + markup/100)
-      : (p.pvp_ars ? p.pvp_ars * (1 + markup/100) : null);
+    // Elit devuelve pvp_ars ya con IVA y cotización aplicados — solo aplicamos markup
+    var pvpBase = parseFloat(p.pvp_ars) || 0;
+    var vp = pvpBase ? pvpBase * (1 + markup/100) : null;
     var tieneStock = (p.stock_total||0) > 0;
     var stockTxt = tieneStock ? (p.nivel_stock || 'En stock') : 'Sin stock';
     var img = (p.miniaturas && p.miniaturas[0])
