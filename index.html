@@ -574,30 +574,24 @@ async function nbFetch(prov, path) {
 async function buscarElit(idx, query, field) {
   var prov = appState.proveedores[idx];
   var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
-  document.getElementById('cr-' + idx).innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Buscando en Elit...</div>';
   try {
-    var userId = parseInt(prov.elitUserId || '2978');
-    var token = prov.elitToken || '5y1p0twcuz';
-    var body = { user_id: userId, token: token, limit: 100 };
-    if (query) {
-      if (field === 'codigo_alfa') body.codigo_alfa = query;
-      else if (field === 'marca') body.marca = query;
-      else if (field === 'categoria') body.categoria = query;
-      else body.nombre = query;
+    // Cargar catálogo completo si no está cacheado
+    if (!prov._elitCatalogo || !prov._elitCatalogo.length) {
+      await cargarCatalogoElit(idx);
     }
-    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Accept':'application/json'},
-      body: JSON.stringify(body)
+    var catalogo = prov._elitCatalogo || [];
+    // Filtro client-side por todas las palabras
+    var words = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    var filtrados = !words.length ? catalogo : catalogo.filter(function(p) {
+      var haystack;
+      if (field === 'codigo_alfa') haystack = (p.codigo_alfa||'').toLowerCase();
+      else if (field === 'marca') haystack = (p.marca||'').toLowerCase();
+      else if (field === 'categoria') haystack = ((p.categoria||'')+' '+(p.sub_categoria||'')).toLowerCase();
+      else haystack = ((p.nombre||'')+' '+(p.marca||'')+' '+(p.codigo_alfa||'')).toLowerCase();
+      return words.every(function(w){ return haystack.indexOf(w) >= 0; });
     });
-    if (!r.ok) { var t=''; try{t=await r.text();}catch(x){} throw new Error('HTTP '+r.status+': '+t.substring(0,200)); }
-    var d = await r.json();
-    console.log('[Elit buscar]', 'paginador='+JSON.stringify(d.paginador), 'resultado='+(d.resultado?d.resultado.length:'N/A'));
-    if (d.codigo !== 200) throw new Error('Elit: '+(d.mensaje||JSON.stringify(d).substring(0,150)));
-    var prods = d.resultado || [];
-    if (soloStock) prods = prods.filter(function(p){ return (p.stock_total||0) > 0; });
-    prov._elitCatalogo = prods;
-    prov.productos = prods;
+    if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
+    prov.productos = filtrados;
     prov.currentPage = 1;
     renderTablaElit(idx);
   } catch(e) { showError('cr-' + idx, 'Error Elit: ' + e.message); }
@@ -607,10 +601,10 @@ async function cargarCatalogoElit(idx) {
   var prov = appState.proveedores[idx];
   var userId = parseInt(prov.elitUserId || '2978');
   var token = prov.elitToken || '5y1p0twcuz';
-  var all = [], offset = 0, limit = 100;
+  var all = [], offset = 0, limit = 100, total = null;
   while (true) {
     var crEl = document.getElementById('cr-' + idx);
-    if (crEl) crEl.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit... ' + all.length + ' productos</div>';
+    if (crEl) crEl.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit... ' + all.length + (total ? ' / ' + total : '') + ' productos</div>';
     var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Accept':'application/json'},
@@ -621,19 +615,25 @@ async function cargarCatalogoElit(idx) {
       throw new Error('HTTP ' + r.status + ': ' + errBody.substring(0,300));
     }
     var d = await r.json();
-    console.log('[Elit page offset=' + offset + ']', 'codigo=' + d.codigo, 'paginador=' + JSON.stringify(d.paginador), 'resultado=' + (d.resultado ? d.resultado.length : 'N/A'));
-    if (d.codigo !== 200) throw new Error('Elit codigo=' + d.codigo + ': ' + (d.mensaje || JSON.stringify(d).substring(0,150)));
-    var prods = d.resultado || d.data || d.productos || d.items || [];
-    if (!prods.length) break; // no hay más
+    if (d.codigo !== 200) throw new Error('Elit: ' + (d.mensaje || JSON.stringify(d).substring(0,150)));
+    var prods = d.resultado || [];
+    if (!prods.length) break;
     all = all.concat(prods);
+    // Leer total del paginador la primera vez
+    if (total === null && d.paginador) {
+      total = d.paginador.total || d.paginador.cantidad || d.paginador.count || null;
+      console.log('[Elit] total según paginador:', total);
+    }
     offset += prods.length;
-    if (prods.length < limit) break; // última página
+    // Parar si ya tenemos todo o si la página fue incompleta
+    if (total && all.length >= total) break;
+    if (prods.length < limit) break;
     if (all.length > 50000) break;
   }
   if (!all.length) throw new Error('Elit no devolvió productos. Verificá credenciales en Configurar.');
   prov._elitCatalogo = all;
   prov._elitDate = new Date().toLocaleDateString('es-AR');
-  console.log('[Elit] catálogo completo:', all.length, 'productos');
+  console.log('[Elit] catálogo cargado:', all.length, 'productos');
   return all;
 }
 
