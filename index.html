@@ -471,10 +471,15 @@ function renderSections() {
       html += '<button class="btn btn-red" onclick="buscar(' + i + ')"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button></div>';
       // Toggle solo con stock (NB y Elit tienen info de stock)
       if (p.tipo === 'nb' || p.tipo === 'elit') {
+        var mkVal = (p.markup !== undefined && p.markup !== null ? p.markup : 30);
+        var mkInput = p.tipo === 'elit'
+          ? '<label style="font-size:12px;color:var(--muted);font-weight:600;margin-left:16px;display:flex;align-items:center;gap:6px"><i class="fa-solid fa-percent"></i> Markup: <input type="number" min="0" max="999" step="0.5" value="' + mkVal + '" id="mk-' + i + '" style="width:64px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:700" onchange="setMarkupElit(' + i + ',this.value)"> %</label>'
+          : '';
         html += '<div class="toggle-row"><label class="toggle-wrap" for="ts-' + i + '">' +
                 '<span class="toggle"><input type="checkbox" id="ts-' + i + '" onchange="renderTabla(' + i + ')"><span class="toggle-slider"></span></span>' +
                 '<label for="ts-' + i + '"><i class="fa-solid fa-boxes-stacked"></i> Solo con stock</label></label>' +
-                '<span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700"></span></div>';
+                mkInput +
+                '<span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700;margin-left:auto"></span></div>';
       } else {
         html += '<div style="margin-top:10px"><span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700"></span></div>';
       }
@@ -604,7 +609,7 @@ async function cargarCatalogoElit(idx) {
 function renderTablaElit(idx) {
   var prov = appState.proveedores[idx];
   var lista = prov.productos || [];
-  var markup = prov.markup || 30;
+  var markup = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30);
   var cotiz = appState.cotizBNA;
   var totalCat = (prov._elitCatalogo||[]).length;
   var rcEl = document.getElementById('rc-' + idx);
@@ -650,11 +655,17 @@ function renderTablaElit(idx) {
 
 function goPageElit(idx, n) { appState.proveedores[idx].currentPage = n; renderTablaElit(idx); }
 
+function setMarkupElit(idx, val) {
+  var v = parseFloat(val);
+  appState.proveedores[idx].markup = isNaN(v) ? 0 : v;
+  renderTablaElit(idx);
+}
+
 function abrirModalElit(idx, id) {
   var prov = appState.proveedores[idx];
   var p = (prov._elitCatalogo||[]).find(function(x){ return x.id === id; });
   if (!p) return;
-  var cotiz = appState.cotizBNA, markup = prov.markup || 30;
+  var cotiz = appState.cotizBNA, markup = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30);
   var precioUSD = parseFloat(p.precio) || 0;
   var iva = parseFloat(p.iva) || 21;
   var vp = (precioUSD && cotiz)
@@ -769,7 +780,7 @@ function renderTabla(idx) {
   var ps = 25, page = prov.currentPage || 1, total = filtrados.length, pages = Math.ceil(total/ps);
   if (page > pages) page = prov.currentPage = 1;
   var slice = filtrados.slice((page-1)*ps, page*ps);
-  var markup = prov.markup || 30, cotiz = appState.cotizBNA;
+  var markup = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30), cotiz = appState.cotizBNA;
   var rows = slice.map(function(p) {
     var precioUSD = p.price && p.price.value != null ? p.price.value : null;
     var iva = p.price && p.price.iva != null ? p.price.iva : 21;
@@ -887,7 +898,7 @@ async function abrirModalNB(idx, id) {
     if (!p) throw new Error('Sin datos');
     var precioUSD = p.price && p.price.value != null ? p.price.value : null;
     var iva = p.price && p.price.iva != null ? p.price.iva : 21;
-    var cotiz = appState.cotizBNA, markup = prov.markup || 30;
+    var cotiz = appState.cotizBNA, markup = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30);
     var vp = (precioUSD !== null && cotiz) ? precioUSD * cotiz * (1+iva/100) * (1+markup/100) : null;
     var stock = p.stock || 'Sin stock';
     var ok = stock.toLowerCase().indexOf('sin') < 0;
@@ -990,7 +1001,7 @@ function editarProveedor(idx) {
   document.getElementById('pf-apiurl').value = p.apiUrl || '';
   document.getElementById('pf-apikey').value = p.apiKey || '';
   document.getElementById('pf-endpoint').value = p.endpoint || '';
-  document.getElementById('pf-markup').value = p.markup || 30;
+  document.getElementById('pf-markup').value = (p.markup !== undefined && p.markup !== null ? p.markup : 30);
   document.getElementById('prov-form-title').textContent = 'Editar: ' + p.nombre;
   onTipoChange();
   document.getElementById('prov-form').style.display = 'block';
