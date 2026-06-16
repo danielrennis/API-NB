@@ -604,6 +604,8 @@ async function cargarCatalogoElit(idx) {
   var token = prov.elitToken || '5y1p0twcuz';
   var all = [], offset = 0, limit = 100;
   while (true) {
+    var crEl = document.getElementById('cr-' + idx);
+    if (crEl) crEl.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit... ' + all.length + ' productos</div>';
     var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Accept':'application/json'},
@@ -614,17 +616,19 @@ async function cargarCatalogoElit(idx) {
       throw new Error('HTTP ' + r.status + ': ' + errBody.substring(0,300));
     }
     var d = await r.json();
-    console.log('[Elit raw]', JSON.stringify(d).substring(0,500));
-    if (d.codigo !== 200) throw new Error('Elit: codigo=' + d.codigo + ' ' + (d.mensaje || JSON.stringify(d).substring(0,150)));
+    console.log('[Elit page offset=' + offset + ']', 'codigo=' + d.codigo, 'keys=' + Object.keys(d).join(','), 'resultado=' + (d.resultado ? d.resultado.length : 'N/A'));
+    if (d.codigo !== 200) throw new Error('Elit codigo=' + d.codigo + ': ' + (d.mensaje || JSON.stringify(d).substring(0,150)));
     var prods = d.resultado || d.data || d.productos || d.items || [];
-    if (!prods.length) throw new Error('Elit OK pero sin productos. Respuesta: ' + JSON.stringify(d).substring(0,300));
+    if (!prods.length) break; // no hay más
     all = all.concat(prods);
     offset += prods.length;
     if (prods.length < limit) break; // última página
-    if (all.length > 50000) break;   // safety cap
+    if (all.length > 50000) break;
   }
+  if (!all.length) throw new Error('Elit no devolvió productos. Verificá credenciales en Configurar.');
   prov._elitCatalogo = all;
   prov._elitDate = new Date().toLocaleDateString('es-AR');
+  console.log('[Elit] catálogo completo:', all.length, 'productos');
   return all;
 }
 
