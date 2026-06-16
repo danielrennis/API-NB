@@ -573,7 +573,7 @@ async function nbFetch(prov, path) {
 // ── ELIT ──────────────────────────────────────────────────────────────────────
 async function buscarElit(idx, query, field) {
   var prov = appState.proveedores[idx];
-  var markup = prov.markup || 30;
+  var markup = (prov.markup !== undefined && prov.markup !== null) ? prov.markup : 30;
   var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
   showLoading('cr-' + idx);
   try {
@@ -629,7 +629,7 @@ async function cargarCatalogoElit(idx) {
 function renderTablaElit(idx) {
   var prov = appState.proveedores[idx];
   var lista = prov.productos || [];
-  var markup = prov.markup || 30;
+  var markup = (prov.markup !== undefined && prov.markup !== null) ? prov.markup : 30;
   var cotiz = appState.cotizBNA;
   var totalCat = (prov._elitCatalogo||[]).length;
   var rcEl = document.getElementById('rc-' + idx);
@@ -997,7 +997,7 @@ function editarProveedor(idx) {
   document.getElementById('pf-apiurl').value = p.apiUrl || '';
   document.getElementById('pf-apikey').value = p.apiKey || '';
   document.getElementById('pf-endpoint').value = p.endpoint || '';
-  document.getElementById('pf-markup').value = p.markup || 30;
+  document.getElementById('pf-markup').value = (p.markup !== undefined && p.markup !== null) ? p.markup : 30;
   document.getElementById('prov-form-title').textContent = 'Editar: ' + p.nombre;
   onTipoChange();
   document.getElementById('prov-form').style.display = 'block';
@@ -1043,7 +1043,7 @@ function guardarProveedor() {
     apiUrl: document.getElementById('pf-apiurl').value.trim(),
     apiKey: document.getElementById('pf-apikey').value.trim(),
     endpoint: document.getElementById('pf-endpoint').value.trim(),
-    markup: parseFloat(document.getElementById('pf-markup').value) || 30,
+    markup: (document.getElementById('pf-markup').value !== '' ? parseFloat(document.getElementById('pf-markup').value) : 30),
     elitUserId: document.getElementById('pf-elit-userid').value.trim(),
     elitToken: document.getElementById('pf-elit-token').value.trim()
   };
