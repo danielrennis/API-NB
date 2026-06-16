@@ -169,7 +169,7 @@
     .prod-modal-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
     .prod-modal-price{font-size:28px;font-weight:900;color:#16a34a;letter-spacing:-.03em}
     .prod-modal-price small{font-size:11px;font-weight:600;color:var(--muted);display:block;margin-top:3px}
-    .prod-modal-body{padding:18px}
+    .prod-modal-body{padding:18px}.prod-modal-footer{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
     .prod-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .prod-detail-item{background:#f8fafc;border-radius:10px;padding:10px 13px}
     .prod-detail-item .lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px}
@@ -283,6 +283,7 @@
     <div class="prod-modal-box">
       <div class="prod-modal-header" id="prod-modal-header"></div>
       <div class="prod-modal-body" id="prod-modal-body"></div>
+      <div class="prod-modal-footer" id="prod-modal-footer"></div>
     </div>
   </div>
 </div>
@@ -661,6 +662,13 @@ function setMarkupElit(idx, val) {
   renderTablaElit(idx);
 }
 
+
+function renderModalFooter(nombre, precio) {
+  var txt = encodeURIComponent('Hola Alberto, quiero consultar por: ' + nombre + (precio ? ' · Precio: $' + precio : ''));
+  var url = 'https://wa.me/5493624720441?text=' + txt;
+  document.getElementById('prod-modal-footer').innerHTML =
+    '<a href="' + url + '" target="_blank" class="btn btn-red" style="text-decoration:none"><i class="fa-brands fa-whatsapp"></i> Consultar a Alberto</a>';
+}
 function abrirModalElit(idx, id) {
   var prov = appState.proveedores[idx];
   var p = (prov._elitCatalogo||[]).find(function(x){ return x.id === id; });
@@ -696,6 +704,7 @@ function abrirModalElit(idx, id) {
       '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+iva+'%</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">EAN</div><div class="val">'+esc(p.ean||'—')+'</div></div>' +
     '</div>';
+  renderModalFooter(p.nombre||'—', vp!==null?Math.round(vp).toLocaleString('es-AR'):null);
   document.getElementById('prod-modal').classList.add('open');
 }
 
@@ -920,6 +929,7 @@ async function abrirModalNB(idx, id) {
         '<div class="prod-detail-item"><div class="lbl">Cant. en stock</div><div class="val">'+(p.amountStock!=null?p.amountStock:'—')+'</div></div>' +
         '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+iva+'%</div></div>' +
       '</div>';
+    renderModalFooter(p.title||p.name||'—', vp!==null?Math.round(vp).toLocaleString('es-AR'):null);
   } catch(e) { document.getElementById('prod-modal-header').innerHTML = '<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> '+e.message+'</div>'; }
 }
 
@@ -947,10 +957,11 @@ function abrirModalAIR(idx, listIdx) {
     '</div>' +
     '<div style="margin-top:14px;background:#fffdf0;border:1px solid #f59e0b;border-radius:10px;padding:10px 14px;font-size:11px;font-weight:700;color:#b45309">' +
       '<i class="fa-solid fa-clock"></i> Entrega 5 a 7 días hábiles · Precios de lista Contado</div>';
+  renderModalFooter(p.title||'—', vp!==null?Math.round(vp).toLocaleString('es-AR'):null);
   document.getElementById('prod-modal').classList.add('open');
 }
 
-function cerrarProdModal() { document.getElementById('prod-modal').classList.remove('open'); }
+function cerrarProdModal() { document.getElementById('prod-modal').classList.remove('open'); document.getElementById('prod-modal-footer').innerHTML=''; }
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 function openConfig() {
