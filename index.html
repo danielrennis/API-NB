@@ -593,9 +593,15 @@ async function buscarElit(idx, query, field) {
     if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
     console.log('[Elit filtro] query="'+query+'" resultados='+filtrados.length+' de '+catalogo.length);
     if (!filtrados.length && catalogo.length) {
-      // Mostrar primeros 3 nombres para debug
       var sample = catalogo.slice(0,3).map(function(p){ return JSON.stringify(p.nombre); }).join(' | ');
       console.log('[Elit sample nombres]', sample);
+      // Buscar manualmente el query ignorando encoding
+      var qNorm = query.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      var found = catalogo.filter(function(p){
+        var n = (p.nombre||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+        return n.indexOf(qNorm) >= 0;
+      });
+      console.log('[Elit normalizado] "'+qNorm+'" encontró', found.length, found.length?'primer: '+found[0].nombre:'');
     }
     prov.productos = filtrados;
     prov._filtrados = filtrados;
