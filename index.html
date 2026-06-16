@@ -709,19 +709,28 @@ function abrirModalElit(idx, id) {
 async function precargarAIR(idx) {
   var prov = appState.proveedores[idx];
   var base = prov.airUrl || '/.netlify/functions/air-proxy';
+  var crEl = document.getElementById('cr-' + idx);
   try {
-    var r = await fetch(base + '?action=load');
-    var text = await r.text();
-    var d = JSON.parse(text);
-    if (d.ok && d.products && d.products.length) {
-      prov.productos = normAIR(d.products);
-      prov._airDate = d.date;
-      prov._filtrados = prov.productos;
-      var rc = document.getElementById('rc-' + idx);
-      if (rc) rc.textContent = prov.productos.length + ' productos en catálogo' + (d.date ? ' · ' + d.date : '');
-    } else {
-      prov._precargarError = d.error || 'Sin productos en caché';
+    // Carga paginada: 500 productos por request para evitar timeout
+    var all = [], page = 0, pages = 1, date = '';
+    while (page < pages) {
+      if (crEl) crEl.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo AIR... ' + all.length + (pages>1?' / ~' + (pages*500):'') + ' productos</div>';
+      var r = await fetch(base + '?action=load&page=' + page + '&ps=500');
+      var text = await r.text();
+      var d = JSON.parse(text);
+      if (!d.ok) { prov._precargarError = d.error || 'Error al cargar caché'; return; }
+      if (!d.products || !d.products.length) break;
+      all = all.concat(d.products);
+      date = d.date || date;
+      pages = d.pages || 1;
+      page++;
     }
+    if (!all.length) { prov._precargarError = 'Sin productos en caché'; return; }
+    prov.productos = normAIR(all);
+    prov._airDate = date;
+    prov._filtrados = prov.productos;
+    var rc = document.getElementById('rc-' + idx);
+    if (rc) rc.textContent = prov.productos.length + ' productos en catálogo' + (date ? ' · ' + date : '');
   } catch(e) {
     prov._precargarError = e.message;
   }
@@ -872,14 +881,9 @@ async function sincronizarAIR(idx) {
     var r = await fetch(base + '?action=sync');
     var d = await r.json();
     if (!d.ok) throw new Error(d.error || 'Error al sincronizar');
-    var r2 = await fetch(base + '?action=load');
-    var d2 = await r2.json();
-    if (d2.ok && d2.products) {
-      prov.productos = normAIR(d2.products);
-      prov._airDate = d2.date;
-      prov._filtrados = prov.productos;
-      prov.currentPage = 1;
-    }
+    prov.loaded = false;
+    await precargarAIR(idx);
+    prov.currentPage = 1;
     renderTablaAIR(idx);
   } catch(e) { showError('cr-' + idx, 'Sincronización fallida: ' + e.message); }
 }
