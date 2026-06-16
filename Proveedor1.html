@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proveedor 1 — Lista de Precios</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1117;
+    --surface:#1a1d27;
+    --border:#2d3147;
+    --text:#e2e8f0;
+    --text-muted:#64748b;
+    --ryr-red:#D92C3B;
+    --green:#25d366;
+    --accent:#4285F4;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-weight:300;min-height:100vh;}
+
+  /* HEADER */
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap;}
+  .logo-name{font-size:20px;font-weight:700;color:var(--text);letter-spacing:.5px;display:block;line-height:1.2;}
+  .logo-sub{font-size:10px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;display:block;margin-top:2px;}
+  .header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+  /* CHIPS */
+  .chip{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border);background:var(--bg);color:var(--text-muted);}
+  .chip strong{color:var(--text);}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  /* BOTONES */
+  .btn{padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;white-space:nowrap;font-weight:500;font-family:inherit;}
+  .btn-sync{background:var(--ryr-red);color:#fff;border:none;}
+  .btn-sync:hover{opacity:.85;}
+  .btn-sync:disabled{opacity:.5;cursor:wait;}
+  .btn-config{background:transparent;color:var(--text-muted);border:1px solid var(--border);}
+  .btn-config:hover{border-color:var(--ryr-red);color:var(--text);}
+
+  /* MAIN */
+  .main{padding:24px;max-width:1100px;margin:0 auto;}
+
+  /* AVISO ENTREGA */
+  .delivery-note{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:8px;}
+  .delivery-note strong{color:var(--text);font-weight:500;}
+
+  /* MARKUP BANNER - oculto */
+  .mkp-banner{display:none;}
+
+  /* SEARCH */
+  .search-row{display:flex;gap:8px;margin-bottom:16px;align-items:center;}
+  .search-wrap{flex:1;display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:5px 5px 5px 15px;transition:border-color .2s;}
+  .search-wrap:focus-within{border-color:var(--ryr-red);}
+  .search-wrap input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;padding:5px 0;font-family:inherit;font-weight:300;}
+  .search-wrap input::placeholder{color:var(--text-muted);}
+  .btn-clear{background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:6px 11px;border-radius:7px;font-size:12px;cursor:pointer;transition:all .2s;}
+  .btn-clear:hover{border-color:var(--ryr-red);color:var(--text);}
+  .count{font-size:11px;color:var(--text-muted);white-space:nowrap;}
+  .count span{color:var(--text);font-weight:500;}
+
+  /* TABLA */
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead th{background:var(--bg);padding:10px 16px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);}
+  thead th.r{text-align:right;}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .12s;cursor:pointer;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:rgba(217,44,59,0.06);}
+  td{padding:10px 16px;font-size:13px;}
+  td.cod{font-family:monospace;color:var(--text-muted);font-size:12px;white-space:nowrap;}
+  td.desc{color:var(--text);}
+  td.pf{text-align:right;font-weight:600;color:#4ade80;font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .empty{text-align:center;padding:50px;color:var(--text-muted);}
+  .empty .big{font-size:32px;margin-bottom:8px;}
+
+  /* PAGINACION */
+  .pagination{display:flex;justify-content:center;align-items:center;gap:6px;padding:16px;}
+  .pg{background:var(--bg);border:1px solid var(--border);color:var(--text-muted);padding:6px 11px;border-radius:7px;font-size:12px;cursor:pointer;transition:all .15s;min-width:32px;text-align:center;font-family:inherit;}
+  .pg:hover{border-color:var(--ryr-red);color:var(--text);}
+  .pg.active{background:var(--ryr-red);color:#fff;border-color:var(--ryr-red);}
+  .pg:disabled{opacity:.3;cursor:default;}
+  .pg-info{font-size:11px;color:var(--text-muted);padding:0 4px;}
+
+  /* LISTA SELECCIONADOS */
+  #selSection{display:none;margin:18px 0 0 0;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .sel-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
+  .sel-title{font-weight:600;color:var(--text);font-size:14px;}
+  .sel-count{color:var(--text-muted);font-size:12px;margin-left:6px;}
+  .btn-copy{background:var(--green);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit;font-weight:500;transition:opacity .2s;}
+  .btn-copy:hover{opacity:.85;}
+  .btn-sel-clear{background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .2s;}
+  .btn-sel-clear:hover{border-color:var(--ryr-red);color:var(--text);}
+  #selTbody tr{border-top:1px solid var(--border);}
+  #selTbody td{padding:8px 12px;font-size:13px;}
+
+  /* MODAL */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;}
+  .overlay.show{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:420px;max-width:95vw;box-shadow:0 24px 80px rgba(0,0,0,.5);overflow:hidden;animation:su .2s ease;}
+  @keyframes su{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .mhdr{background:var(--bg);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+  .mtitle{font-size:14px;font-weight:600;color:var(--text);}
+  .mclose{background:none;border:none;color:var(--text-muted);font-size:17px;cursor:pointer;}
+  .mclose:hover{color:var(--text);}
+  .mbody{padding:20px;}
+  .fg{margin-bottom:16px;}
+  .fg label{display:block;font-size:11px;color:var(--text-muted);margin-bottom:6px;letter-spacing:.4px;text-transform:uppercase;}
+  .fg input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;outline:none;transition:border-color .2s;font-family:inherit;}
+  .fg input:focus{border-color:var(--ryr-red);}
+  .fg-row{display:flex;gap:10px;}
+  .fg-row .fg{flex:1;}
+  .mkp-prev{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;margin-bottom:16px;}
+  .mkp-prev .lbl{font-size:11px;color:var(--text-muted);margin-bottom:3px;}
+  .mkp-prev .val{font-size:24px;font-weight:700;color:var(--text);}
+  .bfull{width:100%;background:var(--ryr-red);border:none;color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;font-family:inherit;}
+  .bfull:hover{opacity:.85;}
+  .breset{width:100%;margin-top:7px;background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:8px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit;}
+  .breset:hover{border-color:var(--ryr-red);color:var(--text);}
+  .err{color:var(--ryr-red);font-size:11px;margin-top:6px;display:none;}
+  .err.show{display:block;}
+  .lock-c{text-align:center;padding:6px 0 3px;}
+  .lock-c .ic{font-size:34px;margin-bottom:5px;}
+  .lock-c .ti{font-size:14px;font-weight:600;margin-bottom:3px;}
+  .lock-c .su{font-size:12px;color:var(--text-muted);margin-bottom:16px;}
+
+  /* FOOTER */
+  footer{margin-top:32px;padding:16px 24px;border-top:1px solid var(--border);text-align:center;font-size:11px;color:var(--text-muted);}
+  footer .footer-note{margin-bottom:6px;}
+
+  /* SYNC MSG */
+  #syncMsg{font-size:11px;padding:4px 10px;border-radius:6px;display:none;}
+  #syncMsg.ok{background:rgba(37,211,102,0.1);color:var(--green);border:1px solid rgba(37,211,102,0.2);display:inline-block;}
+  #syncMsg.fail{background:rgba(217,44,59,0.1);color:#f87171;border:1px solid rgba(217,44,59,0.2);display:inline-block;}
+
+  /* RESPONSIVE */
+  @media(max-width:768px){
+    header{height:auto;padding:12px 16px;}
+    .main{padding:16px;}
+    td.desc{font-size:12px;}
+    td.pf{font-size:13px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div>
+      <span class="logo-name">Proveedor 1</span>
+      <span class="logo-sub">Lista de Precios al Cliente</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="chip"><div class="dot"></div><span>USD BNA:&nbsp;</span><strong id="tcVal">cargando...</strong></div>
+    <div class="chip">Precios al: <strong id="priceDate">--/--/----</strong></div>
+    <span id="syncMsg"></span>
+    <button class="btn btn-sync" id="btnSync" onclick="syncPrices()">⟳ Actualizar precios</button>
+    <button class="btn btn-config" onclick="openConfig()">⚙ Markup</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="mkp-banner" id="mkpBanner"></div>
+
+  <div class="delivery-note">
+    ⏱ <span>Cualquier producto puede solicitarse. Entrega estimada: <strong>5 a 7 días hábiles</strong> &nbsp;·&nbsp; 💵 Precios de <strong>lista Contado</strong></span>
+  </div>
+
+  <div class="search-row">
+    <div class="search-wrap">
+      <span style="color:var(--text-muted)">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar por código o descripción..." oninput="applyFilters()" autocomplete="off">
+    </div>
+    <button class="btn-clear" onclick="clearSearch()">✕</button>
+    <div class="count"><span id="cShow">0</span> / <span id="cTotal">0</span> artículos</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Código</th><th>Descripción</th><th class="r">Precio Final (ARS c/IVA)</th></tr></thead>
+      <tbody id="tbody"><tr><td colspan="3" class="empty"><div class="big">⏳</div><p>Cargando...</p></td></tr></tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pagination"></div>
+
+  <!-- Lista seleccionados -->
+  <div id="selSection">
+    <div class="sel-header">
+      <span class="sel-title">📋 Lista del cliente <span class="sel-count" id="selCount"></span></span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-copy" onclick="copyList()">📋 Copiar lista</button>
+        <button class="btn-sel-clear" onclick="clearList()">✕ Limpiar</button>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:var(--bg)">
+        <th style="padding:8px 12px;text-align:left;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">Código</th>
+        <th style="padding:8px 12px;text-align:left;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">Descripción</th>
+        <th style="padding:8px 12px;text-align:right;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)">Precio</th>
+        <th style="border-bottom:1px solid var(--border);width:32px"></th>
+      </tr></thead>
+      <tbody id="selTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-note">⏱ Entrega en 5 a 7 días hábiles · Precios lista Contado · IVA incluido</div>
+  <span id="footerTc"></span>
+</footer>
+
+<!-- MODAL CONFIG -->
+<div class="overlay" id="overlay" onclick="closeOvl(event)">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle">🔐 Configuración de Markup</div>
+      <button class="mclose" onclick="closeConfig()">✕</button>
+    </div>
+    <div class="mbody">
+      <div id="lockScreen">
+        <div class="lock-c"><div class="ic">🔒</div><div class="ti">Acceso restringido</div><div class="su">Ingresá la contraseña para configurar</div></div>
+        <div class="fg"><label>Contraseña</label><input type="password" id="passInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPass()"><div class="err" id="passErr">Contraseña incorrecta</div></div>
+        <button class="bfull" onclick="checkPass()">Ingresar</button>
+      </div>
+      <div id="cfgScreen" style="display:none">
+        <div class="mkp-prev"><div class="lbl">Markup neto aplicado</div><div class="val" id="mkpDisp">0%</div></div>
+        <div class="fg-row">
+          <div class="fg"><label>Markup (%)</label><input type="number" id="mkpIn" min="0" max="500" step="0.5" value="0" oninput="updPrev()"></div>
+          <div class="fg"><label>Descuento (%)</label><input type="number" id="dscIn" min="0" max="90" step="0.5" value="0" oninput="updPrev()"></div>
+        </div>
+        <button class="bfull" onclick="applyMkp()">✓ Aplicar markup</button>
+        <button class="breset" onclick="resetMkp()">↩ Resetear</button>
+        <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="fg">
+            <label>PHPSESSID air-intra <span style="color:var(--text-muted);font-size:10px;text-transform:none">(para Actualizar precios)</span></label>
+            <input type="text" id="sessInput" placeholder="pegar sesion de air-intra.com..." style="font-family:monospace;font-size:11px">
+            <div style="font-size:10px;color:var(--text-muted);margin-top:5px">En air-intra.com → F12 → Application → Cookies → PHPSESSID</div>
+          </div>
+          <button class="bfull" style="background:rgba(37,211,102,0.2);border:1px solid rgba(37,211,102,0.3);color:#25d366" onclick="saveSess()">💾 Guardar sesión</button>
+          <div id="sessMsg" style="font-size:11px;margin-top:6px;display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let PRODUCTS = []
+
+let markup=0, discount=0, tc=0, filtered=[], page=1, pageSize=50;
+
+function fmtARS(n){ return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:0,maximumFractionDigits:0}).format(n); }
+
+function calcFinal(p,i){ return parseFloat(p)*(1+markup/100)*(1-discount/100)*(1+parseFloat(i)/100)*tc; }
+
+// Fetch TC BNA
+async function fetchTC(){
+  try{
+    const r = await fetch('sync2.php?action=tc');
+    const d = await r.json();
+    tc = d.venta || d.compra || 0;
+    document.getElementById('tcVal').textContent = '$ ' + new Intl.NumberFormat('es-AR',{minimumFractionDigits:2}).format(tc);
+    document.getElementById('footerTc').textContent = 'Cotización USD BNA venta: $' + new Intl.NumberFormat('es-AR',{minimumFractionDigits:2}).format(tc);
+  }catch(e){
+    document.getElementById('tcVal').textContent = 'sin conexión';
+    document.getElementById('tcVal').style.color='var(--red)';
+  }
+}
+
+// Sync from server
+async function syncPrices(){
+  const btn = document.getElementById('btnSync');
+  const msg = document.getElementById('syncMsg');
+  btn.disabled = true;
+  btn.textContent = '⟳ Actualizando...';
+  msg.className=''; msg.style.display='none';
+  try{
+    // 1. trigger sync en server (timeout 5 minutos)
+    const ctrl = new AbortController();
+    const tId = setTimeout(()=>ctrl.abort(), 300000);
+    const r1 = await fetch('sync2.php?action=sync', {signal: ctrl.signal});
+    clearTimeout(tId);
+    const d1 = await r1.json();
+    if(!d1.ok) throw new Error(d1.error || 'Error al sincronizar');
+
+    // 2. load full product list from cache
+    const r2 = await fetch('sync2.php?action=load');
+    const d2 = await r2.json();
+    if(!d2.ok || !d2.products) throw new Error('No se pudo cargar el catálogo');
+
+    PRODUCTS = d2.products;
+    filtered = [...PRODUCTS];
+    document.getElementById('priceDate').textContent = d2.date;
+    page = 1;
+    renderTable();
+    msg.textContent = '✓ ' + d1.count + ' productos — ' + d1.date;
+    msg.className = 'ok';
+  }catch(e){
+    msg.textContent = '✗ ' + e.message;
+    msg.className = 'fail';
+  }
+  btn.disabled = false;
+  btn.textContent = '⟳ Actualizar precios';
+}
+
+
+// --- LISTA DE SELECCIONADOS ---
+let selList = [];
+
+function addToList(cod, desc, precio, iva){
+  // Si ya existe, no duplicar
+  if(selList.find(x=>x.c===cod)) return;
+  selList.push({c:cod, d:desc, p:precio, i:iva});
+  renderSelList();
+  document.getElementById('selSection').style.display='block';
+}
+
+function removeFromList(cod){
+  selList = selList.filter(x=>x.c!==cod);
+  renderSelList();
+  if(selList.length===0) document.getElementById('selSection').style.display='none';
+}
+
+function clearList(){
+  selList=[];
+  document.getElementById('selSection').style.display='none';
+}
+
+function renderSelList(){
+  const tbody = document.getElementById('selTbody');
+  document.getElementById('selCount').textContent = '(' + selList.length + ' items)';
+  tbody.innerHTML = selList.map(p =>
+    `<tr style="border-top:1px solid var(--border)">
+      <td style="padding:8px 12px;font-family:monospace;color:var(--accent1);font-size:12px">${p.c}</td>
+      <td style="padding:8px 12px;font-size:13px;color:var(--text1)">${p.d}</td>
+      <td style="padding:8px 12px;text-align:right;color:#4ade80;font-weight:600">${fmtARS(calcFinal(p.p,p.i))}</td>
+      <td style="padding:8px 4px;text-align:center"><span onclick="removeFromList('${p.c}')" style="cursor:pointer;color:var(--text2);font-size:16px" title="Quitar">✕</span></td>
+    </tr>`
+  ).join('');
+}
+
+function copyList(){
+  if(!selList.length) return;
+  const lines = selList.map(p => p.c + '\t' + p.d + '\t' + fmtARS(calcFinal(p.p,p.i)));
+  const text = 'Código\tDescripción\tPrecio\n' + lines.join('\n');
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.querySelector('[onclick="copyList()"]');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copiado!';
+    setTimeout(()=>btn.textContent=orig, 2000);
+  }).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+// Filter
+function applyFilters(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  filtered = PRODUCTS.filter(p => {
+    if(!q) return true;
+    const h = (p.d+' '+p.c).toLowerCase();
+    return q.split(' ').filter(Boolean).every(t => h.includes(t));
+  });
+  page=1; renderTable();
+}
+function clearSearch(){ document.getElementById('searchInput').value=''; applyFilters(); }
+
+// Render
+function renderTable(){
+  if(tc===0) return;
+  const tbody = document.getElementById('tbody');
+  const total = filtered.length;
+  const start=(page-1)*pageSize, end=Math.min(start+pageSize,total);
+  document.getElementById('cShow').textContent = total;
+  document.getElementById('cTotal').textContent = PRODUCTS.length;
+  const slice = filtered.slice(start,end);
+  if(!slice.length){
+    tbody.innerHTML='<tr><td colspan="3" class="empty"><div class="big">🔍</div><p>Sin resultados</p></td></tr>';
+    renderPg(total); return;
+  }
+  tbody.innerHTML = slice.map(p =>
+    `<tr data-c="${p.c.replace(/"/g,'&quot;')}" data-d="${p.d.replace(/"/g,'&quot;')}" data-p="${p.p}" data-i="${p.i}" style="cursor:pointer" title="Agregar a lista"><td class="cod">${p.c}</td><td class="desc">${p.d}</td><td class="pf">${fmtARS(calcFinal(p.p,p.i))}</td></tr>`
+  ).join('');
+  tbody.querySelectorAll('tr[data-c]').forEach(tr => {
+    tr.addEventListener('click', function(){
+      addToList(this.dataset.c, this.dataset.d, this.dataset.p, this.dataset.i);
+    });
+  });
+  renderPg(total);
+}
+
+function renderPg(total){
+  const pages=Math.ceil(total/pageSize);
+  const pg=document.getElementById('pagination');
+  if(pages<=1){pg.innerHTML='';return;}
+  let h=`<button class="pg" onclick="goPage(${page-1})" ${page===1?'disabled':''}>‹</button>`;
+  let s=Math.max(1,page-2),e=Math.min(pages,s+4);
+  if(e-s<4) s=Math.max(1,e-4);
+  if(s>1) h+=`<button class="pg" onclick="goPage(1)">1</button>${s>2?'<span class="pg-info">…</span>':''}`;
+  for(let i=s;i<=e;i++) h+=`<button class="pg${i===page?' active':''}" onclick="goPage(${i})">${i}</button>`;
+  if(e<pages) h+=`${e<pages-1?'<span class="pg-info">…</span>':''}<button class="pg" onclick="goPage(${pages})">${pages}</button>`;
+  h+=`<button class="pg" onclick="goPage(${page+1})" ${page===pages?'disabled':''}>›</button>`;
+  h+=`<span class="pg-info">Pág ${page}/${pages}</span>`;
+  pg.innerHTML=h;
+}
+function goPage(p){
+  const pages=Math.ceil(filtered.length/pageSize);
+  if(p<1||p>pages)return;
+  page=p; renderTable(); window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Modal config
+function openConfig(){
+  document.getElementById('lockScreen').style.display='block';
+  document.getElementById('cfgScreen').style.display='none';
+  document.getElementById('passInput').value='';
+  document.getElementById('passErr').classList.remove('show');
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('passInput').focus(),100);
+}
+function closeConfig(){document.getElementById('overlay').classList.remove('show');}
+function closeOvl(e){if(e.target===document.getElementById('overlay'))closeConfig();}
+function checkPass(){
+  if(document.getElementById('passInput').value==='da89c261'){
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('cfgScreen').style.display='block';
+    document.getElementById('mkpIn').value=markup;
+    document.getElementById('dscIn').value=discount;
+    updPrev();
+  }else{
+    document.getElementById('passErr').classList.add('show');
+    document.getElementById('passInput').value='';
+    document.getElementById('passInput').focus();
+    setTimeout(()=>document.getElementById('passErr').classList.remove('show'),2500);
+  }
+}
+function updPrev(){
+  const m=parseFloat(document.getElementById('mkpIn').value)||0;
+  const d=parseFloat(document.getElementById('dscIn').value)||0;
+  const net=m-d;
+  document.getElementById('mkpDisp').textContent=(net>=0?'+':'')+net.toFixed(1)+'%';
+}
+async function applyMkp(){
+  markup=parseFloat(document.getElementById('mkpIn').value)||0;
+  discount=parseFloat(document.getElementById('dscIn').value)||0;
+  // Persistir en server
+  try{ await fetch('sync2.php?action=save_config&markup='+markup+'&discount='+discount); }catch(e){}
+  const net=markup-discount;
+  const banner=document.getElementById('mkpBanner');
+  if(markup>0||discount>0){
+    banner.innerHTML=`<strong>⚙ Markup activo:</strong> +${markup}% ${discount>0?'— Descuento '+discount+'%':''} → Neto: ${net>=0?'+':''}${net.toFixed(1)}%`;
+    // banner oculto
+  }else{
+    banner.classList.remove('show');
+  }
+  closeConfig(); renderTable();
+}
+async function resetMkp(){
+  markup=0;discount=0;
+  try{ await fetch('sync2.php?action=save_config&markup=0&discount=0'); }catch(e){}
+  document.getElementById('mkpBanner').classList.remove('show');
+  closeConfig(); renderTable();
+}
+
+// SAVE SESSION
+async function saveSess(){
+  const sess = document.getElementById('sessInput').value.trim();
+  if(!sess){return;}
+  const msg = document.getElementById('sessMsg');
+  try{
+    const r = await fetch('sync2.php?action=save_sess&sess='+encodeURIComponent(sess));
+    const d = await r.json();
+    msg.textContent = d.ok ? '✓ Sesion guardada OK' : '✗ '+d.error;
+    msg.style.color = d.ok ? '#6ee7b7' : '#f87171';
+    msg.style.display='block';
+  }catch(e){
+    msg.textContent='Error: '+e.message; msg.style.display='block';
+  }
+}
+
+// INIT
+(async function(){
+  // Cargar todo en paralelo
+  const [cfgRes, prodRes, tcRes] = await Promise.allSettled([
+    fetch('sync2.php?action=load_config').then(r=>r.json()).catch(()=>({})),
+    fetch('sync2.php?action=load').then(r=>r.json()).catch(()=>({})),
+    fetch('sync2.php?action=tc').then(r=>r.json()).catch(()=>({}))
+  ]);
+
+  // Config markup
+  try{
+    const cfg = cfgRes.value || {};
+    markup   = cfg.markup   || 0;
+    discount = cfg.discount || 0;
+    if(markup>0||discount>0){
+      document.getElementById('mkpIn').value  = markup;
+      document.getElementById('dscIn').value  = discount;
+      const net = markup-discount;
+      const banner = document.getElementById('mkpBanner');
+      banner.innerHTML = '<strong>⚙ Markup activo:</strong> +'+markup+'% '+(discount>0?'— Descuento '+discount+'% ':'')+' → Neto: '+(net>=0?'+':'')+net.toFixed(1)+'%';
+      // banner oculto
+      document.getElementById('mkpDisp').textContent=(net>=0?'+':'')+net.toFixed(1)+'%';
+    }
+  }catch(e){}
+
+  // Productos
+  try{
+    const d2 = prodRes.value || {};
+    if(d2.ok && d2.products && d2.products.length > 0){
+      PRODUCTS = d2.products;
+      document.getElementById('priceDate').textContent = d2.date;
+    }
+  }catch(e){}
+
+  // Cotizacion TC
+  try{
+    const d3 = tcRes.value || {};
+    tc = d3.venta || d3.compra || 0;
+    if(tc > 0){
+      document.getElementById('tcVal').textContent = '$ ' + new Intl.NumberFormat('es-AR',{minimumFractionDigits:2}).format(tc);
+      document.getElementById('footerTc').textContent = 'Cotización USD BNA venta: $' + new Intl.NumberFormat('es-AR',{minimumFractionDigits:2}).format(tc);
+    }
+  }catch(e){}
+
+  filtered=[...PRODUCTS];
+  renderTable();
+})();
+</script>
+</body>
+</html>
+</body>
+</html>
