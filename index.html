@@ -538,6 +538,7 @@ async function buscarElit(idx, query, field) {
     var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
     if (!cacheOk) await cargarCatalogoElit(idx);
     var catalogo = prov._elitCatalogo || [];
+    console.log('[buscarElit] catalogo='+catalogo.length+' query="'+query+'"');
     var words = (query||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
     var filtrados = !words.length ? catalogo.slice() : catalogo.filter(function(p) {
       var haystack;
@@ -548,6 +549,7 @@ async function buscarElit(idx, query, field) {
       return words.every(function(w){ return haystack.indexOf(w) >= 0; });
     });
     if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
+    console.log('[buscarElit] filtrados='+filtrados.length);
     prov.productos = filtrados;
     prov._filtrados = filtrados;
     prov.currentPage = 1;
