@@ -624,10 +624,11 @@ async function cargarCatalogoElit(idx) {
       console.log('[Elit] total:', total, 'limit real:', d.paginador.limit);
     }
     // Usar el offset que devuelve el paginador + limit real para el próximo request
-    var realLimit = (d.paginador && d.paginador.limit) ? d.paginador.limit : prods.length;
+    var realLimit = (d.paginador && d.paginador.limit) ? parseInt(d.paginador.limit) : prods.length;
+    console.log('[Elit] page ok: prods=' + prods.length + ' realLimit=' + realLimit + ' offset=' + offset + ' total=' + total + ' all=' + all.length);
     offset += realLimit;
     if (total && all.length >= total) break;
-    if (prods.length < realLimit) break;
+    if (prods.length < realLimit) { console.log('[Elit] corte: prods < realLimit'); break; }
     if (all.length > 50000) break;
   }
   if (!all.length) throw new Error('Elit no devolvió productos. Verificá credenciales en Configurar.');
