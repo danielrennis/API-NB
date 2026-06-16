@@ -498,11 +498,11 @@ function switchProv(idx) {
   document.querySelectorAll('.nav-tab:not(.nav-tab-add)').forEach(function(b,i){ b.classList.toggle('active', i===idx); });
   var sec = document.getElementById('sec-' + idx);
   if (sec) sec.classList.add('active');
-  // LAZY: si es AIR y tiene catálogo pero no ha cargado aún, cargar en background
   var prov = appState.proveedores[idx];
-  if (prov && prov.tipo === 'air' && prov.airUrl && !prov.loaded) {
-    prov.loaded = true;
-    precargarAIR(idx);
+  if (prov && prov.tipo === 'air' && prov.airUrl && !prov.loaded) { prov.loaded = true; precargarAIR(idx); }
+  if (prov && prov.tipo === 'elit' && prov.elitUserId && prov.elitToken) {
+    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
+    if (!cacheOk || !prov.productos || !prov.productos.length) buscarElit(idx, '', 'nombre');
   }
 }
 
@@ -533,24 +533,23 @@ async function nbFetch(prov, path) {
 // ── ELIT ──────────────────────────────────────────────────────────────────────
 async function buscarElit(idx, query, field) {
   var prov = appState.proveedores[idx];
-  var markup = prov.markup || 30;
   var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
-  showLoading('cr-' + idx);
   try {
-    if (!prov._elitCatalogo || !prov._elitCatalogo.length) {
-      document.getElementById('cr-' + idx).innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit (' + (prov._elitCatalogo ? prov._elitCatalogo.length : 0) + ' productos)...</div>';
-      await cargarCatalogoElit(idx);
-    }
+    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
+    if (!cacheOk) await cargarCatalogoElit(idx);
     var catalogo = prov._elitCatalogo || [];
-    var q = query.toLowerCase();
-    var filtrados = catalogo.filter(function(p) {
-      if (field === 'codigo_alfa') return (p.codigo_alfa||'').toLowerCase().indexOf(q) >= 0;
-      if (field === 'marca') return (p.marca||'').toLowerCase().indexOf(q) >= 0;
-      if (field === 'categoria') return ((p.categoria||'') + ' ' + (p.sub_categoria||'')).toLowerCase().indexOf(q) >= 0;
-      return (p.nombre||'').toLowerCase().indexOf(q) >= 0;
+    var words = (query||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
+    var filtrados = !words.length ? catalogo.slice() : catalogo.filter(function(p) {
+      var haystack;
+      if (field === 'codigo_alfa') haystack = (p.codigo_alfa||'').toLowerCase();
+      else if (field === 'marca') haystack = (p.marca||'').toLowerCase();
+      else if (field === 'categoria') haystack = ((p.categoria||'')+' '+(p.sub_categoria||'')).toLowerCase();
+      else haystack = ((p.nombre||'')+' '+(p.marca||'')+' '+(p.codigo_alfa||'')+' '+(p.categoria||'')).toLowerCase();
+      return words.every(function(w){ return haystack.indexOf(w) >= 0; });
     });
     if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
     prov.productos = filtrados;
+    prov._filtrados = filtrados;
     prov.currentPage = 1;
     renderTablaElit(idx);
   } catch(e) { showError('cr-' + idx, 'Error Elit: ' + e.message); }
@@ -558,27 +557,46 @@ async function buscarElit(idx, query, field) {
 
 async function cargarCatalogoElit(idx) {
   var prov = appState.proveedores[idx];
+  // Evitar cargas simultáneas
+  if (prov._elitLoading) {
+    while (prov._elitLoading) await new Promise(function(r){ setTimeout(r,200); });
+    return prov._elitCatalogo;
+  }
+  prov._elitLoading = true;
+  prov._elitCatalogo = [];
   var userId = parseInt(prov.elitUserId || '2978');
   var token = prov.elitToken || '5y1p0twcuz';
-  var all = [], page = 0, limit = 40, total = 99999;
-  while (all.length < total) {
-    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({user_id: userId, token: token, page: page})
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    var d = await r.json();
-    if (d.codigo !== 200) throw new Error('Elit API: ' + (d.mensaje || JSON.stringify(d)));
-    var prods = d.resultado || [];
-    if (!prods.length) break;
-    all = all.concat(prods);
-    total = d.paginador ? d.paginador.total : all.length;
-    page++;
-  }
-  prov._elitCatalogo = all;
-  prov._elitDate = new Date().toLocaleDateString('es-AR');
-  return all;
+  var all = [], offset = 0, total = null, realLimit = 40;
+  try {
+    while (true) {
+      var crEl = document.getElementById('cr-' + idx);
+      if (crEl) crEl.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit... ' + all.length + (total?' / '+total:'') + ' productos</div>';
+      var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Accept':'application/json'},
+        body: JSON.stringify({user_id: userId, token: token, offset: offset})
+      });
+      if (!r.ok) { var e=''; try{e=await r.text();}catch(x){} throw new Error('HTTP '+r.status+': '+e.substring(0,200)); }
+      var d = await r.json();
+      if (d.codigo !== 200) throw new Error('Elit: '+(d.mensaje||JSON.stringify(d).substring(0,120)));
+      var prods = d.resultado || [];
+      if (!prods.length) break;
+      if (total === null && d.paginador) { total = d.paginador.total; realLimit = d.paginador.limit || prods.length; }
+      all = all.concat(prods);
+      offset += realLimit;
+      if (total && all.length >= total) break;
+      if (prods.length < realLimit) break;
+      if (all.length > 50000) break;
+    }
+    // Deduplicar por id
+    var seen = {}; all = all.filter(function(p){ if(seen[p.id])return false; seen[p.id]=1; return true; });
+    if (!all.length) throw new Error('Sin productos. Verificá credenciales.');
+    prov._elitCatalogo = all;
+    prov._elitCacheTs = Date.now();
+    prov._elitDate = new Date().toLocaleDateString('es-AR');
+    prov._elitLoading = false;
+    return all;
+  } catch(e) { prov._elitLoading = false; throw e; }
 }
 
 function renderTablaElit(idx) {
