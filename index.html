@@ -607,7 +607,10 @@ async function cargarCatalogoElit(idx) {
       headers: {'Content-Type':'application/json','Accept':'application/json'},
       body: JSON.stringify({user_id: userId, token: token, page: page, limit: limit})
     });
-    if (!r.ok) throw new Error('HTTP ' + r.status + ' — verificá user_id/token en Configurar');
+    if (!r.ok) {
+      var errBody = ''; try { errBody = await r.text(); } catch(x){}
+      throw new Error('HTTP ' + r.status + ': ' + errBody.substring(0,200));
+    }
     var d = await r.json();
     if (d.codigo !== 200) throw new Error('Elit: ' + (d.mensaje || JSON.stringify(d).substring(0,120)));
     var prods = d.resultado || d.data || d.productos || [];
