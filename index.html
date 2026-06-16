@@ -592,6 +592,11 @@ async function buscarElit(idx, query, field) {
     });
     if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
     console.log('[Elit filtro] query="'+query+'" resultados='+filtrados.length+' de '+catalogo.length);
+    if (!filtrados.length && catalogo.length) {
+      // Mostrar primeros 3 nombres para debug
+      var sample = catalogo.slice(0,3).map(function(p){ return JSON.stringify(p.nombre); }).join(' | ');
+      console.log('[Elit sample nombres]', sample);
+    }
     prov.productos = filtrados;
     prov._filtrados = filtrados;
     prov.currentPage = 1;
