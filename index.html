@@ -719,7 +719,8 @@ async function buscar(idx) {
   var prov = appState.proveedores[idx];
   var query = (document.getElementById('si-' + idx).value || '').trim();
   var type = document.getElementById('st-' + idx).value;
-  if (!query) return;
+  var prov0 = appState.proveedores[idx];
+  if (!query && prov0 && prov0.tipo !== 'elit') return; // Elit permite búsqueda vacía (muestra todos)
   showLoading('cr-' + idx);
   document.getElementById('pg-' + idx).innerHTML = '';
   document.getElementById('rc-' + idx).textContent = '';
