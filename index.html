@@ -729,7 +729,7 @@ async function precargarAIR(idx) {
 
 function normAIR(arr) {
   return arr.map(function(p) {
-    return { id:p.c, title:p.d||'—', sku:p.c||'', _usd:parseFloat(p.p)||0, _iva:parseFloat(p.i)||21, _stock:(p.s !== undefined ? p.s : -1) };
+    return { id:p.c, title:p.d||'—', sku:p.c||'', _usd:parseFloat(p.p)||0, _iva:parseFloat(p.i)||21, _stock:(p.s !== undefined ? p.s : -1), _img:p.img||'' };
   });
 }
 
@@ -832,7 +832,7 @@ function renderTablaAIR(idx) {
     // Usar data-idx (posición en slice) para evitar problemas con caracteres especiales en SKU
     var sliceStart = (page-1)*ps;
     return '<tr data-provid="' + idx + '" data-listidx="' + (sliceStart + i) + '" style="cursor:pointer">' +
-      '<td><div class="img-ph"><i class="fa-solid fa-box"></i></div></td>' +
+      '<td>' + (p._img ? '<img class="img-prod" src="'+esc(p._img)+'" alt="" loading="lazy" onerror="this.remove()">' : '<div class="img-ph"><i class="fa-solid fa-box"></i></div>') + '</td>' +
       '<td><div style="font-weight:700;font-size:12px">' + esc(p.title) + '</div><div class="sku">' + esc(p.sku) + '</div></td>' +
       '<td><span class="badge badge-info">—</span></td>' +
       '<td style="color:var(--muted);font-weight:600;font-size:12px">—</td>' +
@@ -939,7 +939,7 @@ function abrirModalAIR(idx, listIdx) {
   var cotiz = appState.cotizBNA, markup = prov.markup || 38;
   var vp = (cotiz && p._usd) ? p._usd * cotiz * (1+p._iva/100) * (1+markup/100) : null;
   document.getElementById('prod-modal-header').innerHTML =
-    '<div class="prod-modal-img-ph"><i class="fa-solid fa-box"></i></div>' +
+    (p._img ? '<img class="prod-modal-img" src="'+esc(p._img)+'" alt="" onerror="this.style.display=\'none\'">' : '<div class="prod-modal-img-ph"><i class="fa-solid fa-box"></i></div>') +
     '<div class="prod-modal-meta"><h2>' + esc(p.title) + '</h2>' +
     '<div class="sku" style="margin-bottom:10px"><i class="fa-solid fa-barcode"></i> ' + esc(p.sku) + '</div>' +
     '<div class="prod-modal-badges"><span class="badge badge-ok"><i class="fa-solid fa-circle-check"></i> Disponible</span></div>' +
