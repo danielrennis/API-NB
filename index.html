@@ -616,7 +616,7 @@ async function cargarCatalogoElit(idx) {
       throw new Error('HTTP ' + r.status + ': ' + errBody.substring(0,300));
     }
     var d = await r.json();
-    console.log('[Elit page offset=' + offset + ']', 'codigo=' + d.codigo, 'keys=' + Object.keys(d).join(','), 'resultado=' + (d.resultado ? d.resultado.length : 'N/A'));
+    console.log('[Elit page offset=' + offset + ']', 'codigo=' + d.codigo, 'paginador=' + JSON.stringify(d.paginador), 'resultado=' + (d.resultado ? d.resultado.length : 'N/A'));
     if (d.codigo !== 200) throw new Error('Elit codigo=' + d.codigo + ': ' + (d.mensaje || JSON.stringify(d).substring(0,150)));
     var prods = d.resultado || d.data || d.productos || d.items || [];
     if (!prods.length) break; // no hay más
