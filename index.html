@@ -480,7 +480,7 @@ function renderSections() {
                 '<span class="toggle"><input type="checkbox" id="ts-' + i + '" onchange="' + onchangeFn + '"><span class="toggle-slider"></span></span>' +
                 '<label for="ts-' + i + '"><i class="fa-solid fa-boxes-stacked"></i> Solo con stock</label></label>' +
                 mkInput +
-                (p.tipo === 'air' ? '<button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="sincronizarAIR(' + i + ')"><i class="fa-solid fa-rotate"></i> Actualizar catálogo</button>' : '') +
+                (p.tipo === 'air' ? '<button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="sincronizarAIR(' + i + ')"><i class="fa-solid fa-rotate"></i> Sincronizar</button><button class="btn btn-ghost btn-sm" style="margin-left:4px" onclick="recargarCatalogoAIR(' + i + ')"><i class="fa-solid fa-download"></i> Recargar</button>' : '') +
                 '<span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700;margin-left:auto"></span></div>';
       } else {
         html += '<div style="margin-top:10px"><span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700"></span></div>';
@@ -855,7 +855,7 @@ function renderTablaAIR(idx) {
   document.getElementById('cr-' + idx).innerHTML =
     '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px;display:flex;align-items:center;gap:12px">' +
     '<span>' + total + ' resultado(s)' + '</span>' +
-    '<button class="btn btn-ghost btn-sm" onclick="sincronizarAIR(' + idx + ')"><i class="fa-solid fa-rotate"></i> Actualizar catálogo</button></div>' +
+    '<button class="btn btn-ghost btn-sm" onclick="sincronizarAIR(' + idx + ')"><i class="fa-solid fa-rotate"></i> Sincronizar</button>' +'<button class="btn btn-ghost btn-sm" onclick="recargarCatalogoAIR(' + idx + ')"><i class="fa-solid fa-download"></i> Recargar</button></div>' +
     '<div class="tbl-wrap"><table><thead><tr>' +
     '<th class="left" style="width:50px"></th><th class="left">Producto / Código</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado · $ARS</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>';
@@ -877,17 +877,32 @@ function goPageAIR(idx, n) { appState.proveedores[idx].currentPage = n; renderTa
 
 async function sincronizarAIR(idx) {
   var prov = appState.proveedores[idx];
-  var base = prov.airSyncUrl || prov.airUrl;
-  showMsg('cr-' + idx, '<span class="spinner" style="width:18px;height:18px;display:inline-block;margin-right:8px;vertical-align:middle"></span> Sincronizando con AIR...');
-  try {
-    var r = await fetch(base + '?action=sync');
-    var d = await r.json();
-    if (!d.ok) throw new Error(d.error || 'Error al sincronizar');
-    prov.loaded = false;
-    await precargarAIR(idx);
-    prov.currentPage = 1;
-    renderTablaAIR(idx);
-  } catch(e) { showError('cr-' + idx, 'Sincronización fallida: ' + e.message); }
+  var syncUrl = prov.airSyncUrl || '';
+  // El sync debe correr directo en el servidor (CORS/mixed-content impide fetch desde HTTPS)
+  // Abrimos la URL en nueva pestaña para que el servidor ejecute el sync
+  if (syncUrl) {
+    var fullUrl = syncUrl + '?action=sync';
+    showMsg('cr-' + idx,
+      '<div style="padding:14px;font-size:13px;font-weight:600;color:var(--text)">' +
+      '<i class="fa-solid fa-circle-info" style="color:#f59e0b;margin-right:8px"></i>' +
+      'Para sincronizar: <a href="' + fullUrl + '" target="_blank" style="color:var(--ryr-red);text-decoration:underline">abrí este link</a> ' +
+      'y cuando termine cerrá esa pestaña y presioná <strong>Actualizar catálogo</strong> de nuevo.' +
+      '</div>'
+    );
+  } else {
+    showError('cr-' + idx, 'Configurá la URL directa del servidor en la config del proveedor.');
+  }
+}
+
+async function recargarCatalogoAIR(idx) {
+  var prov = appState.proveedores[idx];
+  prov.loaded = false;
+  prov.productos = [];
+  prov._filtrados = [];
+  showLoading('cr-' + idx);
+  await precargarAIR(idx);
+  prov.currentPage = 1;
+  renderTablaAIR(idx);
 }
 
 // ── PAGINATION ────────────────────────────────────────────────────────────────
