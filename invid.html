@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invid — Lista de Precios</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--surface:#ffffff;--surface-1:#f7f7f9;--surface-2:#efeff2;--border:rgba(0,0,0,0.08);--text:#0f0f12;--text-secondary:rgba(15,15,18,0.6);--text-muted:rgba(15,15,18,0.35);--ryr-red:#D92C3B;--green:#1a9c4a;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--surface-1);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-weight:300;min-height:100vh;}
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap;}
+  .logo-name{font-size:17px;font-weight:700;color:var(--text);display:block;line-height:1.2;}
+  .logo-sub{font-size:10px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-top:1px;}
+  .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .chip{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;border:1px solid var(--border);background:var(--surface-1);color:var(--text-secondary);}
+  .chip strong{color:var(--text);font-weight:500;}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .btn{padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;white-space:nowrap;font-weight:500;font-family:inherit;}
+  .btn-sync{background:var(--ryr-red);color:#fff;border:none;}
+  .btn-sync:hover{opacity:.85;}
+  .btn-sync:disabled{opacity:.45;cursor:wait;}
+  .btn-config{background:transparent;color:var(--text-secondary);border:1px solid var(--border);}
+  .btn-config:hover{border-color:var(--ryr-red);color:var(--text);}
+  .main{padding:20px 24px;max-width:1100px;margin:0 auto;}
+  .delivery-note{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;margin-bottom:14px;font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:8px;}
+  .delivery-note strong{color:var(--text);font-weight:500;}
+  .search-row{display:flex;gap:8px;margin-bottom:14px;align-items:center;}
+  .search-wrap{flex:1;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 5px 5px 14px;transition:border-color .2s;}
+  .search-wrap:focus-within{border-color:var(--ryr-red);}
+  .search-wrap input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;padding:5px 0;font-family:inherit;font-weight:300;}
+  .search-wrap input::placeholder{color:var(--text-muted);}
+  .btn-clear{background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:6px 11px;border-radius:7px;font-size:12px;cursor:pointer;}
+  .btn-clear:hover{border-color:var(--ryr-red);color:var(--text);}
+  .count{font-size:11px;color:var(--text-muted);white-space:nowrap;}
+  .count span{color:var(--text-secondary);font-weight:500;}
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead th{background:var(--surface-1);padding:9px 16px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);}
+  thead th.r{text-align:right;}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:rgba(217,44,59,0.04);}
+  td{padding:10px 16px;font-size:13px;}
+  td.cod{font-family:monospace;color:var(--text-muted);font-size:11px;white-space:nowrap;}
+  td.desc{color:var(--text);}
+  td.marca{color:var(--text-secondary);font-size:11px;white-space:nowrap;}
+  td.stock{text-align:center;font-size:11px;}
+  .stk-ok{color:var(--green);font-weight:500;}
+  .stk-no{color:var(--text-muted);}
+  td.pf{text-align:right;font-weight:600;color:var(--green);font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  td.pf.sin-precio{color:var(--text-muted);font-weight:300;font-size:12px;}
+  .empty{text-align:center;padding:50px;color:var(--text-muted);}
+  .empty .big{font-size:32px;margin-bottom:8px;}
+  .pagination{display:flex;justify-content:center;align-items:center;gap:5px;padding:14px;}
+  .pg{background:var(--surface);border:1px solid var(--border);color:var(--text-secondary);padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer;transition:all .15s;min-width:30px;text-align:center;font-family:inherit;}
+  .pg:hover{border-color:var(--ryr-red);color:var(--text);}
+  .pg.active{background:var(--ryr-red);color:#fff;border-color:var(--ryr-red);}
+  .pg:disabled{opacity:.3;cursor:default;}
+  .pg-info{font-size:11px;color:var(--text-muted);padding:0 4px;}
+  #selSection{display:none;margin:16px 0 0 0;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .sel-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface-1);}
+  .sel-title{font-weight:600;color:var(--text);font-size:14px;}
+  .sel-count{color:var(--text-muted);font-size:12px;margin-left:6px;}
+  .btn-copy{background:var(--ryr-red);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit;font-weight:500;transition:opacity .2s;}
+  .btn-copy:hover{opacity:.85;}
+  .btn-sel-clear{background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit;}
+  .btn-sel-clear:hover{border-color:var(--ryr-red);color:var(--text);}
+  #selTbody tr{border-top:1px solid var(--border);}
+  #selTbody td{padding:8px 12px;font-size:13px;}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);backdrop-filter:blur(3px);z-index:200;align-items:center;justify-content:center;}
+  .overlay.show{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:420px;max-width:95vw;overflow:hidden;animation:su .2s ease;}
+  @keyframes su{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .mhdr{background:var(--surface-1);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+  .mtitle{font-size:14px;font-weight:600;color:var(--text);}
+  .mclose{background:none;border:none;color:var(--text-muted);font-size:17px;cursor:pointer;}
+  .mclose:hover{color:var(--text);}
+  .mbody{padding:20px;}
+  .fg{margin-bottom:16px;}
+  .fg label{display:block;font-size:10px;color:var(--text-muted);margin-bottom:6px;letter-spacing:.4px;text-transform:uppercase;font-weight:500;}
+  .fg input{width:100%;background:var(--surface-1);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;outline:none;transition:border-color .2s;font-family:inherit;}
+  .fg input:focus{border-color:var(--ryr-red);}
+  .fg-row{display:flex;gap:10px;}
+  .fg-row .fg{flex:1;}
+  .mkp-prev{background:var(--surface-1);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;margin-bottom:16px;}
+  .mkp-prev .lbl{font-size:11px;color:var(--text-muted);margin-bottom:3px;}
+  .mkp-prev .val{font-size:24px;font-weight:700;color:var(--text);}
+  .bfull{width:100%;background:var(--ryr-red);border:none;color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;font-family:inherit;}
+  .bfull:hover{opacity:.85;}
+  .breset{width:100%;margin-top:7px;background:transparent;border:1px solid var(--border);color:var(--text-secondary);padding:8px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .breset:hover{border-color:var(--ryr-red);color:var(--text);}
+  .err{color:var(--ryr-red);font-size:11px;margin-top:6px;display:none;}
+  .err.show{display:block;}
+  .lock-c{text-align:center;padding:6px 0 3px;}
+  .lock-c .ic{font-size:34px;margin-bottom:5px;}
+  .lock-c .ti{font-size:14px;font-weight:600;margin-bottom:3px;}
+  .lock-c .su{font-size:12px;color:var(--text-muted);margin-bottom:16px;}
+  #syncMsg{font-size:11px;padding:4px 10px;border-radius:6px;display:none;}
+  #syncMsg.ok{background:rgba(26,156,74,0.08);color:var(--green);border:1px solid rgba(26,156,74,0.2);display:inline-block;}
+  #syncMsg.fail{background:rgba(217,44,59,0.08);color:var(--ryr-red);border:1px solid rgba(217,44,59,0.2);display:inline-block;}
+  footer{margin-top:32px;padding:14px 24px;border-top:1px solid var(--border);text-align:center;font-size:11px;color:var(--text-muted);}
+  .filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+  .fchip{padding:4px 10px;border-radius:16px;font-size:11px;border:1px solid var(--border);background:var(--surface);color:var(--text-secondary);cursor:pointer;transition:all .15s;font-family:inherit;}
+  .fchip:hover,.fchip.on{border-color:var(--ryr-red);color:var(--ryr-red);background:rgba(217,44,59,0.06);}
+  @media(max-width:768px){header{height:auto;padding:10px 16px;}.main{padding:12px 16px;}td{padding:8px 10px;}td.desc{font-size:12px;}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <span class="logo-name">Invid</span>
+    <span class="logo-sub">Lista de Precios al Cliente</span>
+  </div>
+  <div class="header-right">
+    <div class="chip"><div class="dot"></div><span>USD BNA:&nbsp;</span><strong id="tcVal">cargando...</strong></div>
+    <div class="chip">Precios al: <strong id="priceDate">--/--/----</strong></div>
+    <span id="syncMsg"></span>
+    <button class="btn btn-sync" id="btnSync" onclick="syncPrices()">⟳ Actualizar precios</button>
+    <button class="btn btn-config" onclick="openConfig()">⚙ Markup</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="delivery-note">
+    📦 <span>Entrega estimada: <strong>3 a 5 días hábiles</strong> &nbsp;·&nbsp; 💵 Precios de <strong>lista Contado</strong> &nbsp;·&nbsp; Stock sujeto a disponibilidad</span>
+  </div>
+
+  <div class="filter-row" id="filterRow">
+    <button class="fchip on" data-filter="todos" onclick="setFilter(this)">Todos</button>
+    <button class="fchip" data-filter="con-stock" onclick="setFilter(this)">Con stock</button>
+    <button class="fchip" data-filter="sin-precio" onclick="setFilter(this)">Sin precio</button>
+  </div>
+
+  <div class="search-row">
+    <div class="search-wrap">
+      <span style="color:var(--text-muted)">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar por código, descripción o marca..." oninput="applyFilters()" autocomplete="off">
+    </div>
+    <button class="btn-clear" onclick="clearSearch()">✕</button>
+    <div class="count"><span id="cShow">0</span> / <span id="cTotal">0</span> artículos</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descripción</th>
+          <th>Marca</th>
+          <th style="text-align:center">Stock</th>
+          <th class="r">Precio Final (ARS c/IVA)</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="5" class="empty"><div class="big">⏳</div><p>Cargando catálogo...</p></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pagination"></div>
+
+  <div id="selSection">
+    <div class="sel-header">
+      <span class="sel-title">📋 Lista del cliente <span class="sel-count" id="selCount"></span></span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-copy" onclick="copyList()">📋 Copiar lista</button>
+        <button class="btn-sel-clear" onclick="clearList()">✕ Limpiar</button>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:var(--surface-1)">
+        <th style="padding:8px 12px;text-align:left;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);font-weight:600">Código</th>
+        <th style="padding:8px 12px;text-align:left;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);font-weight:600">Descripción</th>
+        <th style="padding:8px 12px;text-align:right;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);font-weight:600">Precio</th>
+        <th style="border-bottom:1px solid var(--border);width:32px"></th>
+      </tr></thead>
+      <tbody id="selTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  📦 Entrega 3 a 5 días hábiles &nbsp;·&nbsp; Lista Contado &nbsp;·&nbsp; Precios en pesos argentinos, IVA incluido
+  <br><span id="footerTc"></span>
+</footer>
+
+<!-- Modal Config -->
+<div class="overlay" id="overlay" onclick="closeOvl(event)">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle">⚙ Configuración de Markup</div>
+      <button class="mclose" onclick="closeConfig()">✕</button>
+    </div>
+    <div class="mbody">
+      <div id="lockScreen">
+        <div class="lock-c">
+          <div class="ic">🔒</div>
+          <div class="ti">Acceso restringido</div>
+          <div class="su">Ingresá la contraseña para configurar</div>
+        </div>
+        <div class="fg">
+          <label>Contraseña</label>
+          <input type="password" id="passInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPass()">
+          <div class="err" id="passErr">Contraseña incorrecta</div>
+        </div>
+        <button class="bfull" onclick="checkPass()">Ingresar</button>
+      </div>
+      <div id="cfgScreen" style="display:none">
+        <div class="mkp-prev"><div class="lbl">Markup neto aplicado</div><div class="val" id="mkpDisp">0%</div></div>
+        <div class="fg-row">
+          <div class="fg"><label>Markup (%)</label><input type="number" id="mkpIn" min="0" max="500" step="0.5" value="0" oninput="updPrev()"></div>
+          <div class="fg"><label>Descuento (%)</label><input type="number" id="dscIn" min="0" max="90" step="0.5" value="0" oninput="updPrev()"></div>
+        </div>
+        <button class="bfull" onclick="applyMkp()">✓ Aplicar markup</button>
+        <button class="breset" onclick="resetMkp()">↩ Resetear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Estado ──────────────────────────────────────────────────────────────────
+let PRODUCTS = [];
+let markup = 0, discount = 0, tc = 0;
+let filtered = [], page = 1, pageSize = 50;
+let selected = {};
+let activeFilter = 'todos';
+
+const CFG_PASS = 'ryr2025';
+const SYNC_URL = './invid_sync.php';
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(async function init() {
+  markup   = parseFloat(localStorage.getItem('invid_mkp')  || '0');
+  discount = parseFloat(localStorage.getItem('invid_dsc')  || '0');
+  await loadTC();
+  await loadCache();
+})();
+
+// ─── Tipo de cambio ───────────────────────────────────────────────────────────
+async function loadTC() {
+  try {
+    const r = await fetch('https://dolarapi.com/v1/dolares/oficial');
+    const d = await r.json();
+    tc = parseFloat(d.venta) || 0;
+    document.getElementById('tcVal').textContent = tc ? '$' + tc.toLocaleString('es-AR') : 'N/D';
+    document.getElementById('footerTc').textContent = tc ? 'USD BNA venta: $' + tc.toLocaleString('es-AR') : '';
+  } catch { document.getElementById('tcVal').textContent = 'N/D'; }
+}
+
+// ─── Carga caché ──────────────────────────────────────────────────────────────
+async function loadCache() {
+  try {
+    const r    = await fetch(SYNC_URL + '?action=get&_=' + Date.now());
+    const data = await r.json();
+    if (data.articulos && data.articulos.length) {
+      PRODUCTS = data.articulos;
+      const d = new Date(data.ts * 1000);
+      document.getElementById('priceDate').textContent = d.toLocaleDateString('es-AR');
+      applyFilters();
+    } else {
+      showEmpty('Sin caché. Hacé clic en "Actualizar precios".');
+    }
+  } catch { showEmpty('Error al cargar caché.'); }
+}
+
+// ─── Sync ─────────────────────────────────────────────────────────────────────
+async function syncPrices() {
+  const btn = document.getElementById('btnSync');
+  const msg = document.getElementById('syncMsg');
+  btn.disabled = true;
+  btn.textContent = '⏳ Sincronizando...';
+  msg.className = ''; msg.style.display = 'none';
+  try {
+    const r    = await fetch(SYNC_URL + '?action=sync&_=' + Date.now());
+    const data = await r.json();
+    if (data.ok) {
+      msg.className = 'ok';
+      msg.textContent = '✓ ' + data.total + ' artículos';
+      await loadCache();
+    } else {
+      msg.className = 'fail';
+      msg.textContent = '✗ ' + (data.error || 'Error');
+    }
+  } catch (e) {
+    msg.className = 'fail';
+    msg.textContent = '✗ Error de red';
+  }
+  btn.disabled = false;
+  btn.textContent = '⟳ Actualizar precios';
+}
+
+// ─── Filtros y búsqueda ───────────────────────────────────────────────────────
+function setFilter(el) {
+  document.querySelectorAll('.fchip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  activeFilter = el.dataset.filter;
+  page = 1;
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  filtered = PRODUCTS.filter(p => {
+    if (activeFilter === 'con-stock' && p.stock <= 0) return false;
+    if (activeFilter === 'sin-precio' && p.precio > 0) return false;
+    if (!q) return true;
+    return (p.codigo + ' ' + p.descripcion + ' ' + p.marca).toLowerCase().includes(q);
+  });
+  document.getElementById('cShow').textContent  = filtered.length;
+  document.getElementById('cTotal').textContent = PRODUCTS.length;
+  renderTable();
+  renderPagination();
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  applyFilters();
+}
+
+// ─── Render tabla ─────────────────────────────────────────────────────────────
+function calcPrecio(usd) {
+  if (!usd || !tc) return 0;
+  const base = usd * tc;
+  return base * (1 + markup / 100) * (1 - discount / 100);
+}
+
+function fmtARS(n) {
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  const start = (page - 1) * pageSize;
+  const slice = filtered.slice(start, start + pageSize);
+
+  if (!slice.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty"><div class="big">🔍</div><p>Sin resultados</p></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = slice.map(p => {
+    const precio = calcPrecio(p.precio);
+    const precioCell = precio
+      ? `<td class="pf">${fmtARS(precio)}</td>`
+      : `<td class="pf sin-precio">Sin precio</td>`;
+    const stk = p.stock > 0
+      ? `<span class="stk-ok">✓ ${p.stock}</span>`
+      : `<span class="stk-no">—</span>`;
+    return `<tr onclick="toggleSelect('${esc(p.codigo)}')">
+      <td class="cod">${esc(p.codigo)}</td>
+      <td class="desc">${esc(p.descripcion)}</td>
+      <td class="marca">${esc(p.marca)}</td>
+      <td class="stock">${stk}</td>
+      ${precioCell}
+    </tr>`;
+  }).join('');
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showEmpty(msg) {
+  document.getElementById('tbody').innerHTML =
+    `<tr><td colspan="5" class="empty"><div class="big">📭</div><p>${msg}</p></td></tr>`;
+}
+
+// ─── Paginación ───────────────────────────────────────────────────────────────
+function renderPagination() {
+  const total = Math.ceil(filtered.length / pageSize);
+  const pg = document.getElementById('pagination');
+  if (total <= 1) { pg.innerHTML = ''; return; }
+
+  let html = `<button class="pg" onclick="goPage(${page-1})" ${page===1?'disabled':''}>‹</button>`;
+  const range = [];
+  for (let i = 1; i <= total; i++) {
+    if (i===1||i===total||Math.abs(i-page)<=2) range.push(i);
+    else if (range[range.length-1]!=='…') range.push('…');
+  }
+  range.forEach(r => {
+    if (r==='…') html += `<span class="pg-info">…</span>`;
+    else html += `<button class="pg ${r===page?'active':''}" onclick="goPage(${r})">${r}</button>`;
+  });
+  html += `<button class="pg" onclick="goPage(${page+1})" ${page===total?'disabled':''}>›</button>`;
+  pg.innerHTML = html;
+}
+
+function goPage(p) {
+  const total = Math.ceil(filtered.length / pageSize);
+  if (p < 1 || p > total) return;
+  page = p;
+  renderTable();
+  renderPagination();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── Selección / lista cliente ────────────────────────────────────────────────
+function toggleSelect(cod) {
+  const p = PRODUCTS.find(x => x.codigo === cod);
+  if (!p) return;
+  if (selected[cod]) delete selected[cod];
+  else selected[cod] = p;
+  renderSelected();
+}
+
+function renderSelected() {
+  const keys = Object.keys(selected);
+  document.getElementById('selSection').style.display = keys.length ? 'block' : 'none';
+  document.getElementById('selCount').textContent = keys.length ? `(${keys.length})` : '';
+  const tbody = document.getElementById('selTbody');
+  tbody.innerHTML = keys.map(cod => {
+    const p = selected[cod];
+    const precio = calcPrecio(p.precio);
+    return `<tr>
+      <td class="cod">${esc(p.codigo)}</td>
+      <td class="desc">${esc(p.descripcion)}</td>
+      <td style="text-align:right;font-weight:600;color:var(--green)">${precio ? fmtARS(precio) : '—'}</td>
+      <td style="text-align:center"><button onclick="toggleSelect('${esc(cod)}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function copyList() {
+  const lines = Object.values(selected).map(p => {
+    const precio = calcPrecio(p.precio);
+    return `${p.codigo}\t${p.descripcion}\t${precio ? fmtARS(precio) : 'Sin precio'}`;
+  });
+  navigator.clipboard.writeText(lines.join('\n')).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => btn.textContent = '📋 Copiar lista', 1500);
+  });
+}
+
+function clearList() { selected = {}; renderSelected(); }
+
+// ─── Modal Config / Markup ────────────────────────────────────────────────────
+function openConfig() {
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('lockScreen').style.display = 'block';
+  document.getElementById('cfgScreen').style.display  = 'none';
+  document.getElementById('passInput').value = '';
+  document.getElementById('passErr').classList.remove('show');
+  document.getElementById('mkpIn').value = markup;
+  document.getElementById('dscIn').value = discount;
+  updPrev();
+}
+
+function closeConfig() { document.getElementById('overlay').classList.remove('show'); }
+function closeOvl(e)   { if (e.target === document.getElementById('overlay')) closeConfig(); }
+
+function checkPass() {
+  if (document.getElementById('passInput').value === CFG_PASS) {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('cfgScreen').style.display  = 'block';
+  } else {
+    document.getElementById('passErr').classList.add('show');
+  }
+}
+
+function updPrev() {
+  const m = parseFloat(document.getElementById('mkpIn').value) || 0;
+  const d = parseFloat(document.getElementById('dscIn').value) || 0;
+  const net = ((1 + m / 100) * (1 - d / 100) - 1) * 100;
+  document.getElementById('mkpDisp').textContent = net.toFixed(1) + '%';
+}
+
+function applyMkp() {
+  markup   = parseFloat(document.getElementById('mkpIn').value) || 0;
+  discount = parseFloat(document.getElementById('dscIn').value) || 0;
+  localStorage.setItem('invid_mkp', markup);
+  localStorage.setItem('invid_dsc', discount);
+  renderTable();
+  renderSelected();
+  closeConfig();
+}
+
+function resetMkp() {
+  markup = discount = 0;
+  document.getElementById('mkpIn').value = 0;
+  document.getElementById('dscIn').value = 0;
+  localStorage.removeItem('invid_mkp');
+  localStorage.removeItem('invid_dsc');
+  updPrev();
+  renderTable();
+  renderSelected();
+  closeConfig();
+}
+</script>
+</body>
+</html>
