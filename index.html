@@ -169,7 +169,7 @@
     .prod-modal-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
     .prod-modal-price{font-size:28px;font-weight:900;color:#16a34a;letter-spacing:-.03em}
     .prod-modal-price small{font-size:11px;font-weight:600;color:var(--muted);display:block;margin-top:3px}
-    .prod-modal-body{padding:18px}.prod-modal-footer{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+    .prod-modal-body{padding:18px}
     .prod-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .prod-detail-item{background:#f8fafc;border-radius:10px;padding:10px 13px}
     .prod-detail-item .lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px}
@@ -252,8 +252,7 @@
         <div class="form-group"><label class="form-label">Contraseña API</label><input type="password" class="form-input" id="pf-pass"/></div>
       </div>
       <div id="pf-air-fields" style="display:none">
-        <div class="form-group"><label class="form-label">URL load (via Netlify)</label><input type="text" class="form-input" id="pf-air-url"/></div>
-        <div class="form-group"><label class="form-label">URL sync directo (servidor local)</label><input type="text" class="form-input" id="pf-air-sync-url" placeholder="http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php"/></div>
+        <div class="form-group"><label class="form-label">URL sync2.php</label><input type="text" class="form-input" id="pf-air-url"/></div>
       </div>
       <div id="pf-elit-fields" style="display:none">
         <div class="form-group"><label class="form-label">User ID</label><input type="text" class="form-input" id="pf-elit-userid" placeholder="2978"/></div>
@@ -284,7 +283,6 @@
     <div class="prod-modal-box">
       <div class="prod-modal-header" id="prod-modal-header"></div>
       <div class="prod-modal-body" id="prod-modal-body"></div>
-      <div class="prod-modal-footer" id="prod-modal-footer"></div>
     </div>
   </div>
 </div>
@@ -313,12 +311,15 @@ var appState = {
       airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
     { id:'prov_air', nombre:'Proveedor 126', tipo:'air', user:'', pass:'', markup:38,
-      airUrl: '/.netlify/functions/air-proxy', airSyncUrl:'http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php', apiUrl:'', apiKey:'', endpoint:'',
+      airUrl: '/.netlify/functions/air-proxy', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
     { id:'prov_elit', nombre:'Proveedor 4', tipo:'elit', user:'', pass:'', markup:30,
       elitUserId:'2978', elitToken:'5y1p0twcuz',
       airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
-      token:null, productos:[], currentPage:1, loaded:false, _elitCatalogo:[], _elitDate:'' }
+      token:null, productos:[], currentPage:1, loaded:false, _elitCatalogo:[], _elitDate:'' },
+    { id:'prov_invid', nombre:'Proveedor 149', tipo:'invid',
+      airUrl:'', apiUrl:'', apiKey:'', endpoint:'', user:'', pass:'', markup:0,
+      token:null, productos:[], currentPage:1, loaded:false }
   ]
 };
 var sbClient = null;
@@ -354,7 +355,6 @@ function loadLocalConfig() {
         if (sp.pass !== undefined) p.pass = sp.pass;
         if (sp.markup !== undefined) p.markup = sp.markup;
         if (sp.airUrl !== undefined) p.airUrl = sp.airUrl;
-        if (sp.airSyncUrl !== undefined) p.airSyncUrl = sp.airSyncUrl;
         if (sp.apiUrl !== undefined) p.apiUrl = sp.apiUrl;
         if (sp.apiKey !== undefined) p.apiKey = sp.apiKey;
         if (sp.endpoint !== undefined) p.endpoint = sp.endpoint;
@@ -375,7 +375,7 @@ function loadLocalConfig() {
 function saveLocalConfig() {
   var toSave = appState.proveedores.map(function(p) {
     return { id:p.id, nombre:p.nombre, tipo:p.tipo, user:p.user, pass:p.pass,
-             markup:p.markup, airUrl:p.airUrl, airSyncUrl:p.airSyncUrl||'', apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint,
+             markup:p.markup, airUrl:p.airUrl, apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint,
              elitUserId:p.elitUserId, elitToken:p.elitToken };
   });
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ supaUrl:appState.supaUrl, supaKey:appState.supaKey, proveedores:toSave }));
@@ -416,6 +416,7 @@ function provConectado(p) {
   if (p.tipo === 'air') return !!p.airUrl;
   if (p.tipo === 'elit') return !!(p.elitUserId && p.elitToken);
   if (p.tipo === 'custom') return !!(p.apiUrl && p.apiKey);
+  if (p.tipo === 'invid') return true;
   return false;
 }
 
@@ -444,6 +445,11 @@ function renderSections() {
              : '<span class="badge badge-no"><i class="fa-solid fa-circle-xmark"></i> Sin configurar</span>') +
         '<button class="btn btn-ghost btn-sm" onclick="openConfig();editarProveedor(' + i + ')"><i class="fa-solid fa-pen"></i></button>' +
       '</div></div>';
+    if (p.tipo === 'invid') {
+      html += '<div style="margin-top:0"><iframe src="./invid.html" style="width:100%;height:calc(100vh - 130px);border:none;border-radius:12px;display:block;" allowfullscreen></iframe></div>';
+      html += '</div>';
+      return;
+    }
     if (!ok) {
       html += '<div class="unconfigured"><i class="fa-solid fa-plug"></i><h3>Proveedor no configurado</h3>' +
               '<p>Agregá las credenciales para empezar a consultar</p>' +
@@ -472,16 +478,12 @@ function renderSections() {
         html += '<input type="hidden" id="st-' + i + '" value="q"/>';
       }
       html += '<button class="btn btn-red" onclick="buscar(' + i + ')"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button></div>';
-      // Toggle solo con stock
-      if (p.tipo === 'nb' || p.tipo === 'elit' || p.tipo === 'air') {
-        var mkInput = '';
-        var onchangeFn = (p.tipo === 'air') ? 'renderTablaAIR(' + i + ')' : 'renderTabla(' + i + ')';
+      // Toggle solo con stock (NB y Elit tienen info de stock)
+      if (p.tipo === 'nb' || p.tipo === 'elit') {
         html += '<div class="toggle-row"><label class="toggle-wrap" for="ts-' + i + '">' +
-                '<span class="toggle"><input type="checkbox" id="ts-' + i + '" onchange="' + onchangeFn + '"><span class="toggle-slider"></span></span>' +
+                '<span class="toggle"><input type="checkbox" id="ts-' + i + '" onchange="renderTabla(' + i + ')"><span class="toggle-slider"></span></span>' +
                 '<label for="ts-' + i + '"><i class="fa-solid fa-boxes-stacked"></i> Solo con stock</label></label>' +
-                mkInput +
-                (p.tipo === 'air' ? '<button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="sincronizarAIR(' + i + ')"><i class="fa-solid fa-rotate"></i> Sincronizar</button><button class="btn btn-ghost btn-sm" style="margin-left:4px" onclick="recargarCatalogoAIR(' + i + ')"><i class="fa-solid fa-download"></i> Recargar</button>' : '') +
-                '<span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700;margin-left:auto"></span></div>';
+                '<span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700"></span></div>';
       } else {
         html += '<div style="margin-top:10px"><span id="rc-' + i + '" style="font-size:11px;color:var(--muted);font-weight:700"></span></div>';
       }
@@ -505,11 +507,11 @@ function switchProv(idx) {
   document.querySelectorAll('.nav-tab:not(.nav-tab-add)').forEach(function(b,i){ b.classList.toggle('active', i===idx); });
   var sec = document.getElementById('sec-' + idx);
   if (sec) sec.classList.add('active');
+  // LAZY: si es AIR y tiene catálogo pero no ha cargado aún, cargar en background
   var prov = appState.proveedores[idx];
-  if (prov && prov.tipo === 'air' && prov.airUrl && !prov.loaded) { prov.loaded = true; precargarAIR(idx); }
-  if (prov && prov.tipo === 'elit' && prov.elitUserId && prov.elitToken) {
-    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length > 100 && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
-    if (!cacheOk || !prov.productos || !prov.productos.length) buscarElit(idx, '', 'nombre');
+  if (prov && prov.tipo === 'air' && prov.airUrl && !prov.loaded) {
+    prov.loaded = true;
+    precargarAIR(idx);
   }
 }
 
@@ -540,25 +542,24 @@ async function nbFetch(prov, path) {
 // ── ELIT ──────────────────────────────────────────────────────────────────────
 async function buscarElit(idx, query, field) {
   var prov = appState.proveedores[idx];
+  var markup = prov.markup || 30;
   var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
+  showLoading('cr-' + idx);
   try {
-    var cacheOk = prov._elitCatalogo && prov._elitCatalogo.length > 100 && prov._elitCacheTs && (Date.now() - prov._elitCacheTs < 600000);
-    if (!cacheOk) await cargarCatalogoElit(idx);
+    if (!prov._elitCatalogo || !prov._elitCatalogo.length) {
+      document.getElementById('cr-' + idx).innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit (' + (prov._elitCatalogo ? prov._elitCatalogo.length : 0) + ' productos)...</div>';
+      await cargarCatalogoElit(idx);
+    }
     var catalogo = prov._elitCatalogo || [];
-    console.log('[buscarElit] catalogo='+catalogo.length+' query="'+query+'"');
-    var words = (query||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
-    var filtrados = !words.length ? catalogo.slice() : catalogo.filter(function(p) {
-      var haystack;
-      if (field === 'codigo_alfa') haystack = (p.codigo_alfa||'').toLowerCase();
-      else if (field === 'marca') haystack = (p.marca||'').toLowerCase();
-      else if (field === 'categoria') haystack = ((p.categoria||'')+' '+(p.sub_categoria||'')).toLowerCase();
-      else haystack = ((p.nombre||'')+' '+(p.marca||'')+' '+(p.codigo_alfa||'')+' '+(p.categoria||'')).toLowerCase();
-      return words.every(function(w){ return haystack.indexOf(w) >= 0; });
+    var q = query.toLowerCase();
+    var filtrados = catalogo.filter(function(p) {
+      if (field === 'codigo_alfa') return (p.codigo_alfa||'').toLowerCase().indexOf(q) >= 0;
+      if (field === 'marca') return (p.marca||'').toLowerCase().indexOf(q) >= 0;
+      if (field === 'categoria') return ((p.categoria||'') + ' ' + (p.sub_categoria||'')).toLowerCase().indexOf(q) >= 0;
+      return (p.nombre||'').toLowerCase().indexOf(q) >= 0;
     });
     if (soloStock) filtrados = filtrados.filter(function(p){ return (p.stock_total||0) > 0; });
-    console.log('[buscarElit] filtrados='+filtrados.length);
     prov.productos = filtrados;
-    prov._filtrados = filtrados;
     prov.currentPage = 1;
     renderTablaElit(idx);
   } catch(e) { showError('cr-' + idx, 'Error Elit: ' + e.message); }
@@ -566,52 +567,33 @@ async function buscarElit(idx, query, field) {
 
 async function cargarCatalogoElit(idx) {
   var prov = appState.proveedores[idx];
-  // Evitar cargas simultáneas
-  if (prov._elitLoading) {
-    while (prov._elitLoading) await new Promise(function(r){ setTimeout(r,200); });
-    return prov._elitCatalogo;
-  }
-  prov._elitLoading = true;
-  prov._elitCatalogo = [];
   var userId = parseInt(prov.elitUserId || '2978');
   var token = prov.elitToken || '5y1p0twcuz';
-  var all = [], offset = 1, total = null, realLimit = 100;
-  try {
-    while (true) {
-      var crEl = document.getElementById('cr-' + idx);
-      if (crEl) crEl.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo Elit... ' + all.length + (total?' / '+total:'') + ' productos</div>';
-      var r = await fetch('https://clientes.elit.com.ar/v1/api/productos?offset=' + offset + '&limit=100', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json','Accept':'application/json'},
-        body: JSON.stringify({user_id: userId, token: token})
-      });
-      if (!r.ok) { var e=''; try{e=await r.text();}catch(x){} throw new Error('HTTP '+r.status+': '+e.substring(0,200)); }
-      var d = await r.json();
-      if (d.codigo !== 200) throw new Error('Elit: '+(d.mensaje||JSON.stringify(d).substring(0,120)));
-      var prods = d.resultado || [];
-      if (!prods.length) break;
-      if (total === null && d.paginador) { total = d.paginador.total; realLimit = prods.length || 100; }
-      all = all.concat(prods);
-      offset += realLimit;
-      if (total && all.length >= total) break;
-      if (prods.length < realLimit) break;
-      if (all.length > 50000) break;
-    }
-    // Deduplicar por id
-    var seen = {}; all = all.filter(function(p){ if(seen[p.id])return false; seen[p.id]=1; return true; });
-    if (!all.length) throw new Error('Sin productos. Verificá credenciales.');
-    prov._elitCatalogo = all;
-    prov._elitCacheTs = Date.now();
-    prov._elitDate = new Date().toLocaleDateString('es-AR');
-    prov._elitLoading = false;
-    return all;
-  } catch(e) { prov._elitLoading = false; throw e; }
+  var all = [], page = 0, limit = 40, total = 99999;
+  while (all.length < total) {
+    var r = await fetch('https://clientes.elit.com.ar/v1/api/productos', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({user_id: userId, token: token, page: page})
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    if (d.codigo !== 200) throw new Error('Elit API: ' + (d.mensaje || JSON.stringify(d)));
+    var prods = d.resultado || [];
+    if (!prods.length) break;
+    all = all.concat(prods);
+    total = d.paginador ? d.paginador.total : all.length;
+    page++;
+  }
+  prov._elitCatalogo = all;
+  prov._elitDate = new Date().toLocaleDateString('es-AR');
+  return all;
 }
 
 function renderTablaElit(idx) {
   var prov = appState.proveedores[idx];
   var lista = prov.productos || [];
-  var markup = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30);
+  var markup = prov.markup || 30;
   var cotiz = appState.cotizBNA;
   var totalCat = (prov._elitCatalogo||[]).length;
   var rcEl = document.getElementById('rc-' + idx);
@@ -640,10 +622,10 @@ function renderTablaElit(idx) {
       '<td class="right ' + (tieneStock?'price-ok':'price-no') + '">' + (vp!==null ? '$'+Math.round(vp).toLocaleString('es-AR') : '—') + '</td>' +
       '</tr>';
   }).join('');
-  var cotizNote = '';
+  var cotizNote = cotiz ? ' · BNA $'+Math.round(cotiz).toLocaleString('es-AR') : '';
   document.getElementById('cr-' + idx).innerHTML =
     '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px">' +
-    lista.length + ' resultado(s)' + (prov._elitDate ? ' · Catálogo: ' + prov._elitDate : '') + '</div>' +
+    lista.length + ' resultado(s)' + cotizNote + (prov._elitDate ? ' · Catálogo: ' + prov._elitDate : '') + '</div>' +
     '<div class="tbl-wrap"><table><thead><tr>' +
     '<th class="left" style="width:50px"></th>' +
     '<th class="left">Producto</th>' +
@@ -657,24 +639,11 @@ function renderTablaElit(idx) {
 
 function goPageElit(idx, n) { appState.proveedores[idx].currentPage = n; renderTablaElit(idx); }
 
-function setMarkupElit(idx, val) {
-  var v = parseFloat(val);
-  appState.proveedores[idx].markup = isNaN(v) ? 0 : v;
-  renderTablaElit(idx);
-}
-
-
-function renderModalFooter(nombre, precio) {
-  var txt = encodeURIComponent('Hola Alberto, quiero consultar por: ' + nombre + (precio ? ' · Precio: $' + precio : ''));
-  var url = 'https://wa.me/5493624720441?text=' + txt;
-  document.getElementById('prod-modal-footer').innerHTML =
-    '<a href="' + url + '" target="_blank" class="btn btn-red" style="text-decoration:none"><i class="fa-brands fa-whatsapp"></i> Consultar a Alberto</a>';
-}
 function abrirModalElit(idx, id) {
   var prov = appState.proveedores[idx];
   var p = (prov._elitCatalogo||[]).find(function(x){ return x.id === id; });
   if (!p) return;
-  var cotiz = appState.cotizBNA, markup = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30);
+  var cotiz = appState.cotizBNA, markup = prov.markup || 30;
   var precioUSD = parseFloat(p.precio) || 0;
   var iva = parseFloat(p.iva) || 21;
   var vp = (precioUSD && cotiz)
@@ -693,7 +662,8 @@ function abrirModalElit(idx, id) {
       '<span class="badge badge-purple">' + esc(p.marca||'—') + '</span>' +
       '<span class="badge '+(tieneStock?'badge-ok':'badge-no')+'">' + (tieneStock?'En stock':'Sin stock') + '</span>' +
     '</div>' +
-    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'</div></div>';
+    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+
+    '<small>Precio Final en Pesos · IVA '+iva+'% · BNA oficial</small></div></div>';
   document.getElementById('prod-modal-body').innerHTML =
     '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
     '<div class="prod-detail-grid">' +
@@ -701,9 +671,9 @@ function abrirModalElit(idx, id) {
       '<div class="prod-detail-item"><div class="lbl">Garantía</div><div class="val">'+esc(p.garantia||'—')+' meses</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">Stock total</div><div class="val">'+((p.stock_total)||0)+'</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">Nivel stock</div><div class="val">'+esc(p.nivel_stock||'—')+'</div></div>' +
+      '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+iva+'%</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">EAN</div><div class="val">'+esc(p.ean||'—')+'</div></div>' +
     '</div>';
-  renderModalFooter(p.nombre||'—', vp!==null?Math.round(vp).toLocaleString('es-AR'):null);
   document.getElementById('prod-modal').classList.add('open');
 }
 
@@ -711,28 +681,19 @@ function abrirModalElit(idx, id) {
 async function precargarAIR(idx) {
   var prov = appState.proveedores[idx];
   var base = prov.airUrl || '/.netlify/functions/air-proxy';
-  var crEl = document.getElementById('cr-' + idx);
   try {
-    // Carga paginada: 500 productos por request para evitar timeout
-    var all = [], page = 0, pages = 1, date = '';
-    while (page < pages) {
-      if (crEl) crEl.innerHTML = '<div class="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo AIR... ' + all.length + (pages>1?' / ~' + (pages*500):'') + ' productos</div>';
-      var r = await fetch(base + '?action=load&page=' + page + '&ps=500');
-      var text = await r.text();
-      var d = JSON.parse(text);
-      if (!d.ok) { prov._precargarError = d.error || 'Error al cargar caché'; return; }
-      if (!d.products || !d.products.length) break;
-      all = all.concat(d.products);
-      date = d.date || date;
-      pages = d.pages || 1;
-      page++;
+    var r = await fetch(base + '?action=load');
+    var text = await r.text();
+    var d = JSON.parse(text);
+    if (d.ok && d.products && d.products.length) {
+      prov.productos = normAIR(d.products);
+      prov._airDate = d.date;
+      prov._filtrados = prov.productos;
+      var rc = document.getElementById('rc-' + idx);
+      if (rc) rc.textContent = prov.productos.length + ' productos en catálogo' + (d.date ? ' · ' + d.date : '');
+    } else {
+      prov._precargarError = d.error || 'Sin productos en caché';
     }
-    if (!all.length) { prov._precargarError = 'Sin productos en caché'; return; }
-    prov.productos = normAIR(all);
-    prov._airDate = date;
-    prov._filtrados = prov.productos;
-    var rc = document.getElementById('rc-' + idx);
-    if (rc) rc.textContent = prov.productos.length + ' productos en catálogo' + (date ? ' · ' + date : '');
   } catch(e) {
     prov._precargarError = e.message;
   }
@@ -740,7 +701,7 @@ async function precargarAIR(idx) {
 
 function normAIR(arr) {
   return arr.map(function(p) {
-    return { id:p.c, title:p.d||'—', sku:p.c||'', _usd:parseFloat(p.p)||0, _iva:parseFloat(p.i)||21, _stock:(p.s !== undefined ? p.s : -1), _img:p.img||'' };
+    return { id:p.c, title:p.d||'—', sku:p.c||'', _usd:parseFloat(p.p)||0, _iva:parseFloat(p.i)||21 };
   });
 }
 
@@ -749,8 +710,7 @@ async function buscar(idx) {
   var prov = appState.proveedores[idx];
   var query = (document.getElementById('si-' + idx).value || '').trim();
   var type = document.getElementById('st-' + idx).value;
-  var prov0 = appState.proveedores[idx];
-  if (!query && prov0 && prov0.tipo !== 'elit' && prov0.tipo !== 'air') return; // Elit y AIR permiten búsqueda vacía
+  if (!query) return;
   showLoading('cr-' + idx);
   document.getElementById('pg-' + idx).innerHTML = '';
   document.getElementById('rc-' + idx).textContent = '';
@@ -797,7 +757,7 @@ function renderTabla(idx) {
   var ps = 25, page = prov.currentPage || 1, total = filtrados.length, pages = Math.ceil(total/ps);
   if (page > pages) page = prov.currentPage = 1;
   var slice = filtrados.slice((page-1)*ps, page*ps);
-  var markup = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30), cotiz = appState.cotizBNA;
+  var markup = prov.markup || 30, cotiz = appState.cotizBNA;
   var rows = slice.map(function(p) {
     var precioUSD = p.price && p.price.value != null ? p.price.value : null;
     var iva = p.price && p.price.iva != null ? p.price.iva : 21;
@@ -815,9 +775,9 @@ function renderTabla(idx) {
       '<td class="right ' + (ok?'price-ok':'price-no') + '">' + (vp!==null ? '$'+Math.round(vp).toLocaleString('es-AR') : '—') + '</td>' +
       '</tr>';
   }).join('');
-  var cotizNote = '';
+  var cotizNote = cotiz ? ' · BNA $'+Math.round(cotiz).toLocaleString('es-AR') : '';
   document.getElementById('cr-' + idx).innerHTML =
-    '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px">' + total + ' resultado(s)' + '</div>' +
+    '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px">' + total + ' resultado(s)' + cotizNote + '</div>' +
     '<div class="tbl-wrap"><table><thead><tr>' +
     '<th class="left" style="width:50px"></th><th class="left">Producto</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado · $ARS</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>';
@@ -829,8 +789,7 @@ function goPage(idx, n) { appState.proveedores[idx].currentPage = n; renderTabla
 // ── RENDER TABLA AIR ──────────────────────────────────────────────────────────
 function renderTablaAIR(idx) {
   var prov = appState.proveedores[idx];
-  var soloStock = document.getElementById('ts-' + idx) && document.getElementById('ts-' + idx).checked;
-  var lista = (prov._filtrados || prov.productos || []).filter(function(p){ return !soloStock || p._stock === -1 || p._stock > 0; });
+  var lista = prov._filtrados || prov.productos || [];
   var rcEl = document.getElementById('rc-' + idx);
   if (rcEl) rcEl.textContent = lista.length + ' producto(s)' + (prov._airDate ? ' · ' + prov._airDate : '');
   if (!lista.length) { showMsg('cr-' + idx, 'Sin resultados.'); document.getElementById('pg-' + idx).innerHTML=''; return; }
@@ -843,19 +802,19 @@ function renderTablaAIR(idx) {
     // Usar data-idx (posición en slice) para evitar problemas con caracteres especiales en SKU
     var sliceStart = (page-1)*ps;
     return '<tr data-provid="' + idx + '" data-listidx="' + (sliceStart + i) + '" style="cursor:pointer">' +
-      '<td>' + (p._img ? '<img class="img-prod" src="'+esc(p._img)+'" alt="" loading="lazy" onerror="this.remove()">' : '<div class="img-ph"><i class="fa-solid fa-box"></i></div>') + '</td>' +
+      '<td><div class="img-ph"><i class="fa-solid fa-box"></i></div></td>' +
       '<td><div style="font-weight:700;font-size:12px">' + esc(p.title) + '</div><div class="sku">' + esc(p.sku) + '</div></td>' +
       '<td><span class="badge badge-info">—</span></td>' +
       '<td style="color:var(--muted);font-weight:600;font-size:12px">—</td>' +
-      (function(){ var sk=p._stock; var ok=sk===-1||sk>0; return '<td><span class="'+(ok?'stock-ok':'stock-no')+'"><i class="fa-solid '+(ok?'fa-circle-check':'fa-circle-xmark')+'"></i> '+(sk===-1?'Disponible':sk>0?'En stock':'Sin stock')+'</span></td>'; })() +
+      '<td><span class="stock-ok"><i class="fa-solid fa-circle-check"></i> Disponible</span></td>' +
       '<td class="right price-ok">' + (vp!==null ? '$'+Math.round(vp).toLocaleString('es-AR') : '—') + '</td>' +
       '</tr>';
   }).join('');
-  var cotizNote = '';
+  var cotizNote = cotiz ? ' · BNA $'+Math.round(cotiz).toLocaleString('es-AR') : '';
   document.getElementById('cr-' + idx).innerHTML =
     '<div style="font-size:11px;color:var(--muted);font-weight:700;padding:12px 14px;display:flex;align-items:center;gap:12px">' +
-    '<span>' + total + ' resultado(s)' + '</span>' +
-    '<button class="btn btn-ghost btn-sm" onclick="sincronizarAIR(' + idx + ')"><i class="fa-solid fa-rotate"></i> Sincronizar</button>' +'<button class="btn btn-ghost btn-sm" onclick="recargarCatalogoAIR(' + idx + ')"><i class="fa-solid fa-download"></i> Recargar</button></div>' +
+    '<span>' + total + ' resultado(s)' + cotizNote + '</span>' +
+    '<button class="btn btn-ghost btn-sm" onclick="sincronizarAIR(' + idx + ')"><i class="fa-solid fa-rotate"></i> Actualizar catálogo</button></div>' +
     '<div class="tbl-wrap"><table><thead><tr>' +
     '<th class="left" style="width:50px"></th><th class="left">Producto / Código</th><th class="left">Categoría</th><th class="left">Marca</th><th>Stock</th><th>Precio Final Contado · $ARS</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>';
@@ -877,32 +836,22 @@ function goPageAIR(idx, n) { appState.proveedores[idx].currentPage = n; renderTa
 
 async function sincronizarAIR(idx) {
   var prov = appState.proveedores[idx];
-  var syncUrl = prov.airSyncUrl || '';
-  // El sync debe correr directo en el servidor (CORS/mixed-content impide fetch desde HTTPS)
-  // Abrimos la URL en nueva pestaña para que el servidor ejecute el sync
-  if (syncUrl) {
-    var fullUrl = syncUrl + '?action=sync';
-    showMsg('cr-' + idx,
-      '<div style="padding:14px;font-size:13px;font-weight:600;color:var(--text)">' +
-      '<i class="fa-solid fa-circle-info" style="color:#f59e0b;margin-right:8px"></i>' +
-      'Para sincronizar: <a href="' + fullUrl + '" target="_blank" style="color:var(--ryr-red);text-decoration:underline">abrí este link</a> ' +
-      'y cuando termine cerrá esa pestaña y presioná <strong>Actualizar catálogo</strong> de nuevo.' +
-      '</div>'
-    );
-  } else {
-    showError('cr-' + idx, 'Configurá la URL directa del servidor en la config del proveedor.');
-  }
-}
-
-async function recargarCatalogoAIR(idx) {
-  var prov = appState.proveedores[idx];
-  prov.loaded = false;
-  prov.productos = [];
-  prov._filtrados = [];
-  showLoading('cr-' + idx);
-  await precargarAIR(idx);
-  prov.currentPage = 1;
-  renderTablaAIR(idx);
+  var base = prov.airUrl;
+  showMsg('cr-' + idx, '<span class="spinner" style="width:18px;height:18px;display:inline-block;margin-right:8px;vertical-align:middle"></span> Sincronizando con AIR...');
+  try {
+    var r = await fetch(base + '?action=sync');
+    var d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Error al sincronizar');
+    var r2 = await fetch(base + '?action=load');
+    var d2 = await r2.json();
+    if (d2.ok && d2.products) {
+      prov.productos = normAIR(d2.products);
+      prov._airDate = d2.date;
+      prov._filtrados = prov.productos;
+      prov.currentPage = 1;
+    }
+    renderTablaAIR(idx);
+  } catch(e) { showError('cr-' + idx, 'Sincronización fallida: ' + e.message); }
 }
 
 // ── PAGINATION ────────────────────────────────────────────────────────────────
@@ -926,7 +875,7 @@ async function abrirModalNB(idx, id) {
     if (!p) throw new Error('Sin datos');
     var precioUSD = p.price && p.price.value != null ? p.price.value : null;
     var iva = p.price && p.price.iva != null ? p.price.iva : 21;
-    var cotiz = appState.cotizBNA, markup = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30);
+    var cotiz = appState.cotizBNA, markup = prov.markup || 30;
     var vp = (precioUSD !== null && cotiz) ? precioUSD * cotiz * (1+iva/100) * (1+markup/100) : null;
     var stock = p.stock || 'Sin stock';
     var ok = stock.toLowerCase().indexOf('sin') < 0;
@@ -939,15 +888,15 @@ async function abrirModalNB(idx, id) {
         '<span class="badge badge-purple">' + esc(p.brand||'—') + '</span>' +
         '<span class="badge '+(ok?'badge-ok':'badge-no')+'"><i class="fa-solid '+(ok?'fa-circle-check':'fa-circle-xmark')+'"></i> '+esc(stock)+'</span>' +
       '</div>' +
-      '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'</div></div>';
+      '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'<small>Precio Final en Pesos · IVA '+iva+'% · cotización BNA oficial</small></div></div>';
     document.getElementById('prod-modal-body').innerHTML =
       '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
       '<div class="prod-detail-grid">' +
         '<div class="prod-detail-item"><div class="lbl">ID</div><div class="val">'+(p.id||'—')+'</div></div>' +
         '<div class="prod-detail-item"><div class="lbl">Garantía</div><div class="val">'+esc(p.warranty||'—')+'</div></div>' +
         '<div class="prod-detail-item"><div class="lbl">Cant. en stock</div><div class="val">'+(p.amountStock!=null?p.amountStock:'—')+'</div></div>' +
-        '</div>';
-    renderModalFooter(p.title||p.name||'—', vp!==null?Math.round(vp).toLocaleString('es-AR'):null);
+        '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+iva+'%</div></div>' +
+      '</div>';
   } catch(e) { document.getElementById('prod-modal-header').innerHTML = '<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> '+e.message+'</div>'; }
 }
 
@@ -960,26 +909,25 @@ function abrirModalAIR(idx, listIdx) {
   var cotiz = appState.cotizBNA, markup = prov.markup || 38;
   var vp = (cotiz && p._usd) ? p._usd * cotiz * (1+p._iva/100) * (1+markup/100) : null;
   document.getElementById('prod-modal-header').innerHTML =
-    (p._img ? '<img class="prod-modal-img" src="'+esc(p._img)+'" alt="" onerror="this.style.display=\'none\'">' : '<div class="prod-modal-img-ph"><i class="fa-solid fa-box"></i></div>') +
+    '<div class="prod-modal-img-ph"><i class="fa-solid fa-box"></i></div>' +
     '<div class="prod-modal-meta"><h2>' + esc(p.title) + '</h2>' +
     '<div class="sku" style="margin-bottom:10px"><i class="fa-solid fa-barcode"></i> ' + esc(p.sku) + '</div>' +
     '<div class="prod-modal-badges"><span class="badge badge-ok"><i class="fa-solid fa-circle-check"></i> Disponible</span></div>' +
-    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'</div></div>';
+    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'<small>Precio Final en Pesos · IVA '+p._iva+'% · cotización BNA oficial</small></div></div>';
   document.getElementById('prod-modal-body').innerHTML =
     '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
     '<div class="prod-detail-grid">' +
       '<div class="prod-detail-item"><div class="lbl">Código</div><div class="val">'+esc(p.sku)+'</div></div>' +
-      
+      '<div class="prod-detail-item"><div class="lbl">IVA</div><div class="val">'+p._iva+'%</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">Entrega</div><div class="val">5-7 días hábiles</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">Proveedor</div><div class="val">Proveedor 126</div></div>' +
     '</div>' +
     '<div style="margin-top:14px;background:#fffdf0;border:1px solid #f59e0b;border-radius:10px;padding:10px 14px;font-size:11px;font-weight:700;color:#b45309">' +
       '<i class="fa-solid fa-clock"></i> Entrega 5 a 7 días hábiles · Precios de lista Contado</div>';
-  renderModalFooter(p.title||'—', vp!==null?Math.round(vp).toLocaleString('es-AR'):null);
   document.getElementById('prod-modal').classList.add('open');
 }
 
-function cerrarProdModal() { document.getElementById('prod-modal').classList.remove('open'); document.getElementById('prod-modal-footer').innerHTML=''; }
+function cerrarProdModal() { document.getElementById('prod-modal').classList.remove('open'); }
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 function openConfig() {
@@ -1011,7 +959,7 @@ function renderProvList() {
     var cc = COLORS[i % COLORS.length];
     html += '<div class="prov-list-item" onclick="editarProveedor('+i+')">' +
       '<div class="pli-icon '+cc+'"><i class="fa-solid fa-building-store"></i></div>' +
-      '<div><div style="font-weight:800;font-size:13px">'+esc(p.nombre)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+p.tipo+'</div></div>' +
+      '<div><div style="font-weight:800;font-size:13px">'+esc(p.nombre)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+p.tipo+' · '+p.markup+'% markup</div></div>' +
       '<div class="pli-right"><span class="badge '+(ok?'badge-ok':'badge-no')+'">'+(ok?'OK':'Sin config')+'</span></div></div>';
   });
   document.getElementById('prov-list').innerHTML = html;
@@ -1025,13 +973,12 @@ function editarProveedor(idx) {
   document.getElementById('pf-user').value = p.user || '';
   document.getElementById('pf-pass').value = p.pass || '';
   document.getElementById('pf-air-url').value = p.airUrl || AIR_PROXY;
-  document.getElementById('pf-air-sync-url').value = p.airSyncUrl || 'http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php';
   document.getElementById('pf-elit-userid').value = p.elitUserId || '';
   document.getElementById('pf-elit-token').value = p.elitToken || '';
   document.getElementById('pf-apiurl').value = p.apiUrl || '';
   document.getElementById('pf-apikey').value = p.apiKey || '';
   document.getElementById('pf-endpoint').value = p.endpoint || '';
-  document.getElementById('pf-markup').value = (p.markup !== undefined && p.markup !== null ? p.markup : 30);
+  document.getElementById('pf-markup').value = p.markup || 30;
   document.getElementById('prov-form-title').textContent = 'Editar: ' + p.nombre;
   onTipoChange();
   document.getElementById('prov-form').style.display = 'block';
@@ -1074,7 +1021,6 @@ function guardarProveedor() {
     user: document.getElementById('pf-user').value.trim(),
     pass: document.getElementById('pf-pass').value,
     airUrl: document.getElementById('pf-air-url').value.trim(),
-    airSyncUrl: document.getElementById('pf-air-sync-url').value.trim(),
     apiUrl: document.getElementById('pf-apiurl').value.trim(),
     apiKey: document.getElementById('pf-apikey').value.trim(),
     endpoint: document.getElementById('pf-endpoint').value.trim(),
