@@ -446,10 +446,9 @@ function renderSections() {
         '<button class="btn btn-ghost btn-sm" onclick="openConfig();editarProveedor(' + i + ')"><i class="fa-solid fa-pen"></i></button>' +
       '</div></div>';
     if (p.tipo === 'invid') {
-      html += '<div style="margin-top:0"><iframe src="./invid.html" style="width:100%;height:calc(100vh - 130px);border:none;border-radius:12px;display:block;" allowfullscreen></iframe></div>';
+      html += '<iframe src="./invid.html" style="width:100%;height:calc(100vh - 130px);border:none;border-radius:12px;display:block;margin-top:0"></iframe>';
       html += '</div>';
-      return;
-    }
+    } else
     if (!ok) {
       html += '<div class="unconfigured"><i class="fa-solid fa-plug"></i><h3>Proveedor no configurado</h3>' +
               '<p>Agregá las credenciales para empezar a consultar</p>' +
