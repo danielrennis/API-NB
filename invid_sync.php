@@ -5,8 +5,8 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
-define('INVID_AUTH_URL',   'https://www.invidcomputers.com/api/v1/auth');
-define('INVID_ART_URL',    'https://www.invidcomputers.com/api/v1/articulo');
+define('INVID_AUTH_URL',   'https://www.invidcomputers.com/api/v1/auth.php');
+define('INVID_ART_URL',    'https://www.invidcomputers.com/api/v1/articulo.php');
 define('INVID_TOKEN_FILE', __DIR__ . '/invid_token.json');
 define('INVID_CACHE_FILE', __DIR__ . '/invid_cache.json');
 define('INVID_USER',       'ristoffa');
