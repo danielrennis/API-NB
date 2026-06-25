@@ -5,11 +5,12 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
-define('INVID_BASE',       'https://invidcomputers.com/api');
+define('INVID_AUTH_URL',   'https://www.invidcomputers.com/api/v1/auth');
+define('INVID_ART_URL',    'https://www.invidcomputers.com/api/v1/articulo');
 define('INVID_TOKEN_FILE', __DIR__ . '/invid_token.json');
 define('INVID_CACHE_FILE', __DIR__ . '/invid_cache.json');
-define('INVID_USER',       '2026163237');
-define('INVID_PASS',       'Ristoff123');
+define('INVID_USER',       'ristoffa');
+define('INVID_PASS',       'Ristoff_A');
 
 function arr($a, $k, $def) {
     return isset($a[$k]) ? $a[$k] : $def;
@@ -28,7 +29,7 @@ function invid_get_token() {
 }
 
 function invid_login() {
-    $ch = curl_init(INVID_BASE . '/v1/auth.php');
+    $ch = curl_init(INVID_AUTH_URL);
     curl_setopt_array($ch, array(
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
@@ -65,7 +66,7 @@ function invid_fetch_all($token) {
     $items    = array();
 
     do {
-        $url = INVID_BASE . '/v1/articulo.php?page=' . $page . '&limit=' . $pageSize;
+        $url = INVID_ART_URL . '?page=' . $page . '&limit=' . $pageSize;
         $ch  = curl_init($url);
         curl_setopt_array($ch, array(
             CURLOPT_RETURNTRANSFER => true,
