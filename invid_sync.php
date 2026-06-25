@@ -114,6 +114,7 @@ function invid_fetch_all($token) {
 $action = isset($_GET['action']) ? $_GET['action'] : 'sync';
 
 if ($action === 'sync') {
+    set_time_limit(300);
     $token     = invid_get_token();
     $articulos = invid_fetch_all($token);
     $cache = array(
