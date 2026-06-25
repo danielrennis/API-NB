@@ -118,7 +118,6 @@
     <div class="chip">Precios al: <strong id="priceDate">--/--/----</strong></div>
     <span id="syncMsg"></span>
     <button class="btn btn-sync" id="btnSync" onclick="syncPrices()">⟳ Actualizar precios</button>
-    <button class="btn btn-config" onclick="openConfig()">⚙ Markup</button>
   </div>
 </header>
 
@@ -251,8 +250,10 @@ async function loadTC() {
 
 // ─── Carga caché ──────────────────────────────────────────────────────────────
 async function loadCache() {
+  const msg = document.getElementById('syncMsg');
   try {
     const r    = await fetch(SYNC_URL + '?action=get&_=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     if (data.articulos && data.articulos.length) {
       PRODUCTS = data.articulos;
@@ -262,10 +263,14 @@ async function loadCache() {
     } else {
       showEmpty('Sin caché. Hacé clic en "Actualizar precios".');
     }
-  } catch { showEmpty('Error al cargar caché.'); }
+  } catch(e) {
+    msg.className = 'fail';
+    msg.textContent = '✗ Sin conexión al servidor local';
+    msg.style.display = 'inline-block';
+    showEmpty('No se pudo conectar al servidor. Verificá que XAMPP esté activo.');
+  }
 }
 
-// ─── Sync ─────────────────────────────────────────────────────────────────────
 async function syncPrices() {
   const btn = document.getElementById('btnSync');
   const msg = document.getElementById('syncMsg');
@@ -274,18 +279,22 @@ async function syncPrices() {
   msg.className = ''; msg.style.display = 'none';
   try {
     const r    = await fetch(SYNC_URL + '?action=sync&_=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     if (data.ok) {
       msg.className = 'ok';
       msg.textContent = '✓ ' + data.total + ' artículos';
+      msg.style.display = 'inline-block';
       await loadCache();
     } else {
       msg.className = 'fail';
       msg.textContent = '✗ ' + (data.error || 'Error');
+      msg.style.display = 'inline-block';
     }
   } catch (e) {
     msg.className = 'fail';
-    msg.textContent = '✗ Error de red';
+    msg.textContent = '✗ Error: ' + e.message;
+    msg.style.display = 'inline-block';
   }
   btn.disabled = false;
   btn.textContent = '⟳ Actualizar precios';
