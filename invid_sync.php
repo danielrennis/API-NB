@@ -16,8 +16,6 @@ function arr($a, $k, $def) {
     return isset($a[$k]) ? $a[$k] : $def;
 }
 
-// ─── Auth ────────────────────────────────────────────────────────────────────
-
 function invid_get_token() {
     if (file_exists(INVID_TOKEN_FILE)) {
         $t = json_decode(file_get_contents(INVID_TOKEN_FILE), true);
@@ -56,8 +54,6 @@ function invid_login() {
     file_put_contents(INVID_TOKEN_FILE, json_encode($data));
     return $data['access_token'];
 }
-
-// ─── Artículos ───────────────────────────────────────────────────────────────
 
 function invid_fetch_all($token) {
     $page     = 1;
@@ -115,8 +111,6 @@ function invid_fetch_all($token) {
     return $todos;
 }
 
-// ─── Acciones ────────────────────────────────────────────────────────────────
-
 $action = isset($_GET['action']) ? $_GET['action'] : 'sync';
 
 if ($action === 'sync') {
@@ -147,5 +141,5 @@ if ($action === 'sync') {
     ));
 
 } else {
-    echo json_encode(array('ok' => false, 'error' => 'Accion invalida. Usa: sync | get | token'));
+    echo json_encode(array('ok' => false, 'error' => 'Accion invalida'));
 }
