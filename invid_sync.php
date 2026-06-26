@@ -55,58 +55,50 @@ function invid_login() {
     return $data['access_token'];
 }
 
+function invid_fetch_page($token, $url) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, array(
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => array(
+            'Authorization: Bearer ' . $token,
+            'Accept: application/json',
+        ),
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_TIMEOUT        => 30,
+    ));
+    $raw  = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err  = curl_error($ch);
+    curl_close($ch);
+    if ($err || $code !== 200) return null;
+    return json_decode($raw, true);
+}
+
 function invid_fetch_all($token) {
-    $page     = 1;
-    $todos    = array();
-    $pageSize = 100;
-    $items    = array();
+    $todos   = array();
+    $nextUrl = INVID_ART_URL;
 
-    do {
-        $url = INVID_ART_URL . '?page=' . $page . '&limit=' . $pageSize;
-        $ch  = curl_init($url);
-        curl_setopt_array($ch, array(
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => array(
-                'Authorization: Bearer ' . $token,
-                'Accept: application/json',
-            ),
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_TIMEOUT        => 30,
-        ));
-        $raw  = curl_exec($ch);
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $err  = curl_error($ch);
-        curl_close($ch);
+    while ($nextUrl) {
+        $data = invid_fetch_page($token, $nextUrl);
+        if (!$data || !isset($data['data']) || !is_array($data['data'])) break;
 
-        if ($err || $code !== 200) break;
-
-        $data = json_decode($raw, true);
-        if (isset($data['articulos'])) {
-            $items = $data['articulos'];
-        } elseif (isset($data['data'])) {
-            $items = $data['data'];
-        } elseif (is_array($data)) {
-            $items = $data;
-        } else {
-            $items = array();
-        }
-
-        if (empty($items)) break;
-
-        foreach ($items as $a) {
+        foreach ($data['data'] as $a) {
+            $precio_raw = arr($a, 'PRICE', '0');
+            $precio = (float) preg_replace('/[^0-9.]/', '', str_replace(',', '.', $precio_raw));
             $todos[] = array(
-                'codigo'      => arr($a, 'CODIART',   arr($a, 'codigo',      '')),
-                'descripcion' => arr($a, 'DESCRIP',   arr($a, 'descripcion', '')),
-                'precio'      => (float) arr($a, 'PRECIO',    arr($a, 'precio',    0)),
-                'stock'       => (int)   arr($a, 'STOCK',     arr($a, 'stock',     0)),
-                'imagen'      => arr($a, 'IMAGE_URL', arr($a, 'imagen',      '')),
-                'marca'       => arr($a, 'MARCA',     arr($a, 'marca',       '')),
-                'categoria'   => arr($a, 'CATEGORIA', arr($a, 'categoria',   '')),
+                'codigo'      => arr($a, 'ID',           ''),
+                'descripcion' => arr($a, 'TITLE',        ''),
+                'precio'      => $precio,
+                'stock'       => arr($a, 'STOCK_STATUS', 0),
+                'imagen'      => arr($a, 'IMAGE_URL',    ''),
+                'marca'       => arr($a, 'BRAND',        ''),
+                'categoria'   => arr($a, 'CATEGORY',     ''),
+                'part_number' => arr($a, 'PART_NUMBER',  ''),
             );
         }
 
-        $page++;
-    } while (count($items) >= $pageSize);
+        $nextUrl = isset($data['next_page_url']) ? $data['next_page_url'] : null;
+    }
 
     return $todos;
 }
@@ -114,7 +106,7 @@ function invid_fetch_all($token) {
 $action = isset($_GET['action']) ? $_GET['action'] : 'sync';
 
 if ($action === 'sync') {
-    set_time_limit(300);
+set_time_limit(300);	
     $token     = invid_get_token();
     $articulos = invid_fetch_all($token);
     $cache = array(
@@ -141,6 +133,23 @@ if ($action === 'sync') {
         'expires_at' => isset($t['expires_at']) ? date('Y-m-d H:i:s', $t['expires_at']) : '',
     ));
 
+} elseif ($action === 'test') {
+    set_time_limit(60);
+    $token = invid_get_token();
+    $url = INVID_ART_URL . '?page=1&limit=10';
+    $ch  = curl_init($url);
+    curl_setopt_array($ch, array(
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => array('Authorization: Bearer ' . $token, 'Accept: application/json'),
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_TIMEOUT        => 30,
+    ));
+    $raw  = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err  = curl_error($ch);
+    curl_close($ch);
+    echo json_encode(array('code' => $code, 'err' => $err, 'raw' => json_decode($raw, true)));
 } else {
     echo json_encode(array('ok' => false, 'error' => 'Accion invalida'));
 }
+
