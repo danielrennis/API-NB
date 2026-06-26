@@ -134,21 +134,11 @@ set_time_limit(300);
     ));
 
 } elseif ($action === 'test') {
-    set_time_limit(60);
     $token = invid_get_token();
-    $url = INVID_ART_URL . '?page=1&limit=10';
-    $ch  = curl_init($url);
-    curl_setopt_array($ch, array(
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER     => array('Authorization: Bearer ' . $token, 'Accept: application/json'),
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT        => 30,
-    ));
-    $raw  = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $err  = curl_error($ch);
-    curl_close($ch);
-    echo json_encode(array('code' => $code, 'err' => $err, 'raw' => json_decode($raw, true)));
+    $data  = invid_fetch_page($token, INVID_ART_URL);
+    if (!$data) { echo json_encode(array('ok' => false, 'error' => 'Sin respuesta')); exit; }
+    $items = isset($data['data']) ? array_slice($data['data'], 0, 1) : array();
+    echo json_encode(array('ok' => true, 'next' => isset($data['next_page_url']) ? $data['next_page_url'] : null, 'muestra' => $items));
 } else {
     echo json_encode(array('ok' => false, 'error' => 'Accion invalida'));
 }
