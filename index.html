@@ -446,7 +446,12 @@ function renderSections() {
         '<button class="btn btn-ghost btn-sm" onclick="openConfig();editarProveedor(' + i + ')"><i class="fa-solid fa-pen"></i></button>' +
       '</div></div>';
     if (p.tipo === 'invid') {
-      html += '<iframe src="./invid.html" style="width:100%;height:calc(100vh - 130px);border:none;border-radius:12px;display:block;margin-top:0"></iframe>';
+      html += '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;gap:16px">' +
+        '<div style="font-size:48px">🖥️</div>' +
+        '<div style="font-size:18px;font-weight:700;color:var(--text)">Proveedor 149 — Invid</div>' +
+        '<div style="font-size:13px;color:var(--muted);text-align:center">Este proveedor corre en el servidor local.<br>Hacé clic para abrir en nueva pestaña.</div>' +
+        '<a href="http://serverres.dyndns.org:81/prueba/Proveedores/invid.html" target="_blank" class="btn btn-red" style="text-decoration:none;margin-top:8px"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Proveedor 149</a>' +
+        '</div>';
       html += '</div>';
     } else
     if (!ok) {
