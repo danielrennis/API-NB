@@ -76,7 +76,7 @@ function invid_fetch_page($token, $url) {
 
 function invid_fetch_all($token) {
     $todos   = array();
-    $nextUrl = INVID_ART_URL;
+    $nextUrl = INVID_ART_URL . '?offset=0';
 
     while ($nextUrl) {
         $data = invid_fetch_page($token, $nextUrl);
@@ -135,7 +135,7 @@ set_time_limit(300);
 
 } elseif ($action === 'test') {
     $token = invid_get_token();
-    $ch = curl_init(INVID_ART_URL);
+    $ch = curl_init(INVID_ART_URL . '?offset=0');
     curl_setopt_array($ch, array(
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPHEADER     => array('Authorization: Bearer ' . $token, 'Accept: application/json'),
@@ -148,7 +148,7 @@ set_time_limit(300);
     $decoded = json_decode($raw, true);
     $keys = is_array($decoded) ? array_keys($decoded) : array();
     $first = (isset($decoded['data']) && is_array($decoded['data'])) ? array_slice($decoded['data'], 0, 1) : $decoded;
-    echo json_encode(array('code' => $code, 'keys' => $keys, 'first' => $first));
+    echo json_encode(array('code' => $code, 'keys' => $keys, 'next' => isset($decoded['next_page_url']) ? $decoded['next_page_url'] : null, 'first' => $first));
 } else {
     echo json_encode(array('ok' => false, 'error' => 'Accion invalida'));
 }
