@@ -332,7 +332,7 @@ var appState = {
       airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
     { id:'prov_air', nombre:'Proveedor 126', tipo:'air', user:'', pass:'', markup:38,
-      airUrl: 'sync2.php', airSyncUrl:'http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php', apiUrl:'', apiKey:'', endpoint:'',
+      airUrl: (window.location.protocol === 'https:' ? '/.netlify/functions/air-proxy' : 'sync2.php'), airSyncUrl:'http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
     { id:'prov_elit', nombre:'Proveedor 4', tipo:'elit', user:'', pass:'', markup:30,
       elitUserId:'2978', elitToken:'5y1p0twcuz',
@@ -564,6 +564,7 @@ function switchProv(idx) {
   if (prov && prov.tipo === 'invid' && !prov.loaded) {
     prov.loaded = true;
     cargarInvid(idx);
+  }
   }
 }
 
