@@ -1373,6 +1373,12 @@ function setInvidFilter(idx, el) {
   applyInvid(idx);
 }
 
+function invidTieneStock(stk) {
+  if (!stk) return false;
+  var s = String(stk).trim().toLowerCase();
+  return s !== 'sin stock' && s !== '0' && s !== 'sin_stock' && s !== 'no';
+}
+
 function applyInvid(idx) {
   var prov = appState.proveedores[idx];
   if (!prov.productos || !prov.productos.length) return;
@@ -1383,7 +1389,7 @@ function applyInvid(idx) {
 
   prov._filtrados = prov.productos.filter(function(p) {
     var tienePrecio = parseFloat(p.precio) > 0;
-    var tieneStock = p.stock && p.stock !== 'SIN STOCK';
+    var tieneStock = invidTieneStock(p.stock);
     if (filter === 'con-precio' && !tienePrecio) return false;
     if (filter === 'con-stock'  && !tieneStock)  return false;
     if (!q) return true;
@@ -1412,7 +1418,7 @@ function renderTablaInvid(idx) {
     var usd = parseFloat(p.precio) || 0;
     var iva = parseFloat(p.iva) || 21;
     var ars = (usd && cotiz) ? Math.round(usd * cotiz * (1 + iva/100) * (1 + mkp/100)) : 0;
-    var tieneStock = p.stock && p.stock !== 'SIN STOCK';
+    var tieneStock = invidTieneStock(p.stock);
     var stockHtml = tieneStock
       ? '<span class="stock-ok"><i class="fa-solid fa-circle-check"></i> ' + esc(p.stock) + '</span>'
       : '<span class="stock-no"><i class="fa-solid fa-circle-xmark"></i> Sin stock</span>';
@@ -1455,9 +1461,12 @@ function abrirInvidFicha(idx, codigo) {
       var usd = parseFloat(d.precio) || 0;
       var iva = parseFloat(d.iva) || 21;
       var ars = (usd && cotiz) ? Math.round(usd * cotiz * (1+iva/100) * (1+mkp/100)) : 0;
-      var stk = d.stock === 'EN STOCK'  ? '<span class="invid-stk-ok">✓ En stock</span>'
-              : d.stock === 'BAJO STOCK' ? '<span class="invid-stk-bajo">⚠ Bajo stock</span>'
-              : '<span class="invid-stk-no">Sin stock</span>';
+      var sNorm = String(d.stock || '').trim().toLowerCase();
+      var stk = (sNorm.indexOf('stock bajo') !== -1 || sNorm.indexOf('bajo') !== -1 || sNorm.indexOf('menos de') !== -1)
+              ? '<span class="invid-stk-bajo">⚠ ' + esc(d.stock) + '</span>'
+              : (invidTieneStock(d.stock)
+                  ? '<span class="invid-stk-ok">✓ ' + esc(d.stock) + '</span>'
+                  : '<span class="invid-stk-no">Sin stock</span>');
       var imgHtml = d.imagen
         ? '<img class="invid-ficha-img" src="' + esc(d.imagen) + '" alt="" onerror="this.style.display=\'none\'">'
         : '';

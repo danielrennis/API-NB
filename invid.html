@@ -343,10 +343,16 @@ function setFilter(el) {
   applyFilters();
 }
 
+function invidTieneStock(stk) {
+  if (!stk) return false;
+  const s = String(stk).trim().toLowerCase();
+  return s !== 'sin stock' && s !== '0' && s !== 'sin_stock' && s !== 'no';
+}
+
 function applyFilters() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   filtered = PRODUCTS.filter(p => {
-    const tieneStock  = p.stock && p.stock !== 'SIN STOCK' && p.stock !== '';
+    const tieneStock  = invidTieneStock(p.stock);
     const tienePrecio = p.precio > 0;
     if (activeFilter === 'con-stock'  && !tieneStock)  return false;
     if (activeFilter === 'con-precio' && !tienePrecio) return false;
@@ -390,8 +396,9 @@ function renderTable() {
     const precioCell = precio
       ? `<td class="pf">${fmtARS(precio)}</td>`
       : `<td class="pf sin-precio">Sin precio</td>`;
-    const stk = p.stock > 0
-      ? `<span class="stk-ok">✓ ${p.stock}</span>`
+    const tieneStk = invidTieneStock(p.stock);
+    const stk = tieneStk
+      ? `<span class="stk-ok">✓ ${esc(p.stock)}</span>`
       : `<span class="stk-no">—</span>`;
     return `<tr onclick="openFicha('${esc(p.codigo)}')" style="cursor:pointer">
       <td class="cod">${esc(p.codigo)}</td>
@@ -548,9 +555,12 @@ async function openFicha(codigo) {
     if (!d.ok) throw new Error(d.error || 'Error');
 
     const precio = calcPrecio(parseFloat(d.precio) || 0);
-    const stockBadge = d.stock === 'EN STOCK'   ? '<span class="ficha-badge ok">✓ En stock</span>'
-                     : d.stock === 'BAJO STOCK'  ? '<span class="ficha-badge bajo">⚠ Bajo stock</span>'
-                     : '<span class="ficha-badge no">Sin stock</span>';
+    const sNorm = String(d.stock || '').trim().toLowerCase();
+    const stockBadge = (sNorm.indexOf('stock bajo') !== -1 || sNorm.indexOf('bajo') !== -1 || sNorm.indexOf('menos de') !== -1)
+                     ? '<span class="ficha-badge bajo">⚠ ' + esc(d.stock) + '</span>'
+                     : (invidTieneStock(d.stock)
+                         ? '<span class="ficha-badge ok">✓ ' + esc(d.stock) + '</span>'
+                         : '<span class="ficha-badge no">Sin stock</span>');
 
     const precioHtml = precio
       ? `<div class="ficha-precio">${fmtARS(precio)}</div>
