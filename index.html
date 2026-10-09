@@ -1382,6 +1382,7 @@ function invidTieneStock(stk) {
 function applyInvid(idx) {
   var prov = appState.proveedores[idx];
   if (!prov.productos || !prov.productos.length) return;
+  prov.currentPage = 1;
   var q = (document.getElementById('si-' + idx)||{value:''}).value.trim().toLowerCase();
   var words = q ? q.split(/\s+/).filter(Boolean) : [];
   var filter = prov._invid_filter || 'con-precio';

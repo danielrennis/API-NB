@@ -350,6 +350,7 @@ function invidTieneStock(stk) {
 }
 
 function applyFilters() {
+  page = 1;
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   const words = q ? q.split(/\s+/).filter(Boolean) : [];
   filtered = PRODUCTS.filter(p => {
