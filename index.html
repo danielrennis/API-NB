@@ -1383,6 +1383,7 @@ function applyInvid(idx) {
   var prov = appState.proveedores[idx];
   if (!prov.productos || !prov.productos.length) return;
   var q = (document.getElementById('si-' + idx)||{value:''}).value.trim().toLowerCase();
+  var words = q ? q.split(/\s+/).filter(Boolean) : [];
   var filter = prov._invid_filter || 'con-precio';
   var cotiz = appState.cotizBNA || 0;
   var mkp = prov.markup || 0;
@@ -1392,8 +1393,9 @@ function applyInvid(idx) {
     var tieneStock = invidTieneStock(p.stock);
     if (filter === 'con-precio' && !tienePrecio) return false;
     if (filter === 'con-stock'  && !tieneStock)  return false;
-    if (!q) return true;
-    return (p.codigo + ' ' + p.descripcion + ' ' + p.marca).toLowerCase().indexOf(q) !== -1;
+    if (!words.length) return true;
+    var haystack = ((p.codigo||'') + ' ' + (p.descripcion||'') + ' ' + (p.marca||'') + ' ' + (p.categoria||'') + ' ' + (p.part_number||'')).toLowerCase();
+    return words.every(function(w){ return haystack.indexOf(w) !== -1; });
   });
   renderTablaInvid(idx);
 }

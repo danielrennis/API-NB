@@ -351,13 +351,15 @@ function invidTieneStock(stk) {
 
 function applyFilters() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const words = q ? q.split(/\s+/).filter(Boolean) : [];
   filtered = PRODUCTS.filter(p => {
     const tieneStock  = invidTieneStock(p.stock);
     const tienePrecio = p.precio > 0;
     if (activeFilter === 'con-stock'  && !tieneStock)  return false;
     if (activeFilter === 'con-precio' && !tienePrecio) return false;
-    if (!q) return true;
-    return (p.codigo + ' ' + p.descripcion + ' ' + p.marca).toLowerCase().includes(q);
+    if (!words.length) return true;
+    const haystack = ((p.codigo||'') + ' ' + (p.descripcion||'') + ' ' + (p.marca||'') + ' ' + (p.categoria||'') + ' ' + (p.part_number||'')).toLowerCase();
+    return words.every(w => haystack.indexOf(w) !== -1);
   });
   document.getElementById('cShow').textContent  = filtered.length;
   document.getElementById('cTotal').textContent = PRODUCTS.length;
