@@ -82,16 +82,9 @@ function invid_fetch_page($token, $url) {
             if ($parsed !== null) return $parsed;
         }
 
-        // Si da 429 (Rate limit de Invid alcanzado, típicamente límite de 50 peticiones)
+        // Si da 429 (Rate limit de Invid alcanzado), no bloquear la ejecucion: retornar null y continuar con el stock actualizado
         if ($code === 429) {
-            $espera = 60;
-            if (preg_match('/Retry-After:\s*(\d+)/i', $headers, $m)) {
-                $espera = (int)$m[1] + 3;
-            } elseif (preg_match('/X-RateLimit-Reset:\s*(\d+)/i', $headers, $m)) {
-                $espera = max(5, (int)$m[1] - time() + 3);
-            }
-            sleep($espera);
-            continue;
+            return null;
         }
 
         // Si da 400 (offset excedido al final del catálogo), terminar
@@ -105,9 +98,10 @@ function invid_fetch_page($token, $url) {
     return null;
 }
 
-function invid_fetch_all($token, $start_offset = 0) {
+function invid_fetch_all($token, $start_offset = 0, $max_pages = 0) {
     $todos  = array();
     $offset = (int)$start_offset;
+    $pages  = 0;
 
     while (true) {
         $url  = INVID_ART_URL . '?offset=' . $offset;
@@ -130,6 +124,8 @@ function invid_fetch_all($token, $start_offset = 0) {
             );
         }
 
+        $pages++;
+        if ($max_pages > 0 && $pages >= $max_pages) break;
         if (count($data['data']) < 100) break;
         $offset += 100;
         // Pausa breve entre páginas para reducir probabilidad de rate limit
@@ -178,11 +174,12 @@ function invid_fetch_stock_precios($token) {
 $action = isset($_GET['action']) ? $_GET['action'] : 'sync';
 
 if ($action === 'sync') {
-    set_time_limit(600);
+    set_time_limit(900);
     $token = invid_get_token();
 
     // 1. Cargar caché previo
     $articulos_map = array();
+    $offset_catalogo = 0;
     if (file_exists(INVID_CACHE_FILE)) {
         $prev = json_decode(file_get_contents(INVID_CACHE_FILE), true);
         if (isset($prev['articulos']) && is_array($prev['articulos'])) {
@@ -192,24 +189,51 @@ if ($action === 'sync') {
                 }
             }
         }
-    }
-
-    // 2. Si no hay catálogo en caché o tiene pocos artículos, descargar artículos completos
-    if (count($articulos_map) < 3000) {
-        $nuevos = invid_fetch_all($token);
-        foreach ($nuevos as $a) {
-            $articulos_map[$a['codigo']] = $a;
+        if (isset($prev['offset_catalogo'])) {
+            $offset_catalogo = (int)$prev['offset_catalogo'];
         }
     }
 
-    // 3. Actualizar stock y precios en tiempo real vía stock-precio.php (ultra-rápido, sin rate limit)
+    // 2. Actualizar stock y precios en tiempo real vía stock-precio.php (ultra-rápido ~15s, sin rate limit)
     $sp = invid_fetch_stock_precios($token);
+    $creados_desde_sp = 0;
     if (!empty($sp)) {
         foreach ($sp as $cod => $info) {
             if (isset($articulos_map[$cod])) {
                 $articulos_map[$cod]['precio'] = $info['precio'];
                 $articulos_map[$cod]['stock']  = $info['stock'];
+            } else {
+                // Auto-incorporar artículo nuevo para que aparezca disponible de inmediato
+                $articulos_map[$cod] = array(
+                    'codigo'      => $cod,
+                    'descripcion' => 'Artículo ' . $cod,
+                    'precio'      => $info['precio'],
+                    'iva'         => 10.5,
+                    'stock'       => $info['stock'],
+                    'imagen'      => '',
+                    'marca'       => '',
+                    'categoria'   => '',
+                    'part_number' => '',
+                );
+                $creados_desde_sp++;
             }
+        }
+    }
+
+    // 3. Descargar lotes de artículos nuevos / descripciones completas vía articulo.php (hasta 20 páginas por sync)
+    // Si la API devuelve 429 no bloquea ni aborta: simplemente continúa y guarda el stock actualizado
+    $nuevos_descargados = 0;
+    $max_paginas_por_sync = 20;
+    $nuevos = invid_fetch_all($token, $offset_catalogo, $max_paginas_por_sync);
+    if (!empty($nuevos)) {
+        foreach ($nuevos as $a) {
+            $articulos_map[$a['codigo']] = $a;
+            $nuevos_descargados++;
+        }
+        $offset_catalogo += count($nuevos);
+        // Si trajo menos del lote esperado, llegó al final del catálogo: reiniciar offset
+        if (count($nuevos) < ($max_paginas_por_sync * 100)) {
+            $offset_catalogo = 0;
         }
     }
 
@@ -220,12 +244,21 @@ if ($action === 'sync') {
     }
 
     $cache = array(
-        'ts'        => time(),
-        'total'     => count($articulos),
-        'articulos' => $articulos,
+        'ts'              => time(),
+        'total'           => count($articulos),
+        'offset_catalogo' => $offset_catalogo,
+        'articulos'       => $articulos,
     );
     file_put_contents(INVID_CACHE_FILE, json_encode($cache));
-    echo json_encode(array('ok' => true, 'total' => count($articulos), 'ts' => $cache['ts'], 'sp_actualizados' => count($sp)));
+    echo json_encode(array(
+        'ok'                 => true,
+        'total'              => count($articulos),
+        'ts'                 => $cache['ts'],
+        'nuevos_catalogo'    => $nuevos_descargados,
+        'offset_catalogo'    => $offset_catalogo,
+        'sp_actualizados'    => count($sp),
+        'creados_desde_sp'   => $creados_desde_sp
+    ));
 
 } elseif ($action === 'sync_catalog') {
     set_time_limit(900);

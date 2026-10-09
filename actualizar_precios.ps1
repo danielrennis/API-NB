@@ -45,7 +45,7 @@ try {
     $InvidSyncUrl = "http://localhost:81/prueba/Proveedores/invid_sync.php?action=sync"
     $respInvid = Invoke-RestMethod -Uri $InvidSyncUrl -Method GET -TimeoutSec 600
     if ($respInvid.ok) {
-        Log "Invid actualizado OK: $($respInvid.total) productos"
+        Log "Invid actualizado OK: $($respInvid.total) total (stock/precios: $($respInvid.sp_actualizados), nuevos catalogo: $($respInvid.nuevos_catalogo))"
     } else {
         Log "ERROR sync Invid: $($respInvid.error)"
     }
