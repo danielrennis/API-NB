@@ -272,7 +272,10 @@
         <div class="form-group"><label class="form-label">API Key / Token</label><input type="text" class="form-input" id="pf-apikey"/></div>
         <div class="form-group"><label class="form-label">Endpoint búsqueda</label><input type="text" class="form-input" id="pf-endpoint" placeholder="/products?q={query}"/></div>
       </div>
-      <div class="form-group"><label class="form-label">Markup (%)</label><input type="number" class="form-input" id="pf-markup" min="0" max="999" step="0.5"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group"><label class="form-label">Markup Minorista (%)</label><input type="number" class="form-input" id="pf-markup" min="0" max="999" step="0.5"/></div>
+        <div class="form-group"><label class="form-label">Markup Mayorista (%)</label><input type="number" class="form-input" id="pf-markup-mayorista" min="0" max="999" step="0.5"/></div>
+      </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
         <button class="btn btn-green" onclick="guardarProveedor()"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
         <button class="btn btn-ghost" onclick="cancelarFormProv()"><i class="fa-solid fa-xmark"></i></button>
@@ -328,17 +331,17 @@ var appState = {
   activeProv: 0,
   editingIdx: null,
   proveedores: [
-    { id:'prov_213', nombre:'Proveedor 213', tipo:'nb', user:'', pass:'', markup:30,
+    { id:'prov_213', nombre:'Proveedor 213', tipo:'nb', user:'', pass:'', markup:30, markupMayorista:15,
       airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
-    { id:'prov_air', nombre:'Proveedor 126', tipo:'air', user:'', pass:'', markup:38,
+    { id:'prov_air', nombre:'Proveedor 126', tipo:'air', user:'', pass:'', markup:38, markupMayorista:18,
       airUrl: (window.location.protocol === 'https:' ? '/.netlify/functions/air-proxy' : 'sync2.php'), airSyncUrl:'http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
-    { id:'prov_elit', nombre:'Proveedor 4', tipo:'elit', user:'', pass:'', markup:30,
+    { id:'prov_elit', nombre:'Proveedor 4', tipo:'elit', user:'', pass:'', markup:30, markupMayorista:15,
       elitUserId:'2978', elitToken:'5y1p0twcuz',
       airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false, _elitCatalogo:[], _elitDate:'' },
-    { id:'prov_invid', nombre:'Proveedor 149', tipo:'invid', user:'2026163237', pass:'Ristoff123', markup:38,
+    { id:'prov_invid', nombre:'Proveedor 149', tipo:'invid', user:'2026163237', pass:'Ristoff123', markup:38, markupMayorista:18,
       airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false }
   ]
@@ -375,6 +378,7 @@ function loadLocalConfig() {
         if (sp.user !== undefined) p.user = sp.user;
         if (sp.pass !== undefined) p.pass = sp.pass;
         if (sp.markup !== undefined) p.markup = sp.markup;
+        if (sp.markupMayorista !== undefined) p.markupMayorista = sp.markupMayorista;
         if (sp.airUrl !== undefined) p.airUrl = sp.airUrl;
         if (sp.airSyncUrl !== undefined) p.airSyncUrl = sp.airSyncUrl;
         if (sp.apiUrl !== undefined) p.apiUrl = sp.apiUrl;
@@ -397,7 +401,8 @@ function loadLocalConfig() {
 function saveLocalConfig() {
   var toSave = appState.proveedores.map(function(p) {
     return { id:p.id, nombre:p.nombre, tipo:p.tipo, user:p.user, pass:p.pass,
-             markup:p.markup, airUrl:p.airUrl, airSyncUrl:p.airSyncUrl||'', apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint,
+             markup:p.markup, markupMayorista:(p.markupMayorista !== undefined ? p.markupMayorista : 15),
+             airUrl:p.airUrl, airSyncUrl:p.airSyncUrl||'', apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint,
              elitUserId:p.elitUserId, elitToken:p.elitToken };
   });
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ supaUrl:appState.supaUrl, supaKey:appState.supaKey, proveedores:toSave }));
@@ -725,16 +730,32 @@ function abrirModalElit(idx, id) {
   var prov = appState.proveedores[idx];
   var p = (prov._elitCatalogo||[]).find(function(x){ return x.id === id; });
   if (!p) return;
-  var cotiz = appState.cotizBNA, markup = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30);
+  var cotiz = appState.cotizBNA;
+  var markupMin = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30);
+  var markupMay = (prov.markupMayorista !== undefined && prov.markupMayorista !== null ? prov.markupMayorista : 15);
   var precioUSD = parseFloat(p.precio) || 0;
   var iva = parseFloat(p.iva) || 21;
-  var vp = (precioUSD && cotiz)
-    ? precioUSD * cotiz * (1+iva/100) * (1+markup/100)
-    : (p.pvp_ars ? p.pvp_ars*(1+markup/100) : null);
+  var vpMin = (precioUSD && cotiz)
+    ? precioUSD * cotiz * (1+iva/100) * (1+markupMin/100)
+    : (p.pvp_ars ? p.pvp_ars*(1+markupMin/100) : null);
+  var vpMay = (precioUSD && cotiz)
+    ? precioUSD * cotiz * (1+iva/100) * (1+markupMay/100)
+    : (p.pvp_ars ? p.pvp_ars*(1+markupMay/100) : null);
   var tieneStock = (p.stock_total||0) > 0;
   var imgHtml = (p.imagenes && p.imagenes[0])
     ? '<img class="prod-modal-img" src="' + esc(p.imagenes[0]) + '" alt="">'
     : '<div class="prod-modal-img-ph"><i class="fa-solid fa-image"></i></div>';
+  var pricesHtml =
+    '<div style="display:flex;gap:16px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">' +
+      '<div>' +
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista ('+markupMin+'%)</div>' +
+        '<div class="prod-modal-price" style="font-size:24px">'+(vpMin!==null?'$'+Math.round(vpMin).toLocaleString('es-AR'):'—')+'</div>' +
+      '</div>' +
+      '<div style="border-left:1px solid var(--border);padding-left:16px">' +
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista ('+markupMay+'%)</div>' +
+        '<div class="prod-modal-price" style="font-size:24px;color:#0284c7">'+(vpMay!==null?'$'+Math.round(vpMay).toLocaleString('es-AR'):'—')+'</div>' +
+      '</div>' +
+    '</div>';
   document.getElementById('prod-modal-header').innerHTML =
     imgHtml +
     '<div class="prod-modal-meta"><h2>' + esc(p.nombre||'—') + '</h2>' +
@@ -744,7 +765,7 @@ function abrirModalElit(idx, id) {
       '<span class="badge badge-purple">' + esc(p.marca||'—') + '</span>' +
       '<span class="badge '+(tieneStock?'badge-ok':'badge-no')+'">' + (tieneStock?'En stock':'Sin stock') + '</span>' +
     '</div>' +
-    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'</div></div>';
+    pricesHtml + '</div>';
   document.getElementById('prod-modal-body').innerHTML =
     '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
     '<div class="prod-detail-grid">' +
@@ -754,7 +775,7 @@ function abrirModalElit(idx, id) {
       '<div class="prod-detail-item"><div class="lbl">Nivel stock</div><div class="val">'+esc(p.nivel_stock||'—')+'</div></div>' +
       '<div class="prod-detail-item"><div class="lbl">EAN</div><div class="val">'+esc(p.ean||'—')+'</div></div>' +
     '</div>';
-  renderModalFooter(p.nombre||'—', vp!==null?Math.round(vp).toLocaleString('es-AR'):null);
+  renderModalFooter(p.nombre||'—', vpMin!==null?Math.round(vpMin).toLocaleString('es-AR'):null);
   document.getElementById('prod-modal').classList.add('open');
 }
 
@@ -977,10 +998,24 @@ async function abrirModalNB(idx, id) {
     if (!p) throw new Error('Sin datos');
     var precioUSD = p.price && p.price.value != null ? p.price.value : null;
     var iva = p.price && p.price.iva != null ? p.price.iva : 21;
-    var cotiz = appState.cotizBNA, markup = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30);
-    var vp = (precioUSD !== null && cotiz) ? precioUSD * cotiz * (1+iva/100) * (1+markup/100) : null;
+    var cotiz = appState.cotizBNA;
+    var markupMin = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 30);
+    var markupMay = (prov.markupMayorista !== undefined && prov.markupMayorista !== null ? prov.markupMayorista : 15);
+    var vpMin = (precioUSD !== null && cotiz) ? precioUSD * cotiz * (1+iva/100) * (1+markupMin/100) : null;
+    var vpMay = (precioUSD !== null && cotiz) ? precioUSD * cotiz * (1+iva/100) * (1+markupMay/100) : null;
     var stock = p.stock || 'Sin stock';
     var ok = stock.toLowerCase().indexOf('sin') < 0;
+    var pricesHtml =
+      '<div style="display:flex;gap:16px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">' +
+        '<div>' +
+          '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista ('+markupMin+'%)</div>' +
+          '<div class="prod-modal-price" style="font-size:24px">'+(vpMin!==null?'$'+Math.round(vpMin).toLocaleString('es-AR'):'—')+'</div>' +
+        '</div>' +
+        '<div style="border-left:1px solid var(--border);padding-left:16px">' +
+          '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista ('+markupMay+'%)</div>' +
+          '<div class="prod-modal-price" style="font-size:24px;color:#0284c7">'+(vpMay!==null?'$'+Math.round(vpMay).toLocaleString('es-AR'):'—')+'</div>' +
+        '</div>' +
+      '</div>';
     document.getElementById('prod-modal-header').innerHTML =
       (p.mainImage ? '<img class="prod-modal-img" src="'+esc(p.mainImage)+'" alt="">' : '<div class="prod-modal-img-ph"><i class="fa-solid fa-image"></i></div>') +
       '<div class="prod-modal-meta"><h2>' + esc(p.title||'—') + '</h2>' +
@@ -990,7 +1025,7 @@ async function abrirModalNB(idx, id) {
         '<span class="badge badge-purple">' + esc(p.brand||'—') + '</span>' +
         '<span class="badge '+(ok?'badge-ok':'badge-no')+'"><i class="fa-solid '+(ok?'fa-circle-check':'fa-circle-xmark')+'"></i> '+esc(stock)+'</span>' +
       '</div>' +
-      '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'</div></div>';
+      pricesHtml + '</div>';
     document.getElementById('prod-modal-body').innerHTML =
       '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
       '<div class="prod-detail-grid">' +
@@ -998,7 +1033,7 @@ async function abrirModalNB(idx, id) {
         '<div class="prod-detail-item"><div class="lbl">Garantía</div><div class="val">'+esc(p.warranty||'—')+'</div></div>' +
         '<div class="prod-detail-item"><div class="lbl">Cant. en stock</div><div class="val">'+(p.amountStock!=null?p.amountStock:'—')+'</div></div>' +
         '</div>';
-    renderModalFooter(p.title||p.name||'—', vp!==null?Math.round(vp).toLocaleString('es-AR'):null);
+    renderModalFooter(p.title||p.name||'—', vpMin!==null?Math.round(vpMin).toLocaleString('es-AR'):null);
   } catch(e) { document.getElementById('prod-modal-header').innerHTML = '<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> '+e.message+'</div>'; }
 }
 
@@ -1008,14 +1043,28 @@ function abrirModalAIR(idx, listIdx) {
   var lista = prov._filtrados || prov.productos || [];
   var p = lista[listIdx];
   if (!p) return;
-  var cotiz = appState.cotizBNA, markup = prov.markup || 38;
-  var vp = (cotiz && p._usd) ? p._usd * cotiz * (1+p._iva/100) * (1+markup/100) : null;
+  var cotiz = appState.cotizBNA;
+  var markupMin = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 38);
+  var markupMay = (prov.markupMayorista !== undefined && prov.markupMayorista !== null ? prov.markupMayorista : 18);
+  var vpMin = (cotiz && p._usd) ? p._usd * cotiz * (1+p._iva/100) * (1+markupMin/100) : null;
+  var vpMay = (cotiz && p._usd) ? p._usd * cotiz * (1+p._iva/100) * (1+markupMay/100) : null;
+  var pricesHtml =
+    '<div style="display:flex;gap:16px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">' +
+      '<div>' +
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista ('+markupMin+'%)</div>' +
+        '<div class="prod-modal-price" style="font-size:24px">'+(vpMin!==null?'$'+Math.round(vpMin).toLocaleString('es-AR'):'—')+'</div>' +
+      '</div>' +
+      '<div style="border-left:1px solid var(--border);padding-left:16px">' +
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista ('+markupMay+'%)</div>' +
+        '<div class="prod-modal-price" style="font-size:24px;color:#0284c7">'+(vpMay!==null?'$'+Math.round(vpMay).toLocaleString('es-AR'):'—')+'</div>' +
+      '</div>' +
+    '</div>';
   document.getElementById('prod-modal-header').innerHTML =
     (p._img ? '<img class="prod-modal-img" src="'+esc(p._img)+'" alt="" onerror="this.style.display=\'none\'">' : '<div class="prod-modal-img-ph"><i class="fa-solid fa-box"></i></div>') +
     '<div class="prod-modal-meta"><h2>' + esc(p.title) + '</h2>' +
     '<div class="sku" style="margin-bottom:10px"><i class="fa-solid fa-barcode"></i> ' + esc(p.sku) + '</div>' +
     '<div class="prod-modal-badges"><span class="badge badge-ok"><i class="fa-solid fa-circle-check"></i> Disponible</span></div>' +
-    '<div class="prod-modal-price">'+(vp!==null?'$'+Math.round(vp).toLocaleString('es-AR'):'—')+'</div></div>';
+    pricesHtml + '</div>';
   document.getElementById('prod-modal-body').innerHTML =
     '<div class="section-title" style="margin-bottom:12px"><i class="fa-solid fa-circle-info"></i> Información</div>' +
     '<div class="prod-detail-grid">' +
@@ -1026,7 +1075,7 @@ function abrirModalAIR(idx, listIdx) {
     '</div>' +
     '<div style="margin-top:14px;background:#fffdf0;border:1px solid #f59e0b;border-radius:10px;padding:10px 14px;font-size:11px;font-weight:700;color:#b45309">' +
       '<i class="fa-solid fa-clock"></i> Entrega 5 a 7 días hábiles · Precios de lista Contado</div>';
-  renderModalFooter(p.title||'—', vp!==null?Math.round(vp).toLocaleString('es-AR'):null);
+  renderModalFooter(p.title||'—', vpMin!==null?Math.round(vpMin).toLocaleString('es-AR'):null);
   document.getElementById('prod-modal').classList.add('open');
 }
 
@@ -1083,6 +1132,7 @@ function editarProveedor(idx) {
   document.getElementById('pf-apikey').value = p.apiKey || '';
   document.getElementById('pf-endpoint').value = p.endpoint || '';
   document.getElementById('pf-markup').value = (p.markup !== undefined && p.markup !== null ? p.markup : 30);
+  document.getElementById('pf-markup-mayorista').value = (p.markupMayorista !== undefined && p.markupMayorista !== null ? p.markupMayorista : 15);
   document.getElementById('prov-form-title').textContent = 'Editar: ' + p.nombre;
   onTipoChange();
   document.getElementById('prov-form').style.display = 'block';
@@ -1101,6 +1151,7 @@ function agregarProveedor() {
   document.getElementById('pf-apikey').value = '';
   document.getElementById('pf-endpoint').value = '';
   document.getElementById('pf-markup').value = 30;
+  document.getElementById('pf-markup-mayorista').value = 15;
   document.getElementById('prov-form-title').textContent = 'Nuevo proveedor';
   onTipoChange();
   document.getElementById('prov-form').style.display = 'block';
@@ -1130,6 +1181,7 @@ function guardarProveedor() {
     apiKey: document.getElementById('pf-apikey').value.trim(),
     endpoint: document.getElementById('pf-endpoint').value.trim(),
     markup: parseFloat(document.getElementById('pf-markup').value) || 30,
+    markupMayorista: parseFloat(document.getElementById('pf-markup-mayorista').value) || 15,
     elitUserId: document.getElementById('pf-elit-userid').value.trim(),
     elitToken: document.getElementById('pf-elit-token').value.trim()
   };
@@ -1257,6 +1309,7 @@ async function cargarConfigDesdeSupabase() {
         if (sp.user  !== undefined) p.user  = sp.user;
         if (sp.pass  !== undefined) p.pass  = sp.pass;
         if (sp.markup !== undefined) p.markup = sp.markup;
+        if (sp.markupMayorista !== undefined) p.markupMayorista = sp.markupMayorista;
         if (sp.airUrl !== undefined) p.airUrl = sp.airUrl;
         if (sp.airSyncUrl !== undefined) p.airSyncUrl = sp.airSyncUrl;
         if (sp.elitUserId !== undefined) p.elitUserId = sp.elitUserId;
@@ -1453,7 +1506,8 @@ function goPageInvid(idx, n) { appState.proveedores[idx].currentPage = n; render
 function abrirInvidFicha(idx, codigo) {
   var prov = appState.proveedores[idx];
   var cotiz = appState.cotizBNA || 0;
-  var mkp = prov.markup || 0;
+  var mkpMin = (prov.markup !== undefined && prov.markup !== null ? prov.markup : 38);
+  var mkpMay = (prov.markupMayorista !== undefined && prov.markupMayorista !== null ? prov.markupMayorista : 18);
   document.getElementById('invid-ficha-hdr').textContent = codigo;
   document.getElementById('invid-ficha-content').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</div>';
   document.getElementById('invid-ficha-overlay').classList.add('open');
@@ -1463,7 +1517,8 @@ function abrirInvidFicha(idx, codigo) {
       if (!d.ok) throw new Error(d.error || 'Error');
       var usd = parseFloat(d.precio) || 0;
       var iva = parseFloat(d.iva) || 21;
-      var ars = (usd && cotiz) ? Math.round(usd * cotiz * (1+iva/100) * (1+mkp/100)) : 0;
+      var arsMin = (usd && cotiz) ? Math.round(usd * cotiz * (1+iva/100) * (1+mkpMin/100)) : 0;
+      var arsMay = (usd && cotiz) ? Math.round(usd * cotiz * (1+iva/100) * (1+mkpMay/100)) : 0;
       var sNorm = String(d.stock || '').trim().toLowerCase();
       var stk = (sNorm.indexOf('stock bajo') !== -1 || sNorm.indexOf('bajo') !== -1 || sNorm.indexOf('menos de') !== -1)
               ? '<span class="invid-stk-bajo">⚠ ' + esc(d.stock) + '</span>'
@@ -1473,8 +1528,17 @@ function abrirInvidFicha(idx, codigo) {
       var imgHtml = d.imagen
         ? '<img class="invid-ficha-img" src="' + esc(d.imagen) + '" alt="" onerror="this.style.display=\'none\'">'
         : '';
-      var precioHtml = ars
-        ? '<div class="invid-ficha-precio">$' + ars.toLocaleString('es-AR') + '</div>'
+      var precioHtml = arsMin
+        ? '<div style="display:flex;gap:16px;align-items:flex-end;margin-bottom:12px;flex-wrap:wrap">' +
+            '<div>' +
+              '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista (' + mkpMin + '%)</div>' +
+              '<div class="invid-ficha-precio" style="font-size:24px">$' + arsMin.toLocaleString('es-AR') + '</div>' +
+            '</div>' +
+            '<div style="border-left:1px solid var(--border);padding-left:16px">' +
+              '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista (' + mkpMay + '%)</div>' +
+              '<div class="invid-ficha-precio" style="font-size:24px;color:#0284c7">$' + arsMay.toLocaleString('es-AR') + '</div>' +
+            '</div>' +
+          '</div>'
         : '<div class="invid-ficha-sub" style="margin-top:6px">Sin precio asignado</div>';
       var descCorta = (d.descripcion_corta||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
       var waMsg = encodeURIComponent('Hola Alberto, quiero consultar por: ' + d.descripcion + (d.part_number ? ' · Part#: '+d.part_number : ''));
