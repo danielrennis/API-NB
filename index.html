@@ -6,7 +6,6 @@
   <title>RyR · Proveedores</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     :root{--ryr:#E30613;--ryr-d:#b90510;--bg:#f4f7fa;--surface:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b}
@@ -281,10 +280,6 @@
         <button class="btn btn-ghost" onclick="cancelarFormProv()"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
-    <div class="section-title" style="margin-top:20px"><i class="fa-solid fa-database"></i> Supabase</div>
-    <div class="form-group"><label class="form-label">URL</label><input type="text" class="form-input" id="cfg-supa-url"/></div>
-    <div class="form-group"><label class="form-label">Anon Key</label><input type="text" class="form-input" id="cfg-supa-key"/></div>
-    <button class="btn btn-green btn-sm" onclick="guardarSupabase()"><i class="fa-solid fa-floppy-disk"></i> Guardar Supabase</button>
   </div>
 </div>
 
@@ -319,25 +314,21 @@ var CONFIG_PASSWORD = 'da89c261';
 var STORAGE_KEY = 'ryr_config_v2';
 var NB_API = 'https://api.nb.com.ar/v1';
 var AIR_PROXY = 'sync2.php';
-var DEFAULT_SUPA_URL = 'https://mvbgtzofohhwhhnjqvvg.supabase.co';
-var DEFAULT_SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12Ymd0em9mb2hod2hobmpxdnZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MjI1MjcsImV4cCI6MjA5MzQ5ODUyN30.6GILq6R1rzfX3b6s63TecyfAIebHyOgRih0kBaM0gcA';
 var COLORS = ['c0','c1','c2','c3','c4','c5'];
 
 // ── ESTADO ────────────────────────────────────────────────────────────────────
 var appState = {
   cotizBNA: null,
-  supaUrl: DEFAULT_SUPA_URL,
-  supaKey: DEFAULT_SUPA_KEY,
   activeProv: 0,
   editingIdx: null,
   proveedores: [
-    { id:'prov_213', nombre:'Proveedor 213', tipo:'nb', user:'', pass:'', markup:30, markupMayorista:15,
+    { id:'prov_213', nombre:'Proveedor 213', tipo:'nb', user:'ryr', pass:'Ryr_2024', markup:38, markupMayorista:18,
       airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
-    { id:'prov_air', nombre:'Proveedor 126', tipo:'air', user:'', pass:'', markup:38, markupMayorista:18,
+    { id:'prov_air', nombre:'Proveedor 126', tipo:'air', user:'R0753', pass:'20261632374', markup:38, markupMayorista:18,
       airUrl: (window.location.protocol === 'https:' ? '/.netlify/functions/air-proxy' : 'sync2.php'), airSyncUrl:'http://serverres.dyndns.org:81/prueba/Proveedores/sync2.php', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false },
-    { id:'prov_elit', nombre:'Proveedor 4', tipo:'elit', user:'', pass:'', markup:30, markupMayorista:15,
+    { id:'prov_elit', nombre:'Proveedor 4', tipo:'elit', user:'', pass:'', markup:38, markupMayorista:18,
       elitUserId:'2978', elitToken:'5y1p0twcuz',
       airUrl:'', apiUrl:'', apiKey:'', endpoint:'',
       token:null, productos:[], currentPage:1, loaded:false, _elitCatalogo:[], _elitDate:'' },
@@ -346,7 +337,6 @@ var appState = {
       token:null, productos:[], currentPage:1, loaded:false }
   ]
 };
-var sbClient = null;
 
 function loadLocalConfig() {
   try {
@@ -358,12 +348,6 @@ function loadLocalConfig() {
     }
     var c;
     try { c = JSON.parse(raw || '{}'); } catch(pe) { c = {}; localStorage.removeItem(STORAGE_KEY); }
-    if (c.supaUrl) appState.supaUrl = c.supaUrl;
-    if (c.supaKey) appState.supaKey = c.supaKey;
-    var elUrl = document.getElementById('cfg-supa-url');
-    var elKey = document.getElementById('cfg-supa-key');
-    if (elUrl) elUrl.value = appState.supaUrl;
-    if (elKey) elKey.value = appState.supaKey;
     // Mergear config guardada sobre defaults
     var saved = c.proveedores || [];
     // Compatibilidad: config vieja tenía nbUser/nbPass sueltos
@@ -401,15 +385,11 @@ function loadLocalConfig() {
 function saveLocalConfig() {
   var toSave = appState.proveedores.map(function(p) {
     return { id:p.id, nombre:p.nombre, tipo:p.tipo, user:p.user, pass:p.pass,
-             markup:p.markup, markupMayorista:(p.markupMayorista !== undefined ? p.markupMayorista : 15),
+             markup:p.markup, markupMayorista:(p.markupMayorista !== undefined ? p.markupMayorista : 18),
              airUrl:p.airUrl, airSyncUrl:p.airSyncUrl||'', apiUrl:p.apiUrl, apiKey:p.apiKey, endpoint:p.endpoint,
              elitUserId:p.elitUserId, elitToken:p.elitToken };
   });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ supaUrl:appState.supaUrl, supaKey:appState.supaKey, proveedores:toSave }));
-}
-
-function initSupa() {
-  try { sbClient = window.supabase.createClient(appState.supaUrl, appState.supaKey); } catch(e) { sbClient = null; }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ proveedores:toSave }));
 }
 
 // ── COTIZACIÓN BNA ────────────────────────────────────────────────────────────
@@ -1202,14 +1182,6 @@ function guardarProveedor() {
   showCfgAlert('success', 'Proveedor guardado');
 }
 
-function guardarSupabase() {
-  appState.supaUrl = document.getElementById('cfg-supa-url').value.trim();
-  appState.supaKey = document.getElementById('cfg-supa-key').value.trim();
-  saveLocalConfig();
-  initSupa();
-  showCfgAlert('success', 'Supabase guardado');
-}
-
 function showCfgAlert(type, msg) {
   var el = document.getElementById('cfg-alert');
   el.className = 'alert alert-' + type;
@@ -1293,54 +1265,13 @@ function showLoading(id){ document.getElementById(id).innerHTML='<div class="sta
 function showMsg(id,msg){ document.getElementById(id).innerHTML='<div class="state-msg">'+msg+'</div>'; }
 function showError(id,msg){ document.getElementById(id).innerHTML='<div class="state-msg" style="color:#dc2626"><i class="fa-solid fa-triangle-exclamation"></i> '+msg+'</div>'; }
 
-// ── CARGA CONFIG DESDE SUPABASE (pisa localStorage) ──────────────────────────
-async function cargarConfigDesdeSupabase() {
-  try {
-    if (!sbClient) return;
-    var r = await sbClient.from('config').select('value').eq('key', 'ryr_proveedores').single();
-    if (r.error || !r.data) return;
-    var c = typeof r.data.value === 'string' ? JSON.parse(r.data.value) : r.data.value;
-    if (!c || !c.proveedores) return;
-    // Aplicar credenciales de cada proveedor
-    c.proveedores.forEach(function(sp) {
-      var p = appState.proveedores.find(function(x){ return x.id === sp.id; });
-      if (p) {
-        if (sp.user  !== undefined) p.user  = sp.user;
-        if (sp.pass  !== undefined) p.pass  = sp.pass;
-        if (sp.markup !== undefined) p.markup = sp.markup;
-        if (sp.markupMayorista !== undefined) p.markupMayorista = sp.markupMayorista;
-        if (sp.airUrl !== undefined) p.airUrl = sp.airUrl;
-        if (sp.airSyncUrl !== undefined) p.airSyncUrl = sp.airSyncUrl;
-        if (sp.elitUserId !== undefined) p.elitUserId = sp.elitUserId;
-        if (sp.elitToken  !== undefined) p.elitToken  = sp.elitToken;
-        if (sp.apiUrl  !== undefined) p.apiUrl  = sp.apiUrl;
-        if (sp.apiKey  !== undefined) p.apiKey  = sp.apiKey;
-        if (sp.endpoint !== undefined) p.endpoint = sp.endpoint;
-        if (sp.nombre !== undefined && ['prov_213','prov_air','prov_elit','prov_invid'].indexOf(sp.id) === -1) p.nombre = sp.nombre;
-      } else {
-        // Proveedor nuevo que no estaba en defaults
-        sp.token = null; sp.productos = []; sp.currentPage = 1; sp.loaded = false;
-        appState.proveedores.push(sp);
-      }
-    });
-    // También actualizar localStorage con lo de Supa
-    saveLocalConfig();
-    renderTabs();
-    renderSections();
-    switchProv(appState.activeProv || 0);
-  } catch(e) { console.warn('[cargarConfigDesdeSupabase]', e); }
-}
-
 // ── INIT ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   loadLocalConfig();
-  initSupa();
   cargarCotizacion();
   renderTabs();
   renderSections();
   switchProv(0);
-  // Cargar config desde Supabase (async, pisa lo local)
-  cargarConfigDesdeSupabase();
 });
 
 document.getElementById('config-pwd-input').addEventListener('keydown', function(e){ if(e.key==='Enter') checkConfigPassword(); });
