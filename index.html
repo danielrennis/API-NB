@@ -748,11 +748,11 @@ function abrirModalElit(idx, id) {
   var pricesHtml =
     '<div style="display:flex;gap:16px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">' +
       '<div>' +
-        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista ('+markupMin+'%)</div>' +
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista</div>' +
         '<div class="prod-modal-price" style="font-size:24px">'+(vpMin!==null?'$'+Math.round(vpMin).toLocaleString('es-AR'):'—')+'</div>' +
       '</div>' +
       '<div style="border-left:1px solid var(--border);padding-left:16px">' +
-        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista ('+markupMay+'%)</div>' +
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista</div>' +
         '<div class="prod-modal-price" style="font-size:24px;color:#0284c7">'+(vpMay!==null?'$'+Math.round(vpMay).toLocaleString('es-AR'):'—')+'</div>' +
       '</div>' +
     '</div>';
@@ -1008,11 +1008,11 @@ async function abrirModalNB(idx, id) {
     var pricesHtml =
       '<div style="display:flex;gap:16px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">' +
         '<div>' +
-          '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista ('+markupMin+'%)</div>' +
+          '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista</div>' +
           '<div class="prod-modal-price" style="font-size:24px">'+(vpMin!==null?'$'+Math.round(vpMin).toLocaleString('es-AR'):'—')+'</div>' +
         '</div>' +
         '<div style="border-left:1px solid var(--border);padding-left:16px">' +
-          '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista ('+markupMay+'%)</div>' +
+          '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista</div>' +
           '<div class="prod-modal-price" style="font-size:24px;color:#0284c7">'+(vpMay!==null?'$'+Math.round(vpMay).toLocaleString('es-AR'):'—')+'</div>' +
         '</div>' +
       '</div>';
@@ -1051,11 +1051,11 @@ function abrirModalAIR(idx, listIdx) {
   var pricesHtml =
     '<div style="display:flex;gap:16px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">' +
       '<div>' +
-        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista ('+markupMin+'%)</div>' +
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista</div>' +
         '<div class="prod-modal-price" style="font-size:24px">'+(vpMin!==null?'$'+Math.round(vpMin).toLocaleString('es-AR'):'—')+'</div>' +
       '</div>' +
       '<div style="border-left:1px solid var(--border);padding-left:16px">' +
-        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista ('+markupMay+'%)</div>' +
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista</div>' +
         '<div class="prod-modal-price" style="font-size:24px;color:#0284c7">'+(vpMay!==null?'$'+Math.round(vpMay).toLocaleString('es-AR'):'—')+'</div>' +
       '</div>' +
     '</div>';
@@ -1071,7 +1071,6 @@ function abrirModalAIR(idx, listIdx) {
       '<div class="prod-detail-item"><div class="lbl">Código</div><div class="val">'+esc(p.sku)+'</div></div>' +
       
       '<div class="prod-detail-item"><div class="lbl">Entrega</div><div class="val">5-7 días hábiles</div></div>' +
-      '<div class="prod-detail-item"><div class="lbl">Proveedor</div><div class="val">Proveedor 126</div></div>' +
     '</div>' +
     '<div style="margin-top:14px;background:#fffdf0;border:1px solid #f59e0b;border-radius:10px;padding:10px 14px;font-size:11px;font-weight:700;color:#b45309">' +
       '<i class="fa-solid fa-clock"></i> Entrega 5 a 7 días hábiles · Precios de lista Contado</div>';
@@ -1531,11 +1530,11 @@ function abrirInvidFicha(idx, codigo) {
       var precioHtml = arsMin
         ? '<div style="display:flex;gap:16px;align-items:flex-end;margin-bottom:12px;flex-wrap:wrap">' +
             '<div>' +
-              '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista (' + mkpMin + '%)</div>' +
+              '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Minorista</div>' +
               '<div class="invid-ficha-precio" style="font-size:24px">$' + arsMin.toLocaleString('es-AR') + '</div>' +
             '</div>' +
             '<div style="border-left:1px solid var(--border);padding-left:16px">' +
-              '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista (' + mkpMay + '%)</div>' +
+              '<div style="font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:.05em">Mayorista</div>' +
               '<div class="invid-ficha-precio" style="font-size:24px;color:#0284c7">$' + arsMay.toLocaleString('es-AR') + '</div>' +
             '</div>' +
           '</div>'
